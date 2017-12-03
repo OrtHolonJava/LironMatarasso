@@ -52,7 +52,6 @@ public class Map {
 			if (tempNode.getNodeType() == Node.ELEMENT_NODE) {
 				if (tempNode.hasAttributes()) {
 					NamedNodeMap nodeMap = tempNode.getAttributes();
-
 					for (int i = 0; i < nodeMap.getLength(); i++) {
 						Node node = nodeMap.item(i);
 						_map[_counter / _size][_counter % _size] = Integer.parseInt(node.getNodeValue());
@@ -64,28 +63,6 @@ public class Map {
 					readNode(tempNode.getChildNodes());
 				}
 			}
-		}
-	}
-	public static int getMapHeight(String fileName){
-		try {
-		File file = new File(fileName);
-		DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document doc = docBuilder.parse(file);
-		return doc.getChildNodes().getLength();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			return -1;
-		}
-	}
-	public static int getMapWidth(String fileName){
-		try {
-		File file = new File(fileName);
-		DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document doc = docBuilder.parse(file);
-		return doc.getChildNodes().item(0).getChildNodes().getLength();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			return -1;
 		}
 	}
 }
