@@ -65,4 +65,21 @@ public class Map {
 			}
 		}
 	}
+		
+		public static int getElementCountByName(String fileName,String name)
+		{
+			try{
+		
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+			Document doc = docBuilder.parse(fileName);
+			NodeList list = doc.getElementsByTagName(name);
+			return  list.getLength();
+			}
+			catch(Exception e)
+			{
+				System.out.println("exception: "+e.getMessage());
+				return -1;
+			}	
+		}
 }

@@ -17,11 +17,9 @@ public class MapPanel extends JPanel {
 	private Img _stoneBlock;
 
 	public MapPanel() {
-		_mapFile = "MapFiles//pic2_20171202195001.xml";
-		_size = 37;
-		_sizeW = 250;
-		System.out.println("ofir gay: " + _size);
-		System.out.println("ofir gay width: " + _sizeW);
+		_mapFile = "MapFiles//הורד_20171203213842.xml";
+		_size = Map.getElementCountByName(_mapFile,"Line");
+		_sizeW = Map.getElementCountByName(_mapFile,"Area")/_size;
 		_blockSize = 8;
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _sizeW * _blockSize, _size * _blockSize);
 		_sandBlock = new Img("images/SandBlock.png", 0, 0, _blockSize, _blockSize);
