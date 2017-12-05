@@ -17,7 +17,7 @@ public class MapPanel extends JPanel {
 	private Img _stoneBlock;
 
 	public MapPanel() {
-		_mapFile = "MapFiles//הורד_20171203213842.xml";
+		_mapFile = "MapFiles//GetPicture_20171205155505.xml";
 		_size = Map.getElementCountByName(_mapFile,"Line");
 		_sizeW = Map.getElementCountByName(_mapFile,"Area")/_size;
 		_blockSize = 8;
