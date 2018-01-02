@@ -20,20 +20,37 @@ public class Map {
 	private int _size;
 	private int _counter = 0;
 	private int[][] _map;
+	private int[][] _effects;
 
-	public Map(int size, int sizeW, String fileName) {
+	public Map(int size, int sizeW, String mapFileName,String effectsFileName) {
+		_effects =new int[size][sizeW];
 		_map = new int[size][sizeW];
 		_size = sizeW;
 
 		try {
-			File file = new File(fileName);
+			File file = new File(mapFileName);
 
 			DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
 			Document doc = docBuilder.parse(file);
 
 			if (doc.hasChildNodes()) {
-				readNode(doc.getChildNodes());
+				readNode(doc.getChildNodes(),_map);
+			}
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+		try {
+			File file = new File(effectsFileName);
+
+			DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+
+			Document doc = docBuilder.parse(file);
+			_counter=0;
+			if (doc.hasChildNodes()) {
+				readNode(doc.getChildNodes(),_effects);
 			}
 
 		} catch (Exception e) {
@@ -41,11 +58,15 @@ public class Map {
 		}
 	}
 
-	public int[][] get_map() {
+	public int[][] getMap() {
 		return _map;
 	}
+	public int[][] getEffects()
+	{
+		return _effects;
+	}
 
-	private void readNode(NodeList nodeList) {
+	private void readNode(NodeList nodeList,int[][] mat) {
 		for (int count = 0; count < nodeList.getLength(); count++) {
 			Node tempNode = nodeList.item(count);
 
@@ -54,13 +75,13 @@ public class Map {
 					NamedNodeMap nodeMap = tempNode.getAttributes();
 					for (int i = 0; i < nodeMap.getLength(); i++) {
 						Node node = nodeMap.item(i);
-						_map[_counter / _size][_counter % _size] = Integer.parseInt(node.getNodeValue());
+						mat[_counter / _size][_counter % _size] = Integer.parseInt(node.getNodeValue());
 						_counter++;
 					}
 				}
 
 				if (tempNode.hasChildNodes()) {
-					readNode(tempNode.getChildNodes());
+					readNode(tempNode.getChildNodes(),mat);
 				}
 			}
 		}
