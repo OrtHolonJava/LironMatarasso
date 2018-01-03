@@ -22,7 +22,7 @@ public class MapPanel extends JPanel {
 
 	public MapPanel() {
 		_mapFile = "MapFiles//pic2_20171206105928.xml";
-		_effectsFile = "MapFiles//effects_20180102080916.xml";
+		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_size = Map.getElementCountByName(_mapFile, "Line");
 		_sizeW = Map.getElementCountByName(_mapFile, "Area") / _size;
 		_blockSize = 6;
@@ -33,6 +33,7 @@ public class MapPanel extends JPanel {
 		_sandBackground = new Img("images//SandBackground.png", 0, 0, _blockSize, _blockSize);
 		_stoneBackground = new Img("images//StoneBackground.png", 0, 0, _blockSize, _blockSize);
 		_map = new Map(_size, _sizeW, _mapFile, _effectsFile);
+		printMat(_map.getEffects(), _size, _sizeW);
 	}
 
 	@Override
