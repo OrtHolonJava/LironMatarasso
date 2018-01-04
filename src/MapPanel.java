@@ -155,16 +155,22 @@ public class MapPanel extends JPanel implements ActionListener {
 		// System.out.println("center: " + _centerPoint.toString());
 
 		if (_centerPoint.getX() < _mousePoint.getX())
-			_camPoint.setLocation(_camPoint.getX() + 1, _camPoint.getY());
+			_camPoint.x++;
 
-		if (_centerPoint.getX() > _mousePoint.getX())
-			_camPoint.setLocation(_camPoint.getX() - 1, _camPoint.getY());
+		if (_centerPoint.getX() >= _mousePoint.getX())
+			if (_camPoint.x > 0)
+				_camPoint.x--;
+			else if (_centerPoint.x > 0)
+				_centerPoint.x--;
 
 		if (_centerPoint.getY() < _mousePoint.getY())
-			_camPoint.setLocation(_camPoint.getX(), _camPoint.getY() + 1);
+			_camPoint.y++;
 
-		if (_centerPoint.getY() > _mousePoint.getY())
-			_camPoint.setLocation(_camPoint.getX(), _camPoint.getY() - 1);
+		if (_centerPoint.getY() >= _mousePoint.getY())
+			if (_camPoint.y > 0)
+				_camPoint.y--;
+			else if (_centerPoint.y > 0)
+				_centerPoint.y--;
 		repaint();
 	}
 
