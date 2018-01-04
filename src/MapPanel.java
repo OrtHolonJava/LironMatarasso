@@ -1,12 +1,23 @@
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import images.Img;
 
 import map.Map;
 
-public class MapPanel extends JPanel {
+public class MapPanel extends JPanel implements ActionListener {
 	private String _mapFile;
 	private String _effectsFile;
 	private int _size;
@@ -19,27 +30,113 @@ public class MapPanel extends JPanel {
 	private Img _seaweedBlock;
 	private Img _sandBackground;
 	private Img _stoneBackground;
+	private Img _shark;
+	private BufferedImage img;
+	private Point _mousePoint;
+	private Point _centerPoint;
+	private Point _camPoint;
 
 	public MapPanel() {
 		_mapFile = "MapFiles//pic2_20171206105928.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_size = Map.getElementCountByName(_mapFile, "Line");
 		_sizeW = Map.getElementCountByName(_mapFile, "Area") / _size;
-		_blockSize = 6;
+		_blockSize = 40;
+		_mousePoint = new Point(0, 0);
+		_centerPoint = new Point(1000, 500);
+		System.out.println("cent: " + _centerPoint.toString());
+		_camPoint = new Point(_centerPoint);
+
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _sizeW * _blockSize, _size * _blockSize);
 		_sandBlock = new Img("images//SandBlock2.png", 0, 0, _blockSize, _blockSize);
 		_stoneBlock = new Img("images//‏‏StoneBlock2.png", 0, 0, _blockSize, _blockSize);
 		_seaweedBlock = new Img("images//OneSW.png", 0, 0, _blockSize, _blockSize);
 		_sandBackground = new Img("images//SandBackground.png", 0, 0, _blockSize, _blockSize);
 		_stoneBackground = new Img("images//StoneBackground.png", 0, 0, _blockSize, _blockSize);
+		_shark = new Img("images//shark1.png", 0, 0, 66, 122);
+		System.out.println(_camPoint.x + " " + _camPoint.y);
+		_shark.setImgCords(_camPoint.x, _camPoint.y);
+		img = Img.toBufferedImage(_shark.getImage());
 		_map = new Map(_size, _sizeW, _mapFile, _effectsFile);
-		printMat(_map.getEffects(), _size, _sizeW);
+		Timer t = new Timer(10, this);
+		t.start();
+	}
+
+	protected void rotateShark(Graphics g) {
+
+		// System.out.println(_camPoint.x + " " + _camPoint.y);
+		Graphics2D g2d = (Graphics2D) g.create();
+
+		double rotation = 0f;
+
+		int width = getWidth() - 1;
+		int height = getHeight() - 1;
+
+		if (_camPoint != null) {
+
+			int x = width / 2;
+			int y = height / 2;
+
+			int deltaX = _camPoint.x - x;
+			int deltaY = _camPoint.y - y;
+
+			rotation = -Math.atan2(deltaX, deltaY);
+
+			rotation = Math.toDegrees(rotation) + 180;
+
+		}
+
+		int x = (width - img.getWidth()) / 2;
+		int y = (height - img.getHeight()) / 2;
+
+		g2d.rotate(Math.toRadians(rotation), width / 2, height / 2);
+		g2d.drawImage(img, x, y, this);
+		x = width / 2;
+		y = height / 2;
+		g2d.dispose();
+	}
+
+	protected void rotateShark2(Graphics g) {
+
+		Graphics2D g2d = (Graphics2D) g.create();
+
+		double rotation = 0f;
+
+		int width = getWidth() - 1;
+		int height = getHeight() - 1;
+
+		if (_mousePoint != null) {
+
+			int x = width / 2;
+			int y = height / 2;
+			System.out.println("w: " + x + " h: " + y);
+
+			int deltaX = _mousePoint.x - x;
+			int deltaY = _mousePoint.y - y;
+
+			rotation = -Math.atan2(deltaX, deltaY);
+
+			rotation = Math.toDegrees(rotation) + 180;
+
+		}
+
+		int x = (width - img.getWidth()) / 2;
+		int y = (height - img.getHeight()) / 2;
+
+		g2d.rotate(Math.toRadians(rotation), width / 2, height / 2);
+		g2d.drawImage(img, x, y, this);
+		x = width / 2;
+		y = height / 2;
+		g2d.dispose();
 	}
 
 	@Override
-	protected void paintComponent(Graphics g) {
+	protected void paintComponent(Graphics g1) {
 		// TODO Auto-generated method stub
+		getPreferredSize();
+		Graphics2D g = (Graphics2D) g1;
 		super.paintComponent(g);
+		g.translate(-_camPoint.getX(), -_camPoint.getY() / 2);
 		_backgroundImg.drawImg(g);
 		for (int i = 0; i < _size; i++) {
 			for (int j = 0; j < _sizeW; j++) {
@@ -72,6 +169,29 @@ public class MapPanel extends JPanel {
 				}
 			}
 		}
+		rotateShark2(g);
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		// TODO Auto-generated method stub
+		_mousePoint = MouseInfo.getPointerInfo().getLocation();
+		// System.out.println("mouse: " + _mousePoint.toString());
+		// System.out.println("cam: " + _camPoint.toString());
+		// System.out.println("center: " + _centerPoint.toString());
+
+		if (_centerPoint.getX() < _mousePoint.getX())
+			_camPoint.setLocation(_camPoint.getX() + 1, _mousePoint.getY());
+
+		if (_centerPoint.getX() > _mousePoint.getX())
+			_camPoint.setLocation(_camPoint.getX() - 1, _mousePoint.getY());
+
+		if (_centerPoint.getY() < _mousePoint.getY())
+			_camPoint.setLocation(_camPoint.getX(), _mousePoint.getY() + 1);
+
+		if (_centerPoint.getY() > _mousePoint.getY())
+			_camPoint.setLocation(_camPoint.getX(), _mousePoint.getY() - 1);
+		repaint();
 	}
 
 	public void printMat(int[][] mat, int size, int sizeW) {
