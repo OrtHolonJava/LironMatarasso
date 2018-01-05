@@ -18,7 +18,7 @@ import images.Img;
 
 import map.Map;
 
-public class MapPanel extends JPanel implements ActionListener {
+public class MapPanel extends JPanel implements ActionListener, MouseMotionListener {
 	private String _mapFile;
 	private String _effectsFile;
 	private int _size;
@@ -34,10 +34,12 @@ public class MapPanel extends JPanel implements ActionListener {
 	private Img _shark;
 	private BufferedImage img;
 	private Point _mousePoint;
+	private Point _finalMousePoint;
 	private Point _centerPoint;
 	private Point _camPoint;
 
 	public MapPanel() {
+		addMouseMotionListener(this);
 		_mapFile = "MapFiles//pic2_20171206105928.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_size = Map.getElementCountByName(_mapFile, "Line");
@@ -45,8 +47,8 @@ public class MapPanel extends JPanel implements ActionListener {
 		_blockSize = 40;
 		_mousePoint = new Point(0, 0);
 		_centerPoint = new Point(0, 0);
-		_camPoint = new Point(_centerPoint);
-
+		_camPoint = new Point(0, 0);
+		_finalMousePoint = new Point(0, 0);
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _sizeW * _blockSize, _size * _blockSize);
 		_sandBlock = new Img("images//SandBlock2.png", 0, 0, _blockSize, _blockSize);
 		_stoneBlock = new Img("images//‏‏StoneBlock2.png", 0, 0, _blockSize, _blockSize);
@@ -65,29 +67,21 @@ public class MapPanel extends JPanel implements ActionListener {
 
 		double rotation = 0f;
 
-		int width = getWidth() - 1;
-		int height = getHeight() - 1;
+		if (_finalMousePoint != null) {
 
-		if (_mousePoint != null) {
-
-			int x = width / 2;
-			int y = height / 2;
-			int deltaX = _mousePoint.x - x;
-			int deltaY = _mousePoint.y - y;
+			int x = _centerPoint.x;
+			int y = _centerPoint.y;
+			int deltaX = _finalMousePoint.x - x;
+			int deltaY = _finalMousePoint.y - y;
 
 			rotation = -Math.atan2(deltaX, deltaY);
 
 			rotation = Math.toDegrees(rotation) + 180;
-
 		}
-
-		int x = (width - img.getWidth()) / 2;
-		int y = (height - img.getHeight()) / 2;
-		g2d.rotate(Math.toRadians(rotation), width / 2, height / 2);
+		int x = _centerPoint.x - img.getWidth() / 2;
+		int y = _centerPoint.y - img.getWidth() / 2;
+		g2d.rotate(Math.toRadians(rotation), _centerPoint.x, _centerPoint.y);
 		g2d.drawImage(img, x, y, this);
-		/*
-		 * x = width / 2; y = height / 2;
-		 */
 		g2d.dispose();
 	}
 
@@ -96,7 +90,7 @@ public class MapPanel extends JPanel implements ActionListener {
 		// TODO Auto-generated method stub
 		Graphics2D g = (Graphics2D) g1;
 		super.paintComponent(g);
-		g.translate(-_camPoint.getX(), -_camPoint.getY());
+		g.translate(-_camPoint.x, -_camPoint.y);
 		_backgroundImg.drawImg(g);
 		for (int i = 0; i < _size; i++) {
 			for (int j = 0; j < _sizeW; j++) {
@@ -129,49 +123,50 @@ public class MapPanel extends JPanel implements ActionListener {
 				}
 			}
 		}
-		_shark.setImgCords(_centerPoint.x, _centerPoint.y);
-		_shark.drawImg(g);
 		img = Img.toBufferedImage(_shark.getImage());
 		rotateShark2(g);
-
 		g.setColor(Color.red);
-		g.drawOval(_mousePoint.x, _mousePoint.y, 100, 100);
+		g.drawRect(_finalMousePoint.x, _finalMousePoint.y, 100, 100);
 		g.setColor(Color.yellow);
-		g.drawOval(_centerPoint.x, _centerPoint.y, 100, 100);
+		g.drawRect(_centerPoint.x, _centerPoint.y, 100, 100);
 		g.setColor(Color.green);
-		g.drawOval(_camPoint.x, _camPoint.y, 100, 100);
-
+		g.drawRect(_camPoint.x, _camPoint.y, 100, 100);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
-		_mousePoint = MouseInfo.getPointerInfo().getLocation();
-		_mousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
+		_finalMousePoint.setLocation(_camPoint);
+		_finalMousePoint.x += _mousePoint.x;
+		_finalMousePoint.y += _mousePoint.y;
 		_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
 
-		// System.out.println("mouse: " + _mousePoint.toString());
-		// System.out.println("cam: " + _camPoint.toString());
-		// System.out.println("center: " + _centerPoint.toString());
-
-		if (_centerPoint.getX() < _mousePoint.getX())
+		if (_centerPoint.x < _finalMousePoint.x)
 			_camPoint.x++;
 
-		if (_centerPoint.getX() >= _mousePoint.getX())
+		if (_centerPoint.x > _finalMousePoint.x)
 			if (_camPoint.x > 0)
 				_camPoint.x--;
-			else if (_centerPoint.x > 0)
-				_centerPoint.x--;
 
-		if (_centerPoint.getY() < _mousePoint.getY())
+		if (_centerPoint.y < _finalMousePoint.y)
 			_camPoint.y++;
 
-		if (_centerPoint.getY() >= _mousePoint.getY())
+		if (_centerPoint.y > _finalMousePoint.y)
 			if (_camPoint.y > 0)
 				_camPoint.y--;
-			else if (_centerPoint.y > 0)
-				_centerPoint.y--;
 		repaint();
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		// TODO Auto-generated method stub
+		_mousePoint = e.getPoint();
 	}
 
 	public void printMat(int[][] mat, int size, int sizeW) {

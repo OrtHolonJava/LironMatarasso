@@ -6,12 +6,14 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.Timer;
 import javax.swing.JPanel;
 
-public class Tar1 extends JPanel implements ActionListener {
+public class Tar1 extends JPanel implements ActionListener, MouseMotionListener {
 
 	private int _dotX;
 	private int _dotY;
@@ -22,15 +24,17 @@ public class Tar1 extends JPanel implements ActionListener {
 	public Tar1() {
 		_dotX = 0;
 		_dotY = 0;
-		_shark = new Img("shark1.png", 0, 0, 66, 122);
+		mousePoint = MouseInfo.getPointerInfo().getLocation();
+		addMouseMotionListener(this);
+		_shark = new Img("sharkdir//shark1.png", 0, 0, 66, 122);
 		img = Img.toBufferedImage(_shark.getImage());
-		Timer t = new Timer(10, this);
+		Timer t = new Timer(5, this);
 		t.start();
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		mousePoint = MouseInfo.getPointerInfo().getLocation();
+		// mousePoint = MouseInfo.getPointerInfo().getLocation();
 		// TODO Auto-generated method stub
 		if (_dotX < mousePoint.getX())
 			_dotX++;
@@ -48,7 +52,7 @@ public class Tar1 extends JPanel implements ActionListener {
 	protected void paintComponent(Graphics g) {
 
 		super.paintComponent(g);
-
+		g.drawRect(mousePoint.x, mousePoint.y, 100, 100);
 		Graphics2D g2d = (Graphics2D) g.create();
 
 		double rotation = 0f;
@@ -78,5 +82,17 @@ public class Tar1 extends JPanel implements ActionListener {
 		x = width / 2;
 		y = height / 2;
 		g2d.dispose();
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		// TODO Auto-generated method stub
+		mousePoint = e.getPoint();
 	}
 }
