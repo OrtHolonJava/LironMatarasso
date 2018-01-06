@@ -77,6 +77,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 			rotation = -Math.atan2(deltaX, deltaY);
 
 			rotation = Math.toDegrees(rotation) + 180;
+			System.out.println(rotation);
 		}
 		int x = _centerPoint.x - img.getWidth() / 2;
 		int y = _centerPoint.y - img.getWidth() / 2;
@@ -136,24 +137,24 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
+		double slope;
 		_finalMousePoint.setLocation(_camPoint);
 		_finalMousePoint.x += _mousePoint.x;
 		_finalMousePoint.y += _mousePoint.y;
 		_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
-
-		if (_centerPoint.x < _finalMousePoint.x)
-			_camPoint.x++;
-
-		if (_centerPoint.x > _finalMousePoint.x)
-			if (_camPoint.x > 0)
-				_camPoint.x--;
-
-		if (_centerPoint.y < _finalMousePoint.y)
-			_camPoint.y++;
-
-		if (_centerPoint.y > _finalMousePoint.y)
-			if (_camPoint.y > 0)
-				_camPoint.y--;
+		int x = _centerPoint.x;
+		int y = _centerPoint.y;
+		int deltaX = _finalMousePoint.x - x;
+		int deltaY = _finalMousePoint.y - y;
+		double rotation = -Math.atan2(deltaX, deltaY);
+		rotation = Math.toDegrees(rotation) + 180;
+		System.out.println(rotation);
+		_camPoint.y -= 4 * Math.cos(Math.toRadians(-rotation));
+		_camPoint.x -= 4 * Math.sin(Math.toRadians(-rotation));
+		if (_camPoint.y < 0)
+			_camPoint.y = 0;
+		if (_camPoint.x < 0)
+			_camPoint.x = 0;
 		repaint();
 	}
 
