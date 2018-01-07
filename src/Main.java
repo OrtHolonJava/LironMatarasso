@@ -6,8 +6,3 @@ public class Main {
 		MapFrame mapFrame = new MapFrame();
 	}
 }
-
-/*
-הוספת קצוות למטה
-תזוזה בהגעת המצלמה לקצוות
-*/
