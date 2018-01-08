@@ -1,10 +1,6 @@
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.MouseInfo;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -12,37 +8,34 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.awt.peer.MouseInfoPeer;
-
 import javax.swing.JPanel;
 import javax.swing.Timer;
-
 import images.Img;
-
 import map.Map;
 
 public class MapPanel extends JPanel implements ActionListener, MouseMotionListener, MouseListener {
-	private String _mapFile;
-	private String _effectsFile;
 	private int _size;
 	private int _sizeW;
 	private int _blockSize;
-	private double _speed;
 	private int _mapPixelWidth;
 	private int _mapPixelHeight;
 	private double _sharkOffsetX;
 	private double _sharkOffsetY;
-	private Img _backgroundImg;
+	private double _speed;
+	private double _angle;
 	private Map _map;
+	private Img _backgroundImg;
 	private Img _sandBlock;
 	private Img _stoneBlock;
 	private Img _seaweedBlock;
 	private Img _sandBackground;
 	private Img _stoneBackground;
 	private Img _shark;
-	private Img _krahs;
+	private Img _sharkRev;
+	private String _mapFile;
+	private String _effectsFile;
 	private BufferedImage _bImgShark;
-	private BufferedImage _bImgKrahs;
+	private BufferedImage _bImgSharkRev;
 	private Point2D.Double _mousePoint;
 	private Point2D.Double _finalSharkPoint;
 	private Point2D.Double _finalMousePoint;
@@ -58,6 +51,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_mapPixelWidth = _sizeW * _blockSize;
 		_mapPixelHeight = _size * _blockSize;
 		_speed = 4;
+		_angle = 0;
 		_sharkOffsetX = 0;
 		_sharkOffsetY = 0;
 		_mousePoint = new Point2D.Double(0, 0);
@@ -72,7 +66,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_sandBackground = new Img("images//SandBackground.png", 0, 0, _blockSize, _blockSize);
 		_stoneBackground = new Img("images//StoneBackground.png", 0, 0, _blockSize, _blockSize);
 		_shark = new Img("images//shark1.png", 0, 0, 33, 61);
-		_krahs = new Img("images//1krahs.png", 0, 0, 33, 61);
+		_sharkRev = new Img("images//shark1rev.png", 0, 0, 33, 61);
 		_map = new Map(_size, _sizeW, _mapFile, _effectsFile);
 		addMouseMotionListener(this);
 		addMouseListener(this);
@@ -80,35 +74,60 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		t.start();
 	}
 
-	protected void rotateShark2(Graphics g) {
-		_bImgShark = Img.toBufferedImage(_shark.getImage());
-		_bImgKrahs = Img.toBufferedImage(_krahs.getImage());
-		BufferedImage use = _bImgShark;
-		Graphics2D g2d = (Graphics2D) g.create();
-		double rotation = 0f;
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
+		_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
+		_finalSharkPoint.setLocation(_centerPoint.x + _sharkOffsetX, _centerPoint.y + _sharkOffsetY);
+		_angle = Math.toDegrees(
+				-Math.atan2(_finalMousePoint.x - _finalSharkPoint.x, _finalMousePoint.y - _finalSharkPoint.y)) + 180;
+		move();
+		repaint();
+	}
 
-		if (_finalMousePoint != null) {
-
-			double x = _finalSharkPoint.x;
-			double y = _finalSharkPoint.y;
-			double deltaX = _finalMousePoint.x - x;
-			double deltaY = _finalMousePoint.y - y;
-			rotation = Math.toDegrees(-Math.atan2(deltaX, deltaY)) + 180;
-			use = (rotation < 180) ? _bImgShark : _bImgKrahs;
+	public void move() {
+		if (_sharkOffsetY == 0) {
+			_camPoint.y -= _speed * Math.cos(Math.toRadians(_angle));
+			if (_camPoint.y < 0 || _camPoint.y > _mapPixelHeight - getHeight()) {
+				_camPoint.y = (_camPoint.y < 0) ? 0 : _mapPixelHeight - getHeight();
+				_sharkOffsetY -= _speed * Math.cos(Math.toRadians(_angle));
+			}
+		} else {
+			int preSignY = (int) Math.signum(_sharkOffsetY);
+			_sharkOffsetY -= _speed * Math.cos(Math.toRadians(_angle));
+			if (preSignY != (int) Math.signum(_sharkOffsetY)) {
+				_camPoint.y -= _sharkOffsetY;
+				_sharkOffsetY = 0;
+			}
 		}
-		double x = _finalSharkPoint.x - use.getWidth() / 2;
-		double y = _finalSharkPoint.y - use.getWidth() / 2;
-		g2d.rotate(Math.toRadians(rotation), _finalSharkPoint.x, _finalSharkPoint.y);
-		g2d.drawImage(use, (int) x, (int) y, this);
-		g2d.dispose();
+
+		if (_sharkOffsetX == 0) {
+			_camPoint.x += _speed * Math.sin(Math.toRadians(_angle));
+			if (_camPoint.x < 0 || _camPoint.x > _mapPixelWidth - getWidth()) {
+				_camPoint.x = (_camPoint.x < 0) ? 0 : _mapPixelWidth - getWidth();
+				_sharkOffsetX += _speed * Math.sin(Math.toRadians(_angle));
+			}
+		} else {
+			int preSignX = (int) Math.signum(_sharkOffsetX);
+			_sharkOffsetX += _speed * Math.sin(Math.toRadians(_angle));
+			if (preSignX != (int) Math.signum(_sharkOffsetX)) {
+				_camPoint.x -= _sharkOffsetX;
+				_sharkOffsetX = 0;
+			}
+		}
 	}
 
 	@Override
 	protected void paintComponent(Graphics g1) {
-		// TODO Auto-generated method stub
 		Graphics2D g = (Graphics2D) g1;
 		super.paintComponent(g);
 		g.translate(-_camPoint.x, -_camPoint.y);
+		drawMap(g);
+		rotateShark2(g);
+		drawDebug(g);
+	}
+
+	public void drawMap(Graphics g) {
 		_backgroundImg.drawImg(g);
 		for (int i = 0; i < _size; i++) {
 			for (int j = 0; j < _sizeW; j++) {
@@ -141,7 +160,21 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 				}
 			}
 		}
-		rotateShark2(g);
+	}
+
+	protected void rotateShark2(Graphics g) {
+		_bImgShark = Img.toBufferedImage(_shark.getImage());
+		_bImgSharkRev = Img.toBufferedImage(_sharkRev.getImage());
+		BufferedImage use = _bImgShark;
+		Graphics2D g2d = (Graphics2D) g.create();
+		use = (_angle < 180) ? _bImgShark : _bImgSharkRev;
+		g2d.rotate(Math.toRadians(_angle), _finalSharkPoint.x, _finalSharkPoint.y);
+		g2d.drawImage(use, (int) _finalSharkPoint.x - use.getWidth() / 2,
+				(int) _finalSharkPoint.y - use.getHeight() / 2, this);
+		g2d.dispose();
+	}
+
+	public void drawDebug(Graphics g) {
 		g.setColor(Color.red);
 		g.drawRect((int) _finalMousePoint.x, (int) _finalMousePoint.y, 100, 100);
 		g.setColor(Color.yellow);
@@ -153,104 +186,39 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
-		// System.out.println("w: " + getWidth() + " h: " + getHeight());
-		// System.out.println("tot: w:" + _sizeW * _blockSize + " h: " + _size *
-		// _blockSize);
-		_finalMousePoint.setLocation(_camPoint);
-		_finalMousePoint.x += _mousePoint.x;
-		_finalMousePoint.y += _mousePoint.y;
-		_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
-		_finalSharkPoint.setLocation(_centerPoint.x + _sharkOffsetX, _centerPoint.y + _sharkOffsetY);
-		double x = _finalSharkPoint.x;
-		double y = _finalSharkPoint.y;
-		double deltaX = _finalMousePoint.x - x;
-		double deltaY = _finalMousePoint.y - y;
-		double rotation = -Math.atan2(deltaX, deltaY);
-		rotation = Math.toDegrees(rotation) + 180;
-		if (_sharkOffsetY == 0) {
-			_camPoint.y -= _speed * Math.cos(Math.toRadians(-rotation));
-			if (_camPoint.y < 0) {
-				_camPoint.y = 0;
-				_sharkOffsetY -= _speed * Math.cos(Math.toRadians(-rotation));
-			}
-			if (_camPoint.y > _mapPixelHeight - getHeight()) {
-				_camPoint.y = _mapPixelHeight - getHeight();
-				_sharkOffsetY -= _speed * Math.cos(Math.toRadians(-rotation));
-			}
-		} else {
-			int preSignY = (int) Math.signum(_sharkOffsetY);
-			_sharkOffsetY -= _speed * Math.cos(Math.toRadians(-rotation));
-			if (preSignY != (int) Math.signum(_sharkOffsetY)) {
-				_camPoint.y -= _sharkOffsetY;
-				_sharkOffsetY = 0;
-			}
-		}
-
-		if (_sharkOffsetX == 0) {
-			_camPoint.x -= _speed * Math.sin(Math.toRadians(-rotation));
-			if (_camPoint.x < 0) {
-				_camPoint.x = 0;
-				_sharkOffsetX -= _speed * Math.sin(Math.toRadians(-rotation));
-
-			}
-			if (_camPoint.x > _mapPixelWidth - getWidth()) {
-				_camPoint.x = _mapPixelWidth - getWidth();
-				_sharkOffsetX -= _speed * Math.sin(Math.toRadians(-rotation));
-			}
-		} else {
-			int preSignX = (int) Math.signum(_sharkOffsetX);
-			_sharkOffsetX -= _speed * Math.sin(Math.toRadians(-rotation));
-			if (preSignX != (int) Math.signum(_sharkOffsetX)) {
-				_camPoint.x -= _sharkOffsetX;
-				_sharkOffsetX = 0;
-			}
-		}
-
-		repaint();
-	}
-
-	@Override
 	public void mouseDragged(MouseEvent e) {
-		// TODO Auto-generated method stub
 		_mousePoint.setLocation(e.getPoint());
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		// TODO Auto-generated method stub
 		_mousePoint.setLocation(e.getPoint());
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-		_speed += 5;
+		if (e.getButton() == MouseEvent.BUTTON1)
+			_speed += 5;
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-		_speed -= 5;
+		if (e.getButton() == MouseEvent.BUTTON1)
+			_speed -= 5;
 	}
 
 	public void printMat(int[][] mat, int size, int sizeW) {
