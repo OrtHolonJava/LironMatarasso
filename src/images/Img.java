@@ -40,7 +40,7 @@ public class Img {
 	}
 
 	/**
-	 * draw the image on the GUI
+	 * draw the image
 	 * 
 	 * @param g
 	 */
@@ -125,6 +125,30 @@ public class Img {
 		return bimage;
 	}
 
+	public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+		Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+		BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+		Graphics2D g2d = dimg.createGraphics();
+		g2d.drawImage(tmp, 0, 0, null);
+		g2d.dispose();
+
+		return dimg;
+	}
+
+	/**
+	 * Converts a given BufferedImage into an Image
+	 * 
+	 * @param bimage
+	 *            The BufferedImage to be converted
+	 * @return The converted Image
+	 */
+	public static Image toImage(BufferedImage bimage) {
+		// Casting is enough to convert from BufferedImage to Image
+		Image img = (Image) bimage;
+		return img;
+	}
+
 	public Image getImage() {
 		return _image;
 	}
@@ -163,18 +187,5 @@ public class Img {
 
 	public void setHeight(int height) {
 		_height = height;
-	}
-
-	/**
-	 * Converts a given BufferedImage into an Image
-	 * 
-	 * @param bimage
-	 *            The BufferedImage to be converted
-	 * @return The converted Image
-	 */
-	public static Image toImage(BufferedImage bimage) {
-		// Casting is enough to convert from BufferedImage to Image
-		Image img = (Image) bimage;
-		return img;
 	}
 }

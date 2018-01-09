@@ -2,17 +2,24 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.LinkedList;
+
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import images.Img;
@@ -27,6 +34,8 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	private String _mapFile, _effectsFile;
 	private BufferedImage _bImgShark, _bImgSharkRev;
 	private Point2D.Double _mousePoint, _finalSharkPoint, _finalMousePoint, _centerPoint, _camPoint;
+	private LinkedList<Integer> _passables;
+	private Area _sharkhb;
 
 	public MapPanel() {
 		_mapFile = "MapFiles//pic2_20171206105928.xml";
@@ -38,11 +47,11 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_mapPixelHeight = _size * _blockSize;
 		_speed = 1;
 		_angle = 0;
-		_sharkOffsetX = 0;
-		_sharkOffsetY = 0;
 		_mousePoint = new Point2D.Double(0, 0);
 		_centerPoint = new Point2D.Double(0, 0);
-		_camPoint = new Point2D.Double(0, 0);
+		_camPoint = new Point2D.Double(_blockSize * 3, 0);
+		_sharkOffsetX = 0;
+		_sharkOffsetY = -0.5*_blockSize;
 		_finalMousePoint = new Point2D.Double(0, 0);
 		_finalSharkPoint = new Point2D.Double(0, 0);
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _sizeW * _blockSize, _size * _blockSize);
@@ -51,9 +60,10 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_seaweedBlock = new Img("images//OneSW.png", 0, 0, _blockSize, _blockSize);
 		_sandBackground = new Img("images//SandBackground.png", 0, 0, _blockSize, _blockSize);
 		_stoneBackground = new Img("images//StoneBackground.png", 0, 0, _blockSize, _blockSize);
-		_shark = new Img("images//sharkfinal.png", 0, 0, _blockSize/2, _blockSize);
-		_sharkRev = new Img("images//sharkfinalrev.png", 0, 0,_blockSize/2, _blockSize);
+		_shark = new Img("images//shark1.png", 0, 0, _blockSize / 2, _blockSize);
+		_sharkRev = new Img("images//shark1rev.png", 0, 0, _blockSize / 2, _blockSize);
 		_map = new Map(_size, _sizeW, _mapFile, _effectsFile);
+		_passables = new LinkedList<Integer>(Arrays.asList(0, 4, 5));
 		addMouseMotionListener(this);
 		addMouseListener(this);
 		Timer t = new Timer(10, this);
@@ -62,13 +72,13 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
+		if (test())
+			move();
 		_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
 		_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
 		_finalSharkPoint.setLocation(_centerPoint.x + _sharkOffsetX, _centerPoint.y + _sharkOffsetY);
 		_angle = Math.toDegrees(
 				-Math.atan2(_finalMousePoint.x - _finalSharkPoint.x, _finalMousePoint.y - _finalSharkPoint.y)) + 180;
-		if (test())
-			move();
 		repaint();
 	}
 
@@ -87,7 +97,6 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 				_sharkOffsetY = 0;
 			}
 		}
-
 		if (_sharkOffsetX == 0) {
 			_camPoint.x += _speed * Math.sin(Math.toRadians(_angle));
 			if (_camPoint.x < 0 || _camPoint.x > _mapPixelWidth - getWidth()) {
@@ -149,23 +158,23 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		}
 	}
 
-	public boolean test(/*Rectangle sharkRect, Graphics g*/) {
-		AffineTransform af = new AffineTransform();
-		af.rotate(Math.toRadians(_angle), _finalSharkPoint.x, _finalSharkPoint.y);
-		Area a = new Area(new Rectangle((int) (_finalSharkPoint.x - _shark.getWidth() / 2),
-				(int) (_finalSharkPoint.y - _shark.getHeight()/2), _shark.getWidth(), _shark.getHeight()));
-		Area at = a.createTransformedArea(af);
-		Rectangle nr = new Rectangle(at.getBounds());
+	public boolean test() {
 		// System.out.println(at.getBounds().toString());
-		//g.setColor(Color.magenta);
-		//g.drawRect(nr.x, nr.y, nr.width, nr.height);
+		// g.setColor(Color.magenta);
+		// g.drawRect(nr.x, nr.y, nr.width, nr.height);
+		setSharkHitBox();
 		for (int i = 0; i < _size; i++) {
 			for (int j = 0; j < _sizeW; j++) {
-				if (_map.getMap()[i][j] != 0) {
+				if (!_passables.contains(_map.getMap()[i][j])) {
 					Rectangle rect = new Rectangle(j * _blockSize, i * _blockSize, _blockSize, _blockSize);
-					if (at.intersects(rect)) {
-						System.out.println(" at:" + rect.toString());
-						return false;
+					if (_sharkhb.intersects(rect)) {
+						Polygon poly = toPolygon(_sharkhb);
+						LinkedList<Point2D.Double> list = getPolygonPoints(poly);
+						for (Point2D p : list)
+							if (rect.contains(p)) {
+								// System.out.println(p + " point at " + rect.toString());
+								return false;
+							}
 					}
 				}
 			}
@@ -173,11 +182,51 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		return true;
 	}
 
+	public LinkedList<Point2D.Double> getPolygonPoints(Polygon p) {
+		LinkedList<Point2D.Double> list = new LinkedList<Point2D.Double>();
+		for (int i = 0; i < p.npoints; i++) {
+			list.add(new Point2D.Double(p.xpoints[i], p.ypoints[i]));
+		}
+		return list;
+	}
+
+	public void setSharkHitBox() {
+		AffineTransform af = new AffineTransform();
+		af.rotate(Math.toRadians(_angle), _finalSharkPoint.x, _finalSharkPoint.y);
+		Area a = new Area(new Rectangle((int) (_finalSharkPoint.x - _shark.getWidth() / 2),
+				(int) (_finalSharkPoint.y - _shark.getHeight() / 2), _shark.getWidth(), _shark.getHeight()));
+		_sharkhb = a.createTransformedArea(af);
+	}
+
+	public Polygon toPolygon(Area a) {
+		PathIterator iterator = a.getPathIterator(null);
+		float[] floats = new float[6];
+		Polygon polygon = new Polygon();
+		while (!iterator.isDone()) {
+			int type = iterator.currentSegment(floats);
+			int x = (int) floats[0];
+			int y = (int) floats[1];
+			if (type != PathIterator.SEG_CLOSE) {
+				if (polygon.npoints == 0 || (polygon.xpoints[0] != x || polygon.ypoints[0] != y)) {
+					polygon.addPoint(x, y);
+				}
+			}
+			iterator.next();
+		}
+		return polygon;
+	}
+
+	public void printPolygon(Polygon p) {
+		for (int i = 0; i < p.npoints; i++) {
+			System.out.println("x: " + p.xpoints[i] + " y: " + p.ypoints[i]);
+		}
+	}
+
 	public void rotateShark2(Graphics g) {
 		_bImgShark = Img.toBufferedImage(_shark.getImage());
-		_bImgShark=resize(_bImgShark,_shark.getWidth(),_shark.getHeight());
+		_bImgShark = Img.resize(_bImgShark, _shark.getWidth(), _shark.getHeight());
 		_bImgSharkRev = Img.toBufferedImage(_sharkRev.getImage());
-		_bImgSharkRev=resize(_bImgSharkRev,_shark.getWidth(),_shark.getHeight());
+		_bImgSharkRev = Img.resize(_bImgSharkRev, _shark.getWidth(), _shark.getHeight());
 
 		BufferedImage use = _bImgShark;
 		Graphics2D g2d = (Graphics2D) g.create();
@@ -186,7 +235,6 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 				(int) (_finalSharkPoint.y - use.getHeight() / 2), use.getWidth(), use.getHeight());
 		g2d.setColor(Color.orange);
 		g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
-		// test(rect,g);
 		g2d.rotate(Math.toRadians(_angle), _finalSharkPoint.x, _finalSharkPoint.y);
 		g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		g2d.drawImage(use, (int) _finalSharkPoint.x - use.getWidth() / 2,
@@ -248,16 +296,5 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 			}
 			System.out.println();
 		}
-	}
-	
-	public BufferedImage resize(BufferedImage img, int newW, int newH) { 
-	    Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
-	    BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
-
-	    Graphics2D g2d = dimg.createGraphics();
-	    g2d.drawImage(tmp, 0, 0, null);
-	    g2d.dispose();
-
-	    return dimg;
 	}
 }
