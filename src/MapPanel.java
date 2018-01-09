@@ -1,12 +1,16 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -14,33 +18,14 @@ import images.Img;
 import map.Map;
 
 public class MapPanel extends JPanel implements ActionListener, MouseMotionListener, MouseListener {
-	private int _size;
-	private int _sizeW;
-	private int _blockSize;
-	private int _mapPixelWidth;
-	private int _mapPixelHeight;
-	private double _sharkOffsetX;
-	private double _sharkOffsetY;
-	private double _speed;
-	private double _angle;
+	private int _size, _sizeW, _blockSize, _mapPixelWidth, _mapPixelHeight;
+	private double _sharkOffsetX, _sharkOffsetY, _speed, _angle;
 	private Map _map;
-	private Img _backgroundImg;
-	private Img _sandBlock;
-	private Img _stoneBlock;
-	private Img _seaweedBlock;
-	private Img _sandBackground;
-	private Img _stoneBackground;
-	private Img _shark;
-	private Img _sharkRev;
-	private String _mapFile;
-	private String _effectsFile;
-	private BufferedImage _bImgShark;
-	private BufferedImage _bImgSharkRev;
-	private Point2D.Double _mousePoint;
-	private Point2D.Double _finalSharkPoint;
-	private Point2D.Double _finalMousePoint;
-	private Point2D.Double _centerPoint;
-	private Point2D.Double _camPoint;
+	private Img _backgroundImg, _sandBlock, _stoneBlock, _seaweedBlock, _sandBackground, _stoneBackground, _shark,
+			_sharkRev;
+	private String _mapFile, _effectsFile;
+	private BufferedImage _bImgShark, _bImgSharkRev;
+	private Point2D.Double _mousePoint, _finalSharkPoint, _finalMousePoint, _centerPoint, _camPoint;
 
 	public MapPanel() {
 		_mapFile = "MapFiles//pic2_20171206105928.xml";
@@ -50,7 +35,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_blockSize = 40;
 		_mapPixelWidth = _sizeW * _blockSize;
 		_mapPixelHeight = _size * _blockSize;
-		_speed = 4;
+		_speed = 2;
 		_angle = 0;
 		_sharkOffsetX = 0;
 		_sharkOffsetY = 0;
@@ -162,13 +147,40 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		}
 	}
 
-	protected void rotateShark2(Graphics g) {
+	public void test(Rectangle sharkRect,Graphics g) {
+		AffineTransform af = new AffineTransform();
+		af.rotate(_angle, _finalSharkPoint.x, _finalSharkPoint.y);
+		Area a = new Area(sharkRect);
+		Area at = a.createTransformedArea(af);
+		Rectangle nr=new Rectangle(at.getBounds());
+		System.out.println(at.getBounds().toString());
+		g.setColor(Color.magenta);
+		g.drawRect(nr.x, nr.y, nr.width, nr.height);
+		for (int i = 0; i < _size; i++) {
+			for (int j = 0; j < _sizeW; j++) {
+				if (_map.getMap()[i][j] != 0) {
+					Rectangle rect = new Rectangle(j * _blockSize, i * _blockSize, _blockSize, _blockSize);
+					if (at.intersects(rect)) {
+						//System.out.println(" at:" + rect.toString());
+					}
+				}
+			}
+		}
+	}
+
+	public void rotateShark2(Graphics g) {
 		_bImgShark = Img.toBufferedImage(_shark.getImage());
 		_bImgSharkRev = Img.toBufferedImage(_sharkRev.getImage());
 		BufferedImage use = _bImgShark;
 		Graphics2D g2d = (Graphics2D) g.create();
 		use = (_angle < 180) ? _bImgShark : _bImgSharkRev;
+		Rectangle rect = new Rectangle((int) (_finalSharkPoint.x - use.getWidth() / 2),
+				(int) (_finalSharkPoint.y - use.getHeight() / 2), use.getWidth(), use.getHeight());
+		g2d.setColor(Color.orange);
+		g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
+		test(rect,g);
 		g2d.rotate(Math.toRadians(_angle), _finalSharkPoint.x, _finalSharkPoint.y);
+		g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		g2d.drawImage(use, (int) _finalSharkPoint.x - use.getWidth() / 2,
 				(int) _finalSharkPoint.y - use.getHeight() / 2, this);
 		g2d.dispose();
