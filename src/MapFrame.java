@@ -10,8 +10,8 @@ public class MapFrame extends JFrame {
 		_mapPanel = new MapPanel();
 		add(_mapPanel,BorderLayout.CENTER);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    setExtendedState(JFrame.MAXIMIZED_BOTH); 
-		//setSize(2000, 1000);
+	    //setExtendedState(JFrame.MAXIMIZED_BOTH); 
+		setSize(200, 100);
 		setVisible(true);
 	}
 }

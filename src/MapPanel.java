@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,7 +36,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_blockSize = 40;
 		_mapPixelWidth = _sizeW * _blockSize;
 		_mapPixelHeight = _size * _blockSize;
-		_speed = 2;
+		_speed = 1;
 		_angle = 0;
 		_sharkOffsetX = 0;
 		_sharkOffsetY = 0;
@@ -50,8 +51,8 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_seaweedBlock = new Img("images//OneSW.png", 0, 0, _blockSize, _blockSize);
 		_sandBackground = new Img("images//SandBackground.png", 0, 0, _blockSize, _blockSize);
 		_stoneBackground = new Img("images//StoneBackground.png", 0, 0, _blockSize, _blockSize);
-		_shark = new Img("images//shark1.png", 0, 0, 33, 61);
-		_sharkRev = new Img("images//shark1rev.png", 0, 0, 33, 61);
+		_shark = new Img("images//sharkfinal.png", 0, 0, _blockSize/2, _blockSize);
+		_sharkRev = new Img("images//sharkfinalrev.png", 0, 0,_blockSize/2, _blockSize);
 		_map = new Map(_size, _sizeW, _mapFile, _effectsFile);
 		addMouseMotionListener(this);
 		addMouseListener(this);
@@ -66,7 +67,8 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_finalSharkPoint.setLocation(_centerPoint.x + _sharkOffsetX, _centerPoint.y + _sharkOffsetY);
 		_angle = Math.toDegrees(
 				-Math.atan2(_finalMousePoint.x - _finalSharkPoint.x, _finalMousePoint.y - _finalSharkPoint.y)) + 180;
-		move();
+		if (test())
+			move();
 		repaint();
 	}
 
@@ -147,30 +149,36 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		}
 	}
 
-	public void test(Rectangle sharkRect,Graphics g) {
+	public boolean test(/*Rectangle sharkRect, Graphics g*/) {
 		AffineTransform af = new AffineTransform();
-		af.rotate(_angle, _finalSharkPoint.x, _finalSharkPoint.y);
-		Area a = new Area(sharkRect);
+		af.rotate(Math.toRadians(_angle), _finalSharkPoint.x, _finalSharkPoint.y);
+		Area a = new Area(new Rectangle((int) (_finalSharkPoint.x - _shark.getWidth() / 2),
+				(int) (_finalSharkPoint.y - _shark.getHeight()/2), _shark.getWidth(), _shark.getHeight()));
 		Area at = a.createTransformedArea(af);
-		Rectangle nr=new Rectangle(at.getBounds());
-		System.out.println(at.getBounds().toString());
-		g.setColor(Color.magenta);
-		g.drawRect(nr.x, nr.y, nr.width, nr.height);
+		Rectangle nr = new Rectangle(at.getBounds());
+		// System.out.println(at.getBounds().toString());
+		//g.setColor(Color.magenta);
+		//g.drawRect(nr.x, nr.y, nr.width, nr.height);
 		for (int i = 0; i < _size; i++) {
 			for (int j = 0; j < _sizeW; j++) {
 				if (_map.getMap()[i][j] != 0) {
 					Rectangle rect = new Rectangle(j * _blockSize, i * _blockSize, _blockSize, _blockSize);
 					if (at.intersects(rect)) {
-						//System.out.println(" at:" + rect.toString());
+						System.out.println(" at:" + rect.toString());
+						return false;
 					}
 				}
 			}
 		}
+		return true;
 	}
 
 	public void rotateShark2(Graphics g) {
 		_bImgShark = Img.toBufferedImage(_shark.getImage());
+		_bImgShark=resize(_bImgShark,_shark.getWidth(),_shark.getHeight());
 		_bImgSharkRev = Img.toBufferedImage(_sharkRev.getImage());
+		_bImgSharkRev=resize(_bImgSharkRev,_shark.getWidth(),_shark.getHeight());
+
 		BufferedImage use = _bImgShark;
 		Graphics2D g2d = (Graphics2D) g.create();
 		use = (_angle < 180) ? _bImgShark : _bImgSharkRev;
@@ -178,7 +186,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 				(int) (_finalSharkPoint.y - use.getHeight() / 2), use.getWidth(), use.getHeight());
 		g2d.setColor(Color.orange);
 		g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
-		test(rect,g);
+		// test(rect,g);
 		g2d.rotate(Math.toRadians(_angle), _finalSharkPoint.x, _finalSharkPoint.y);
 		g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		g2d.drawImage(use, (int) _finalSharkPoint.x - use.getWidth() / 2,
@@ -240,5 +248,16 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 			}
 			System.out.println();
 		}
+	}
+	
+	public BufferedImage resize(BufferedImage img, int newW, int newH) { 
+	    Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+	    BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+	    Graphics2D g2d = dimg.createGraphics();
+	    g2d.drawImage(tmp, 0, 0, null);
+	    g2d.dispose();
+
+	    return dimg;
 	}
 }
