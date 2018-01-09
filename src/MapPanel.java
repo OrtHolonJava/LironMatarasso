@@ -1,13 +1,10 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -15,11 +12,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.LinkedList;
-
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import images.Img;
@@ -51,7 +46,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_centerPoint = new Point2D.Double(0, 0);
 		_camPoint = new Point2D.Double(_blockSize * 3, 0);
 		_sharkOffsetX = 0;
-		_sharkOffsetY = -0.5*_blockSize;
+		_sharkOffsetY = -0.5 * _blockSize;
 		_finalMousePoint = new Point2D.Double(0, 0);
 		_finalSharkPoint = new Point2D.Double(0, 0);
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _sizeW * _blockSize, _size * _blockSize);
