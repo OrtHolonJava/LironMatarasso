@@ -14,6 +14,8 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -31,6 +33,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	private Point2D.Double _mousePoint, _finalSharkPoint, _finalMousePoint, _centerPoint, _camPoint;
 	private LinkedList<Integer> _passables;
 	private Area _sharkhb;
+	private LinkedList<Point2D.Double> _polyList, _coliList;
 
 	public MapPanel() {
 		_mapFile = "MapFiles//pic2_20171206105928.xml";
@@ -46,7 +49,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_centerPoint = new Point2D.Double(0, 0);
 		_camPoint = new Point2D.Double(_blockSize * 3, 0);
 		_sharkOffsetX = 0;
-		_sharkOffsetY = -0.5 * _blockSize;
+		_sharkOffsetY = -10 * _blockSize;
 		_finalMousePoint = new Point2D.Double(0, 0);
 		_finalSharkPoint = new Point2D.Double(0, 0);
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _sizeW * _blockSize, _size * _blockSize);
@@ -70,31 +73,18 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		if (getWidth() != 0 && getHeight() != 0) {
 			_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
 			_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
+			_finalSharkPoint.setLocation(_centerPoint.x + _sharkOffsetX, _centerPoint.y + _sharkOffsetY);
 			_angle = Math.toDegrees(
 					-Math.atan2(_finalMousePoint.x - _finalSharkPoint.x, _finalMousePoint.y - _finalSharkPoint.y))
 					+ 180;
-			if (test())
-				move(_angle, _speed);
-			_finalSharkPoint.setLocation(_centerPoint.x + _sharkOffsetX, _centerPoint.y + _sharkOffsetY);
+			move(_angle, _speed);
+			test();
 			repaint();
 		}
 	}
 
 	public void move(double angle, double speed) {
-		if (_sharkOffsetY == 0) {
-			_camPoint.y -= speed * Math.cos(Math.toRadians(angle));
-			if (_camPoint.y < 0 || _camPoint.y > _mapPixelHeight - getHeight()) {
-				_camPoint.y = (_camPoint.y < 0) ? 0 : _mapPixelHeight - getHeight();
-				_sharkOffsetY -= speed * Math.cos(Math.toRadians(angle));
-			}
-		} else {
-			int preSignY = (int) Math.signum(_sharkOffsetY);
-			_sharkOffsetY -= speed * Math.cos(Math.toRadians(angle));
-			if (preSignY != (int) Math.signum(_sharkOffsetY)) {
-				_camPoint.y -= _sharkOffsetY;
-				_sharkOffsetY = 0;
-			}
-		}
+
 		if (_sharkOffsetX == 0) {
 			_camPoint.x += speed * Math.sin(Math.toRadians(angle));
 			if (_camPoint.x < 0 || _camPoint.x > _mapPixelWidth - getWidth()) {
@@ -107,6 +97,21 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 			if (preSignX != (int) Math.signum(_sharkOffsetX)) {
 				_camPoint.x -= _sharkOffsetX;
 				_sharkOffsetX = 0;
+			}
+		}
+
+		if (_sharkOffsetY == 0) {
+			_camPoint.y -= speed * Math.cos(Math.toRadians(angle));
+			if (_camPoint.y < 0 || _camPoint.y > _mapPixelHeight - getHeight()) {
+				_camPoint.y = (_camPoint.y < 0) ? 0 : _mapPixelHeight - getHeight();
+				_sharkOffsetY -= speed * Math.cos(Math.toRadians(angle));
+			}
+		} else {
+			int preSignY = (int) Math.signum(_sharkOffsetY);
+			_sharkOffsetY -= speed * Math.cos(Math.toRadians(angle));
+			if (preSignY != (int) Math.signum(_sharkOffsetY)) {
+				_camPoint.y -= _sharkOffsetY;
+				_sharkOffsetY = 0;
 			}
 		}
 	}
@@ -158,22 +163,28 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		}
 	}
 
+	private LinkedList<Rectangle> _rects;
+
 	public boolean test() {
-		setSharkHitBox();
+		_rects = new LinkedList<Rectangle>();
 		boolean flag = true;
+		_coliList = new LinkedList<Point2D.Double>();
+		// _finalSharkPoint.setLocation(_centerPoint.x + _sharkOffsetX, _centerPoint.y +
+		// _sharkOffsetY);
+		// System.out.println(_finalSharkPoint);
+		setSharkHitBox();
 		for (int i = (int) (_finalSharkPoint.y / _blockSize) - 2; i <= (_finalSharkPoint.y / _blockSize) + 2; i++) {
 			for (int j = (int) (_finalSharkPoint.x / _blockSize) - 2; j <= (_finalSharkPoint.x / _blockSize) + 2; j++) {
 				if (i >= 0 && j >= 0 && i < _size && j < _sizeW) {
 					if (!_passables.contains(_map.getMap()[i][j])) {
 						Rectangle rect = new Rectangle(j * _blockSize, i * _blockSize, _blockSize, _blockSize);
 						if (_sharkhb.intersects(rect)) {
-
-							Polygon poly = toPolygon(_sharkhb);
-							LinkedList<Point2D.Double> list = getPolygonPoints(poly);
-							for (Point2D p : list)
+							_rects.add(rect);
+							for (Point2D p : _polyList)
 								if (rect.contains(p)) {
 									System.out.println(p + " point at " + rect.toString());
-									return false;
+									_coliList.add(new Point2D.Double(p.getX(), p.getY()));
+									flag = false;
 								}
 						}
 					}
@@ -197,6 +208,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		Area a = new Area(new Rectangle((int) (_finalSharkPoint.x - _shark.getWidth() / 2),
 				(int) (_finalSharkPoint.y - _shark.getHeight() / 2), _shark.getWidth(), _shark.getHeight()));
 		_sharkhb = a.createTransformedArea(af);
+		_polyList = getPolygonPoints(toPolygon(_sharkhb));
 	}
 
 	public Polygon toPolygon(Area a) {
@@ -252,6 +264,17 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		g.drawRect((int) _camPoint.x, (int) _camPoint.y, 100, 100);
 		g.setColor(Color.cyan);
 		g.drawRect((int) _finalSharkPoint.x, (int) _finalSharkPoint.y, 100, 100);
+		g.setColor(Color.orange);
+		for (Rectangle r : _rects) {
+			g.fillRect(r.x, r.y, r.width, r.height);
+		}
+		g.setColor(Color.magenta);
+		for (Point2D r : _coliList) {
+			g.fillRect((int) r.getX(), (int) r.getY(), 1, 1);
+		}
+		g.drawRect(1138, 262, 100, 100);
+		g.drawRect(1137, 262, 100, 100);
+
 	}
 
 	@Override
