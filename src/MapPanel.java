@@ -71,7 +71,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		if (getWidth() != 0 && getHeight() != 0) {
-			// double tempa = _angle;
+			 double tempa = _angle;
 			_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
 			_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
 			_angle = Math.toDegrees(
@@ -81,6 +81,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 			// if (!test()) {
 			// _angle = tempa;
 			// }
+			int count = 0;
 			while (!test()) {
 				// for (Point2D p : _coliList) {
 				for (Rectangle r : _rects) {
@@ -89,6 +90,11 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 						move(Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (_finalSharkPoint.x),
 								(r.y + r.getHeight() / 2) - (_finalSharkPoint.y))), 1);
 					}
+				}
+				count++;
+				if (count == 10) {
+					_angle = tempa;
+					count=0;
 				}
 				// }
 			}
@@ -126,7 +132,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 				_sharkOffsetY = 0;
 			}
 		}
-		System.out.println("offx: " +_sharkOffsetX+" offy: "+_sharkOffsetY);
+		System.out.println("offx: " + _sharkOffsetX + " offy: " + _sharkOffsetY);
 		_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
 		setSharkHitBox();
 	}
@@ -181,6 +187,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	private LinkedList<Rectangle> _rects;
 
 	public boolean test() {
+		setSharkHitBox();
 		_rects = new LinkedList<Rectangle>();
 		boolean flag = true;
 		_coliList = new LinkedList<Point2D.Double>();
