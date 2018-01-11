@@ -12,7 +12,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.LinkedList;
 import javax.swing.JPanel;
@@ -34,14 +33,14 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	private LinkedList<Point2D.Double> _polyList, _coliList;
 
 	public MapPanel() {
-		_mapFile = "MapFiles//pic2_20171206105928.xml";
+		_mapFile = "MapFiles//world2_20180111191159.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_size = Map.getElementCountByName(_mapFile, "Line");
 		_sizeW = Map.getElementCountByName(_mapFile, "Area") / _size;
 		_blockSize = 40;
 		_mapPixelWidth = _sizeW * _blockSize;
 		_mapPixelHeight = _size * _blockSize;
-		_speed = 1;
+		_speed = 4;
 		_angle = 0;
 		_mousePoint = new Point2D.Double(0, 0);
 		_centerPoint = new Point2D.Double(0, 0);
@@ -71,7 +70,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		if (getWidth() != 0 && getHeight() != 0) {
-			 double tempa = _angle;
+			double tempa = _angle;
 			_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
 			_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
 			_angle = Math.toDegrees(
@@ -94,7 +93,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 				count++;
 				if (count == 10) {
 					_angle = tempa;
-					count=0;
+					count = 0;
 				}
 				// }
 			}
