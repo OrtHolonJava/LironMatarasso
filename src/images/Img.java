@@ -3,6 +3,7 @@ package images;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -17,8 +18,8 @@ import javax.swing.ImageIcon;
  *
  */
 public class Img {
-	private Image _image;
-	private int x, y, _width, _height;
+	protected Image _image;
+	protected int x, y, _width, _height;
 
 	/**
 	 * Init a new Img object with the following parameters:
