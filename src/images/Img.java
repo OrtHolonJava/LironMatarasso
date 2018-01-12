@@ -3,12 +3,8 @@ package images;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Polygon;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URL;
 
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
 /**
@@ -18,8 +14,9 @@ import javax.swing.ImageIcon;
  *
  */
 public class Img {
-	protected Image _image;
-	protected int x, y, _width, _height;
+	private Image _image;
+	private BufferedImage _bImage;
+	private int _x, _y, _width, _height;
 
 	/**
 	 * Init a new Img object with the following parameters:
@@ -35,6 +32,8 @@ public class Img {
 			_image = new ImageIcon(this.getClass().getClassLoader().getResource(path)).getImage();
 			setImgCords(x, y);
 			setImgSize(width, height);
+			_bImage = toBufferedImage(_image);
+			_bImage = resize(_bImage, width, height);
 		} catch (NullPointerException e) {
 			System.out.println("image: " + path + " doesnt exist");
 		}
@@ -47,7 +46,7 @@ public class Img {
 	 */
 	public void drawImg(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
-		g2d.drawImage(_image, x, y, _width, _height, null);
+		g2d.drawImage(_image, _x, _y, _width, _height, null);
 	}
 
 	/**
@@ -57,8 +56,8 @@ public class Img {
 	 * @param y
 	 */
 	public void setImgCords(int x, int y) {
-		this.x = x;
-		this.y = y;
+		this._x = x;
+		this._y = y;
 	}
 
 	/**
@@ -73,25 +72,6 @@ public class Img {
 	}
 
 	/**
-	 * Rotates an image. Actually rotates a new copy of the image.
-	 * 
-	 * @param angle
-	 *            The angle in degrees
-	 */
-	public void rotate(double angle) {
-		double sin = Math.abs(Math.sin(Math.toRadians(angle))), cos = Math.abs(Math.cos(Math.toRadians(angle)));
-		int w = _width, h = _height;
-		int neww = (int) Math.floor(w * cos + h * sin), newh = (int) Math.floor(h * cos + w * sin);
-		BufferedImage bimg = toBufferedImage(getEmptyImage(neww, newh));
-		Graphics2D g = bimg.createGraphics();
-		g.translate((neww - w) / 2, (newh - h) / 2);
-		g.rotate(Math.toRadians(angle), w / 2, h / 2);
-		g.drawRenderedImage(toBufferedImage(_image), null);
-		g.dispose();
-		_image = toImage(bimg);
-	}
-
-	/**
 	 * Creates an empty image with transparency
 	 * 
 	 * @param width
@@ -103,6 +83,14 @@ public class Img {
 	public static Image getEmptyImage(int width, int height) {
 		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		return toImage(img);
+	}
+
+	public BufferedImage getbImage() {
+		return _bImage;
+	}
+
+	public void setbImage(BufferedImage bImage) {
+		_bImage = bImage;
 	}
 
 	/**
@@ -159,19 +147,19 @@ public class Img {
 	}
 
 	public int getX() {
-		return x;
+		return _x;
 	}
 
 	public void setX(int x) {
-		this.x = x;
+		this._x = x;
 	}
 
 	public int getY() {
-		return y;
+		return _y;
 	}
 
 	public void setY(int y) {
-		this.y = y;
+		this._y = y;
 	}
 
 	public int getWidth() {
