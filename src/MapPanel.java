@@ -11,6 +11,8 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Map.Entry;
+
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import images.Img;
@@ -20,7 +22,8 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	private int _size, _sizeW, _blockSize, _mapPixelWidth, _mapPixelHeight;
 	private double _sharkOffsetX, _sharkOffsetY;
 	private Map _map;
-	private Img _backgroundImg, _sandBlock, _stoneBlock, _seaweedBlock, _sandBackground, _stoneBackground;
+	private Img _backgroundImg;
+	private BlockType _blocksTypes[];
 	private Player _shark;
 	private String _mapFile, _effectsFile;
 	private Point2D.Double _mousePoint, _finalMousePoint, _centerPoint, _camPoint;
@@ -28,7 +31,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	private LinkedList<Point2D.Double> _coliList;
 
 	public MapPanel() {
-		_mapFile = "MapFiles//‏‏world2b_20180112180443.xml";
+		_mapFile = "MapFiles//‏‏‏‏world2s_20180118172340.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_size = Map.getElementCountByName(_mapFile, "Line");
 		_sizeW = Map.getElementCountByName(_mapFile, "Area") / _size;
@@ -42,12 +45,12 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_sharkOffsetY = -10 * _blockSize;
 		_finalMousePoint = new Point2D.Double(0, 0);
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _sizeW * _blockSize, _size * _blockSize);
-		_sandBlock = new Img("images//SandBlock2.png", 0, 0, _blockSize, _blockSize);
-		_stoneBlock = new Img("images//‏‏StoneBlock2.png", 0, 0, _blockSize, _blockSize);
-		_seaweedBlock = new Img("images//OneSW.png", 0, 0, _blockSize, _blockSize);
-		_sandBackground = new Img("images//SandBackground.png", 0, 0, _blockSize, _blockSize);
-		_stoneBackground = new Img("images//StoneBackground.png", 0, 0, _blockSize, _blockSize);
-		_shark = new Player("images//shark1.png", "images//shark1rev.png", 0, 0, _blockSize / 2, _blockSize, 4);
+		_blocksTypes = new BlockType[5];
+		for (int i = 0; i < _blocksTypes.length; i++) {
+			_blocksTypes[i] = new BlockType(_blockSize, i + 1);
+		}
+		_shark = new Player("images//shark1.png", "images//shark1rev.png", 0, 0, 9 * _blockSize / 10, 2 * _blockSize,
+				4);
 		_map = new Map(_size, _sizeW, _mapFile, _effectsFile);
 		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_rects = new LinkedList<Rectangle>();
@@ -58,32 +61,39 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		t.start();
 	}
 
+	public void movementLogic() {
+		double tempa = _shark.getAngle();
+		_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
+		_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
+		_shark.setAngle(
+				Math.toDegrees(-Math.atan2(_finalMousePoint.x - _shark.getX(), _finalMousePoint.y - _shark.getY()))
+						+ 180);
+		/*double disToSpeedRatio = (_finalMousePoint.distance(_shark.getX(), _shark.getY()) / (getHeight() / 2));
+		disToSpeedRatio = (disToSpeedRatio > 1) ? 1 : disToSpeedRatio;
+		_shark.setSpeed(4 * disToSpeedRatio);*/
+		move(_shark.getAngle(), _shark.getSpeed());
+		int count = 0;
+		while (!checkCollision()) {
+			// for (Point2D p : _coliList) {
+			for (Rectangle r : _rects) {
+				while (_shark.getHitbox().intersects(r)) {
+					move(Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (_shark.getX()),
+							(r.y + r.getHeight() / 2) - (_shark.getY()))), 1);
+				}
+			}
+			count++;
+			if (count == 10) {
+				_shark.setAngle(tempa);
+				count = 0;
+			}
+			// }
+		}
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		if (getWidth() != 0 && getHeight() != 0) {
-			double tempa = _shark.getAngle();
-			_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
-			_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
-			_shark.setAngle(
-					Math.toDegrees(-Math.atan2(_finalMousePoint.x - _shark.getX(), _finalMousePoint.y - _shark.getY()))
-							+ 180);
-			move(_shark.getAngle(), _shark.getSpeed());
-			int count = 0;
-			while (!test()) {
-				// for (Point2D p : _coliList) {
-				for (Rectangle r : _rects) {
-					while (_shark.getHitbox().intersects(r)) {
-						move(Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (_shark.getX()),
-								(r.y + r.getHeight() / 2) - (_shark.getY()))), 1);
-					}
-				}
-				count++;
-				if (count == 10) {
-					_shark.setAngle(tempa);
-					count = 0;
-				}
-				// }
-			}
+			movementLogic();
 			repaint();
 		}
 	}
@@ -134,41 +144,17 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		Graphics2D g = (Graphics2D) g1;
 		super.paintComponent(g);
 		g.translate(-_camPoint.x, -_camPoint.y);
-		drawMap(g);
+		_backgroundImg.drawImg(g);
+		drawHMap(g);
 		_shark.Paint(g);
 		drawDebug(g);
 	}
 
 	public void drawMap(Graphics g) {
-		_backgroundImg.drawImg(g);
 		for (int i = 0; i < _size; i++) {
 			for (int j = 0; j < _sizeW; j++) {
-				switch (_map.getMap()[i][j]) {
-				case 1: {
-					_sandBlock.setImgCords(j * _blockSize, i * _blockSize);
-					_sandBlock.drawImg(g);
-					break;
-				}
-				case 2: {
-					_stoneBlock.setImgCords(j * _blockSize, i * _blockSize);
-					_stoneBlock.drawImg(g);
-					break;
-				}
-				case 3: {
-					_seaweedBlock.setImgCords(j * _blockSize, i * _blockSize);
-					_seaweedBlock.drawImg(g);
-					break;
-				}
-				case 4: {
-					_sandBackground.setImgCords(j * _blockSize, i * _blockSize);
-					_sandBackground.drawImg(g);
-					break;
-				}
-				case 5: {
-					_stoneBackground.setImgCords(j * _blockSize, i * _blockSize);
-					_stoneBackground.drawImg(g);
-					break;
-				}
+				if (_map.getMap()[i][j] != 0) {
+					_blocksTypes[_map.getMap()[i][j] - 1].paintAt(g, j, i);
 				}
 				// g.drawString(String.valueOf(i * _sizeW + j), j * _blockSize, i * _blockSize +
 				// _blockSize / 2);
@@ -176,9 +162,17 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		}
 	}
 
+	public void drawHMap(Graphics g) {
+		for (Entry<Integer, Integer> e : _map.getHmap().entrySet()) {
+			_blocksTypes[e.getValue() - 1].paintAt(g, e.getKey() % _sizeW, e.getKey() / _sizeW);
+			// g.drawString(String.valueOf(i * _sizeW + j), j * _blockSize, i * _blockSize +
+			// _blockSize / 2);
+		}
+	}
+
 	private LinkedList<Rectangle> _rects;
 
-	public boolean test() {
+	public boolean checkCollision() {
 		_shark.setCords((int) (_centerPoint.x + _sharkOffsetX), (int) (_centerPoint.y + _sharkOffsetY));
 		_shark.setHitbox();
 		_rects = new LinkedList<Rectangle>();
@@ -188,18 +182,19 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		for (int i = (int) (_shark.getY() / _blockSize) - 2; i <= (_shark.getY() / _blockSize) + 2; i++) {
 			for (int j = (int) (_shark.getX() / _blockSize) - 2; j <= (_shark.getX() / _blockSize) + 2; j++) {
 				if (i >= 0 && j >= 0 && i < _size && j < _sizeW) {
-					if (!_passables.contains(_map.getMap()[i][j])) {
-						Rectangle rect = new Rectangle(j * _blockSize, i * _blockSize, _blockSize, _blockSize);
-						if (_shark.getHitbox().intersects(rect)) {
-							_rects.add(rect);
-							flag = false;
-							for (Point2D p : _shark.getPolyList())
-								if (rect.contains(p)) {
-									// System.out.println(p + " point at " + rect.toString());
-									_coliList.add(new Point2D.Double(p.getX(), p.getY()));
-								}
+					if (_map.getHmap().containsKey(j + i * _sizeW))
+						if (!_passables.contains(_map.getHmap().get(j + i * _sizeW))) {
+							Rectangle rect = new Rectangle(j * _blockSize, i * _blockSize, _blockSize, _blockSize);
+							if (_shark.getHitbox().intersects(rect)) {
+								_rects.add(rect);
+								flag = false;
+								for (Point2D p : _shark.getPolyList())
+									if (rect.contains(p)) {
+										// System.out.println(p + " point at " + rect.toString());
+										_coliList.add(new Point2D.Double(p.getX(), p.getY()));
+									}
+							}
 						}
-					}
 				}
 			}
 		}
@@ -233,6 +228,9 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		for (Point2D p : _coliList) {
 			g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
 		}
+
+		g.drawOval((int) _shark.getX() - getHeight() / 2, (int) _shark.getY() - getHeight() / 2, getHeight(),
+				getHeight());
 	}
 
 	@Override

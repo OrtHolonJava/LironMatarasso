@@ -13,15 +13,15 @@ import java.util.LinkedList;
 import images.Img;
 
 public class Player {
-	private int _x, _y, _width, _height;
+	private int _height, _width;
 	private Img _image, _mirrorImage;
 	private double _angle, _speed;
 	private Area _hitbox;
 	private LinkedList<Point2D.Double> _polyList;
+	private Point2D.Double _loc;
 
 	public Player(String path, String mirrorPath, int x, int y, int width, int height, double speed) {
-		_x = x;
-		_y = y;
+		_loc = new Point2D.Double(x, y);
 		_angle = 0;
 		_width = width;
 		_height = height;
@@ -34,8 +34,9 @@ public class Player {
 
 	public void setHitbox() {
 		AffineTransform af = new AffineTransform();
-		af.rotate(Math.toRadians(_angle), _x, _y);
-		Area a = new Area(new Rectangle((int) (_x - _width / 2), (int) (_y - _height / 2), _width, _height));
+		af.rotate(Math.toRadians(_angle), _loc.getX(), _loc.getY());
+		Area a = new Area(
+				new Rectangle((int) (_loc.getX() - _width / 2), (int) (_loc.getY() - _height / 2), _width, _height));
 		_hitbox = a.createTransformedArea(af);
 		_polyList = getPolygonPoints(toPolygon(_hitbox));
 	}
@@ -71,19 +72,18 @@ public class Player {
 		BufferedImage use = _image.getbImage();
 		Graphics2D g2d = (Graphics2D) g.create();
 		use = (_angle < 180) ? _image.getbImage() : _mirrorImage.getbImage();
-		Rectangle rect = new Rectangle((int) (_x - use.getWidth() / 2), (int) (_y - use.getHeight() / 2),
-				use.getWidth(), use.getHeight());
+		Rectangle rect = new Rectangle((int) (_loc.getX() - use.getWidth() / 2),
+				(int) (_loc.getY() - use.getHeight() / 2), use.getWidth(), use.getHeight());
 		// g2d.setColor(Color.orange);
 		// g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
-		g2d.rotate(Math.toRadians(_angle), _x, _y);
+		g2d.rotate(Math.toRadians(_angle), _loc.getX(), _loc.getY());
 		g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
-		g2d.drawImage(use, (int) _x - use.getWidth() / 2, (int) _y - use.getHeight() / 2, null);
+		g2d.drawImage(use, (int) _loc.getX() - use.getWidth() / 2, (int) _loc.getY() - use.getHeight() / 2, null);
 		g2d.dispose();
 	}
 
 	public void setCords(int x, int y) {
-		this._x = x;
-		this._y = y;
+		_loc.setLocation(x, y);
 		_image.setImgCords(x, y);
 		_mirrorImage.setImgCords(x, y);
 	}
@@ -96,8 +96,16 @@ public class Player {
 
 	}
 
-	public int getX() {
-		return _x;
+	public Point2D.Double getLoc() {
+		return _loc;
+	}
+
+	public void setLoc(Point2D.Double loc) {
+		_loc = loc;
+	}
+
+	public double getX() {
+		return _loc.getX();
 	}
 
 	public Area getHitbox() {
@@ -116,16 +124,16 @@ public class Player {
 		_polyList = polyList;
 	}
 
-	public void setX(int x) {
-		_x = x;
+	public void setX(double x) {
+		_loc.x = x;
 	}
 
-	public int getY() {
-		return _y;
+	public double getY() {
+		return _loc.getY();
 	}
 
-	public void setY(int y) {
-		_y = y;
+	public void setY(double y) {
+		_loc.y = y;
 	}
 
 	public int getWidth() {
