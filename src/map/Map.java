@@ -30,7 +30,6 @@ public class Map {
 		//_effects = new int[size][sizeW];
 		//_map = new int[size][sizeW];
 		_size = sizeW;
-
 		try {
 			File file = new File(mapFileName);
 

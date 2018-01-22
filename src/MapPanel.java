@@ -50,14 +50,14 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 			_blocksTypes[i] = new BlockType(_blockSize, i + 1);
 		}
 		_shark = new Player("images//shark1.png", "images//shark1rev.png", 0, 0, 9 * _blockSize / 10, 2 * _blockSize,
-				4);
+				8);
 		_map = new Map(_size, _sizeW, _mapFile, _effectsFile);
 		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_rects = new LinkedList<Rectangle>();
 		_coliList = new LinkedList<Point2D.Double>();
 		addMouseMotionListener(this);
 		addMouseListener(this);
-		Timer t = new Timer(10, this);
+		Timer t = new Timer(1000 / 120, this);
 		t.start();
 	}
 
@@ -68,9 +68,11 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_shark.setAngle(
 				Math.toDegrees(-Math.atan2(_finalMousePoint.x - _shark.getX(), _finalMousePoint.y - _shark.getY()))
 						+ 180);
-		/*double disToSpeedRatio = (_finalMousePoint.distance(_shark.getX(), _shark.getY()) / (getHeight() / 2));
-		disToSpeedRatio = (disToSpeedRatio > 1) ? 1 : disToSpeedRatio;
-		_shark.setSpeed(4 * disToSpeedRatio);*/
+		/*
+		 * double disToSpeedRatio = (_finalMousePoint.distance(_shark.getX(),
+		 * _shark.getY()) / (getHeight() / 2)); disToSpeedRatio = (disToSpeedRatio > 1)
+		 * ? 1 : disToSpeedRatio; _shark.setSpeed(4 * disToSpeedRatio);
+		 */
 		move(_shark.getAngle(), _shark.getSpeed());
 		int count = 0;
 		while (!checkCollision()) {
