@@ -3,6 +3,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.PathIterator;
@@ -10,26 +12,50 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 
+import javax.swing.Timer;
+
 import images.Img;
 
-public class Player {
-	private int _height, _width;
+public class Player implements ActionListener {
+	private int _height, _width, _stamina, _hunger, _health;
 	private Img _image, _mirrorImage;
-	private double _angle, _speed;
+	private double _angle, _baseSpeed, _speedMouseBoost, _finalSpeed;
 	private Area _hitbox;
 	private LinkedList<Point2D.Double> _polyList;
 	private Point2D.Double _loc;
+	private boolean _isCooldown;
 
 	public Player(String path, String mirrorPath, int x, int y, int width, int height, double speed) {
 		_loc = new Point2D.Double(x, y);
 		_angle = 0;
 		_width = width;
 		_height = height;
-		_speed = speed;
+		_baseSpeed = speed;
 		_image = new Img(path, x, y, width, height);
 		_mirrorImage = new Img(mirrorPath, x, y, width, height);
 		_polyList = new LinkedList<Point2D.Double>();
+		_stamina = 100;
+		_hunger = 100;
+		_health = 100;
+		_isCooldown = false;
+		Timer t = new Timer(1000, this);
+		t.start();
+	}
 
+	public int getHunger() {
+		return _hunger;
+	}
+
+	public void setHunger(int hunger) {
+		_hunger = hunger;
+	}
+
+	public boolean isCooldown() {
+		return _isCooldown;
+	}
+
+	public void setCooldown(boolean isCooldown) {
+		_isCooldown = isCooldown;
 	}
 
 	public void setHitbox() {
@@ -67,6 +93,36 @@ public class Player {
 		return polygon;
 	}
 
+	public void applyMouseBoost(boolean mouseDown) {
+		if (mouseDown && _stamina > 0 && !_isCooldown) {
+			_speedMouseBoost = 10;
+			_stamina -= 1;
+		} else {
+			_speedMouseBoost = 0;
+			if (_stamina < 100) {
+				_stamina++;
+			}
+		}
+		if (_stamina == 0) {
+			_isCooldown = true;
+		}
+		if (_stamina == 100) {
+			_isCooldown = false;
+		}
+		_finalSpeed = _baseSpeed + _speedMouseBoost;
+	}
+
+	public void updateHealth() {
+		if (_hunger == 0 && _health > 0) {
+			_health--;
+		}
+	}
+
+	public void updateHunger() {
+		if (_hunger > 0)
+			_hunger--;
+	}
+
 	public void Paint(Graphics g) {
 
 		BufferedImage use = _image.getbImage();
@@ -94,6 +150,13 @@ public class Player {
 		_image.setImgSize(width, height);
 		_mirrorImage.setImgSize(width, height);
 
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		updateHunger();
+		updateHealth();
 	}
 
 	public Point2D.Double getLoc() {
@@ -176,12 +239,45 @@ public class Player {
 		_angle = angle;
 	}
 
-	public double getSpeed() {
-		return _speed;
+	public int getStamina() {
+		return _stamina;
 	}
 
-	public void setSpeed(double speed) {
-		_speed = speed;
+	public void setStamina(int stamina) {
+		_stamina = stamina;
+	}
+
+	public double getBaseSpeed() {
+		return _baseSpeed;
+	}
+
+	public void setBaseSpeed(double baseSpeed) {
+		_baseSpeed = baseSpeed;
+	}
+
+	public double getSpeedMouseBoost() {
+		return _speedMouseBoost;
+	}
+
+	public void setSpeedMouseBoost(double speedMouseBoost) {
+		_speedMouseBoost = speedMouseBoost;
+	}
+
+	public double getFinalSpeed() {
+		_finalSpeed = _baseSpeed + _speedMouseBoost;
+		return _finalSpeed;
+	}
+
+	public void setFinalSpeed(double finalSpeed) {
+		_finalSpeed = finalSpeed;
+	}
+
+	public int getHealth() {
+		return _health;
+	}
+
+	public void setHealth(int health) {
+		_health = health;
 	}
 
 }

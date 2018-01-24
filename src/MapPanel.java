@@ -29,9 +29,10 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	private Point2D.Double _mousePoint, _finalMousePoint, _centerPoint, _camPoint;
 	private LinkedList<Integer> _passables;
 	private LinkedList<Point2D.Double> _coliList;
+	private boolean _mouseDown;
 
 	public MapPanel() {
-		_mapFile = "MapFiles//‏‏‏‏world2s_20180118172340.xml";
+		_mapFile = "MapFiles//‏‏‏‏‏‏‏‏‏‏‏‏world2s_20180124222818.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_size = Map.getElementCountByName(_mapFile, "Line");
 		_sizeW = Map.getElementCountByName(_mapFile, "Area") / _size;
@@ -46,58 +47,56 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_finalMousePoint = new Point2D.Double(0, 0);
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _sizeW * _blockSize, _size * _blockSize);
 		_blocksTypes = new BlockType[5];
+		_mouseDown = false;
 		for (int i = 0; i < _blocksTypes.length; i++) {
 			_blocksTypes[i] = new BlockType(_blockSize, i + 1);
 		}
-		_shark = new Player("images//shark1.png", "images//shark1rev.png", 0, 0, 9 * _blockSize / 10, 2 * _blockSize,
-				8);
+		_shark = new Player("images//shark1.png", "images//shark1rev.png", 0, 0, 8 * _blockSize / 10,
+				19 * _blockSize / 10, 8);
 		_map = new Map(_size, _sizeW, _mapFile, _effectsFile);
 		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_rects = new LinkedList<Rectangle>();
 		_coliList = new LinkedList<Point2D.Double>();
 		addMouseMotionListener(this);
 		addMouseListener(this);
-		Timer t = new Timer(1000 / 120, this);
+		Timer t = new Timer(1000 / 60, this);
 		t.start();
 	}
 
 	public void movementLogic() {
-		double tempa = _shark.getAngle();
-		_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
+		// double tempa = _shark.getAngle();
 		_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
 		_shark.setAngle(
 				Math.toDegrees(-Math.atan2(_finalMousePoint.x - _shark.getX(), _finalMousePoint.y - _shark.getY()))
 						+ 180);
-		/*
-		 * double disToSpeedRatio = (_finalMousePoint.distance(_shark.getX(),
-		 * _shark.getY()) / (getHeight() / 2)); disToSpeedRatio = (disToSpeedRatio > 1)
-		 * ? 1 : disToSpeedRatio; _shark.setSpeed(4 * disToSpeedRatio);
-		 */
-		move(_shark.getAngle(), _shark.getSpeed());
-		int count = 0;
-		while (!checkCollision()) {
-			// for (Point2D p : _coliList) {
+
+		double disToSpeedRatio = (_finalMousePoint.distance(_shark.getX(), _shark.getY()) / (5 * _blockSize));
+		disToSpeedRatio = (disToSpeedRatio > 1) ? 1 : disToSpeedRatio;
+		_shark.setBaseSpeed(8 * disToSpeedRatio);
+
+		move(_shark.getAngle(), _shark.getFinalSpeed());
+		if (!checkCollision()) {
 			for (Rectangle r : _rects) {
 				while (_shark.getHitbox().intersects(r)) {
 					move(Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (_shark.getX()),
 							(r.y + r.getHeight() / 2) - (_shark.getY()))), 1);
 				}
 			}
-			count++;
-			if (count == 10) {
-				_shark.setAngle(tempa);
-				count = 0;
-			}
-			// }
 		}
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
+		long start = System.nanoTime(), end;
 		if (getWidth() != 0 && getHeight() != 0) {
+			checkMouse();
 			movementLogic();
+			// _shark.updateHunger();
 			repaint();
 		}
+		end = System.nanoTime();
+		// System.out.println("counter: " + _counter);
+		System.out.println((double) (end - start) / 1000000000);
 	}
 
 	public void move(double angle, double speed) {
@@ -111,12 +110,8 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 			int preSignX = (int) Math.signum(_sharkOffsetX);
 			_sharkOffsetX += speed * Math.sin(Math.toRadians(angle));
 			if (preSignX != (int) Math.signum(_sharkOffsetX)) {
-				System.out.println("cammmmm: " + _camPoint);
 				_camPoint.x += _sharkOffsetX;
 				_sharkOffsetX = 0;
-				System.out.println("restarted x");
-				System.out.println("post cammmmm: " + _camPoint);
-
 			}
 		}
 
@@ -132,11 +127,10 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 			if (preSignY != (int) Math.signum(_sharkOffsetY)) {
 				_camPoint.y += _sharkOffsetY;
 				_sharkOffsetY = 0;
-				System.out.println("restarted y");
 			}
 		}
-		// System.out.println("offx: " + _sharkOffsetX + " offy: " + _sharkOffsetY);
 		_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
+		_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
 		_shark.setCords((int) (_centerPoint.x + _sharkOffsetX), (int) (_centerPoint.y + _sharkOffsetY));
 		_shark.setHitbox();
 	}
@@ -230,9 +224,26 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		for (Point2D p : _coliList) {
 			g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
 		}
+		g.setColor(Color.red);
+		g.drawString("health: " + String.valueOf(_shark.getHealth()), (int) _camPoint.x, (int) _camPoint.y + 10);
+		g.drawRect((int) _camPoint.x + 70, (int) _camPoint.y, 100, 10);
+		g.fillRect((int) _camPoint.x + 70, (int) _camPoint.y, _shark.getHealth(), 10);
+		g.setColor(Color.green);
+		g.drawString("stamina: " + String.valueOf(_shark.getStamina()), (int) _camPoint.x, (int) _camPoint.y + 20);
+		g.drawRect((int) _camPoint.x + 70, (int) _camPoint.y + 10, 100, 10);
+		g.fillRect((int) _camPoint.x + 70, (int) _camPoint.y + 10, _shark.getStamina(), 10);
+		g.setColor(Color.yellow);
+		g.drawString("hunger: " + String.valueOf(_shark.getHunger()), (int) _camPoint.x, (int) _camPoint.y + 30);
+		g.drawRect((int) _camPoint.x + 70, (int) _camPoint.y + 20, 100, 10);
+		g.fillRect((int) _camPoint.x + 70, (int) _camPoint.y + 20, _shark.getHunger(), 10);
+		/*
+		 * g.drawOval((int) _shark.getX() - getHeight() / 2, (int) _shark.getY() -
+		 * getHeight() / 2, getHeight(), getHeight());
+		 */
+	}
 
-		g.drawOval((int) _shark.getX() - getHeight() / 2, (int) _shark.getY() - getHeight() / 2, getHeight(),
-				getHeight());
+	public void checkMouse() {
+		_shark.applyMouseBoost(_mouseDown);
 	}
 
 	@Override
@@ -261,14 +272,16 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		if (e.getButton() == MouseEvent.BUTTON1)
-			_shark.setSpeed(_shark.getSpeed() + 5);
+		if (e.getButton() == MouseEvent.BUTTON1) {
+			_mouseDown = true;
+		}
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		if (e.getButton() == MouseEvent.BUTTON1)
-			_shark.setSpeed(_shark.getSpeed() - 5);
+		if (e.getButton() == MouseEvent.BUTTON1) {
+			_mouseDown = false;
+		}
 	}
 
 	public void printMat(int[][] mat, int size, int sizeW) {
