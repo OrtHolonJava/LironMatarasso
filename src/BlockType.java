@@ -7,25 +7,22 @@ import images.Img;
 public class BlockType {
 	private Img _blockImage;
 	private int _size, _id;
+	private String _path;
 	private static LinkedList<String> _imgPaths = new LinkedList<String>(
 			Arrays.asList("images//SandBlock2.png", "images/StoneBlock2.png", "images//OneSW.png",
 					"images//SandBackground.png", "images//StoneBackground.png"));
 	private boolean setSandsFlag = false;
 
-	public BlockType(int size, int id) {
-		if (!setSandsFlag) {
-			setSands();
-			setSandsFlag = true;
-		}
+	public BlockType(int size, String path) {
 		_size = size;
-		_id = id;
-		_blockImage = new Img(_imgPaths.get(id - 1), 0, 0, _size, _size);
+		_path = path;
+		_blockImage = new Img(_path, 0, 0, _size, _size);
 	}
 
-	public void setSands() {
-		for (int i = 0; i < 48; i++) {
-			_imgPaths.add(String.format("images//SandParts//image_part_%03d.png", (i + 1)));
-		}
+	public BlockType(int size, int id) {
+		_size = size;
+		_path = _imgPaths.get(id - 1);
+		_blockImage = new Img(_path, 0, 0, _size, _size);
 	}
 
 	public void paintAt(Graphics g, int x, int y) {
