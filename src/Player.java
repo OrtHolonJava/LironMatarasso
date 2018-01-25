@@ -123,7 +123,7 @@ public class Player implements ActionListener {
 			_hunger--;
 	}
 
-	public void Paint(Graphics g) {
+	public void Paint(Graphics g, boolean isDebug) {
 
 		BufferedImage use = _image.getbImage();
 		Graphics2D g2d = (Graphics2D) g.create();
@@ -133,7 +133,9 @@ public class Player implements ActionListener {
 		// g2d.setColor(Color.orange);
 		// g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		g2d.rotate(Math.toRadians(_angle), _loc.getX(), _loc.getY());
-		g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
+		if (isDebug) {
+			g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
+		}
 		g2d.drawImage(use, (int) _loc.getX() - use.getWidth() / 2, (int) _loc.getY() - use.getHeight() / 2, null);
 		g2d.dispose();
 	}
@@ -264,7 +266,11 @@ public class Player implements ActionListener {
 	}
 
 	public double getFinalSpeed() {
-		_finalSpeed = _baseSpeed + _speedMouseBoost;
+		if (_baseSpeed + _speedMouseBoost == 0) {
+			_finalSpeed = 0;
+		} else
+			_finalSpeed = _baseSpeed + _speedMouseBoost;
+		_finalSpeed = Math.max(_baseSpeed + _speedMouseBoost, 1);
 		return _finalSpeed;
 	}
 

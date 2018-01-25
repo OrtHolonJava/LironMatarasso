@@ -10,6 +10,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 
@@ -32,7 +33,8 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	private boolean _mouseDown;
 
 	public MapPanel() {
-		_mapFile = "MapFiles//‏‏‏‏‏‏‏‏‏‏‏‏world2s_20180124222818.xml";
+		setKek();
+		_mapFile = "MapFiles//‏‏world2s_20180125170030.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_size = Map.getElementCountByName(_mapFile, "Line");
 		_sizeW = Map.getElementCountByName(_mapFile, "Area") / _size;
@@ -46,7 +48,7 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_sharkOffsetY = -10 * _blockSize;
 		_finalMousePoint = new Point2D.Double(0, 0);
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _sizeW * _blockSize, _size * _blockSize);
-		_blocksTypes = new BlockType[5];
+		_blocksTypes = new BlockType[48 + 5];
 		_mouseDown = false;
 		for (int i = 0; i < _blocksTypes.length; i++) {
 			_blocksTypes[i] = new BlockType(_blockSize, i + 1);
@@ -59,21 +61,20 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_coliList = new LinkedList<Point2D.Double>();
 		addMouseMotionListener(this);
 		addMouseListener(this);
-		Timer t = new Timer(1000 / 60, this);
+		Timer t = new Timer(1000 / 120, this);
 		t.start();
 	}
 
 	public void movementLogic() {
-		// double tempa = _shark.getAngle();
 		_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
-		_shark.setAngle(
-				Math.toDegrees(-Math.atan2(_finalMousePoint.x - _shark.getX(), _finalMousePoint.y - _shark.getY()))
-						+ 180);
+		if (_finalMousePoint.distance(_shark.getLoc()) > 2)
+			_shark.setAngle(
+					Math.toDegrees(-Math.atan2(_finalMousePoint.x - _shark.getX(), _finalMousePoint.y - _shark.getY()))
+							+ 180);
 
 		double disToSpeedRatio = (_finalMousePoint.distance(_shark.getX(), _shark.getY()) / (5 * _blockSize));
 		disToSpeedRatio = (disToSpeedRatio > 1) ? 1 : disToSpeedRatio;
 		_shark.setBaseSpeed(8 * disToSpeedRatio);
-
 		move(_shark.getAngle(), _shark.getFinalSpeed());
 		if (!checkCollision()) {
 			for (Rectangle r : _rects) {
@@ -82,21 +83,20 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 							(r.y + r.getHeight() / 2) - (_shark.getY()))), 1);
 				}
 			}
+			checkCollision();
 		}
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		long start = System.nanoTime(), end;
+		// long start = System.nanoTime(), end;
 		if (getWidth() != 0 && getHeight() != 0) {
 			checkMouse();
 			movementLogic();
-			// _shark.updateHunger();
 			repaint();
 		}
-		end = System.nanoTime();
-		// System.out.println("counter: " + _counter);
-		System.out.println((double) (end - start) / 1000000000);
+		// end = System.nanoTime();
+		// System.out.println((double) (end - start) / 1000000000);
 	}
 
 	public void move(double angle, double speed) {
@@ -117,8 +117,8 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 
 		if (_sharkOffsetY == 0) {
 			_camPoint.y -= speed * Math.cos(Math.toRadians(angle));
-			if (_camPoint.y < _blockSize || _camPoint.y > _mapPixelHeight - getHeight()) {
-				_camPoint.y = (_camPoint.y < _blockSize) ? _blockSize : _mapPixelHeight - getHeight();
+			if (_camPoint.y < _blockSize || _camPoint.y > _mapPixelHeight - getHeight() - _blockSize) {
+				_camPoint.y = (_camPoint.y < _blockSize) ? _blockSize : _mapPixelHeight - getHeight() - _blockSize;
 				_sharkOffsetY -= speed * Math.cos(Math.toRadians(angle));
 			}
 		} else {
@@ -129,11 +129,15 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 				_sharkOffsetY = 0;
 			}
 		}
+		_camPoint.y = Math.round(_camPoint.y);
+		_camPoint.x = Math.round(_camPoint.x);
 		_centerPoint.setLocation(_camPoint.x + getWidth() / 2, _camPoint.y + getHeight() / 2);
 		_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
 		_shark.setCords((int) (_centerPoint.x + _sharkOffsetX), (int) (_centerPoint.y + _sharkOffsetY));
 		_shark.setHitbox();
 	}
+
+	boolean drawDebug = true;
 
 	@Override
 	protected void paintComponent(Graphics g1) {
@@ -142,8 +146,10 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		g.translate(-_camPoint.x, -_camPoint.y);
 		_backgroundImg.drawImg(g);
 		drawHMap(g);
-		_shark.Paint(g);
-		drawDebug(g);
+		_shark.Paint(g, drawDebug);
+		drawBars(g);
+		if (drawDebug)
+			drawDebug(g);
 	}
 
 	public void drawMap(Graphics g) {
@@ -158,12 +164,116 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		}
 	}
 
+	public boolean InScreen(int row, int col) {
+		System.out.println();
+		return (col <= 1 + ((getWidth() + _camPoint.getX()) / _blockSize) && col + 1 >= _camPoint.getX() / _blockSize
+				&& row <= 1 + ((getHeight() + _camPoint.getY()) / _blockSize)
+				&& row + 1 >= _camPoint.getY() / _blockSize);
+	}
+
 	public void drawHMap(Graphics g) {
 		for (Entry<Integer, Integer> e : _map.getHmap().entrySet()) {
-			_blocksTypes[e.getValue() - 1].paintAt(g, e.getKey() % _sizeW, e.getKey() / _sizeW);
-			// g.drawString(String.valueOf(i * _sizeW + j), j * _blockSize, i * _blockSize +
+			if (InScreen(e.getKey() / _sizeW, e.getKey() % _sizeW)) {
+				_blocksTypes[e.getValue() - 1
+						+ ((e.getValue() == 1) ? 5 + computeTile(e.getKey() / _sizeW, e.getKey() % _sizeW, e.getValue())
+								: 0)].paintAt(g, e.getKey() % _sizeW, e.getKey() / _sizeW);
+			}
+			// g.drawString(Integer.toString(computeTile(e.getKey() / _sizeW, e.getKey() %
+			// _sizeW, e.getValue())),
+			// (e.getKey() % _sizeW) * _blockSize, (e.getKey() / _sizeW) * _blockSize +
 			// _blockSize / 2);
+
 		}
+		// g.drawString(String.valueOf(i * _sizeW + j), j * _blockSize, i * _blockSize +
+		// _blockSize / 2);
+	}
+
+	public int rowColToIndex(int row, int col, int width) {
+		return col + row * width;
+	}
+
+	public static HashMap<Integer, Integer> kek = new HashMap<Integer, Integer>();
+
+	public void setKek() {
+		kek.put(2, 1);
+		kek.put(8, 2);
+		kek.put(10, 3);
+		kek.put(11, 4);
+		kek.put(16, 5);
+		kek.put(18, 6);
+		kek.put(22, 7);
+		kek.put(24, 8);
+		kek.put(26, 9);
+		kek.put(27, 10);
+		kek.put(30, 11);
+		kek.put(31, 12);
+		kek.put(64, 13);
+		kek.put(66, 14);
+		kek.put(72, 15);
+		kek.put(74, 16);
+		kek.put(75, 17);
+		kek.put(80, 18);
+		kek.put(82, 19);
+		kek.put(86, 20);
+		kek.put(88, 21);
+		kek.put(90, 22);
+		kek.put(91, 23);
+		kek.put(94, 24);
+		kek.put(95, 25);
+		kek.put(104, 26);
+		kek.put(106, 27);
+		kek.put(107, 28);
+		kek.put(120, 29);
+		kek.put(122, 30);
+		kek.put(123, 31);
+		kek.put(126, 32);
+		kek.put(127, 33);
+		kek.put(208, 34);
+		kek.put(210, 35);
+		kek.put(214, 36);
+		kek.put(216, 37);
+		kek.put(218, 38);
+		kek.put(219, 39);
+		kek.put(222, 40);
+		kek.put(223, 41);
+		kek.put(248, 42);
+		kek.put(250, 43);
+		kek.put(251, 44);
+		kek.put(254, 45);
+		kek.put(255, 46);
+		kek.put(0, 47);
+	}
+
+	public int placeMeeting(int col, int row, int curCol, int curRow, int tileVal) {
+		if (_map.getHmap().containsKey(curRow * _sizeW + curCol)
+				&& _map.getHmap().get(curRow * _sizeW + curCol).intValue() == tileVal) {
+			return 1;
+		}
+		return 0;
+	}
+
+	public int computeTile(int y, int x, int tileVal) {
+		int sum = 0;
+		int north_tile = placeMeeting(x, y, x, y - 1, tileVal);
+		int south_tile = placeMeeting(x, y, x, y + 1, tileVal);
+		int west_tile = placeMeeting(x, y, x - 1, y, tileVal);
+		int east_tile = placeMeeting(x, y, x + 1, y, tileVal);
+		int north_west_tile = (placeMeeting(x, y, x - 1, y - 1, tileVal) == 1 && west_tile == 1 && north_tile == 1) ? 1
+				: 0;
+		int north_east_tile = (placeMeeting(x, y, x + 1, y - 1, tileVal) == 1 && north_tile == 1 && east_tile == 1) ? 1
+				: 0;
+		int south_west_tile = (placeMeeting(x, y, x - 1, y + 1, tileVal) == 1 && south_tile == 1 && west_tile == 1) ? 1
+				: 0;
+		int south_east_tile = (placeMeeting(x, y, x + 1, y + 1, tileVal) == 1 && south_tile == 1 && east_tile == 1) ? 1
+				: 0;
+
+		// 8 bit Bitmasking calculation using Directional check booleans values
+		sum = north_west_tile + 2 * north_tile + 4 * north_east_tile + 8 * west_tile + 16 * east_tile
+				+ 32 * south_west_tile + 64 * south_tile + 128 * south_east_tile;
+
+		if (kek.containsKey(sum))
+			return kek.get(sum);
+		return sum;
 	}
 
 	private LinkedList<Rectangle> _rects;
@@ -224,6 +334,12 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		for (Point2D p : _coliList) {
 			g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
 		}
+		g.drawOval((int) _shark.getX() - _blockSize * 5 / 2, (int) _shark.getY() - _blockSize * 5 / 2, _blockSize * 5,
+				_blockSize * 5);
+
+	}
+
+	public void drawBars(Graphics g) {
 		g.setColor(Color.red);
 		g.drawString("health: " + String.valueOf(_shark.getHealth()), (int) _camPoint.x, (int) _camPoint.y + 10);
 		g.drawRect((int) _camPoint.x + 70, (int) _camPoint.y, 100, 10);
@@ -236,10 +352,6 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		g.drawString("hunger: " + String.valueOf(_shark.getHunger()), (int) _camPoint.x, (int) _camPoint.y + 30);
 		g.drawRect((int) _camPoint.x + 70, (int) _camPoint.y + 20, 100, 10);
 		g.fillRect((int) _camPoint.x + 70, (int) _camPoint.y + 20, _shark.getHunger(), 10);
-		/*
-		 * g.drawOval((int) _shark.getX() - getHeight() / 2, (int) _shark.getY() -
-		 * getHeight() / 2, getHeight(), getHeight());
-		 */
 	}
 
 	public void checkMouse() {
