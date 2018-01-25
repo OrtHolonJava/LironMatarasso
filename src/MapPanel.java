@@ -28,53 +28,16 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	private BlockType _blocksTypes[];
 	private BlockType _sandBlocks[], _stoneBlocks[];
 	private Player _shark;
-	private String _mapFile, _effectsFile;
+	private String _mapFile, _effectsFile, _backgroundFile;
 	private Point2D.Double _mousePoint, _finalMousePoint, _centerPoint, _camPoint;
 	private LinkedList<Integer> _passables;
 	private LinkedList<Point2D.Double> _coliList;
 	private boolean _mouseDown;
 
-	public void setStoneBlocks() {
-		File dir = new File(System.getProperty("user.dir") + "\\bin\\images\\Blocks\\Stone");
-		File[] directoryListing = dir.listFiles();
-		if (directoryListing != null) {
-			_stoneBlocks = new BlockType[directoryListing.length];
-			int counter = 0;
-			for (File child : directoryListing) {
-				// Do something with child
-				System.out.println("images\\Blocks\\Stone\\" + child.getName());
-				_stoneBlocks[counter++] = new BlockType(_blockSize, "images\\Blocks\\Stone\\" + child.getName());
-			}
-		} else {
-			// Handle the case where dir is not really a directory.
-			// Checking dir.isDirectory() above would not be sufficient
-			// to avoid race conditions with another process that deletes
-			// directories.
-		}
-	}
-
-	public void setSandBlocks() {
-		File dir = new File(System.getProperty("user.dir") + "\\bin\\images\\Blocks\\Sand");
-		File[] directoryListing = dir.listFiles();
-		if (directoryListing != null) {
-			_sandBlocks = new BlockType[directoryListing.length];
-			int counter = 0;
-			for (File child : directoryListing) {
-				// Do something with child
-				System.out.println("images\\Blocks\\Sand\\" + child.getName());
-				_sandBlocks[counter++] = new BlockType(_blockSize, "images\\Blocks\\Sand\\" + child.getName());
-			}
-		} else {
-			// Handle the case where dir is not really a directory.
-			// Checking dir.isDirectory() above would not be sufficient
-			// to avoid race conditions with another process that deletes
-			// directories.
-		}
-	}
-
 	public MapPanel() {
 		setKek();
-		_mapFile = "MapFiles//‏‏world2s_20180125170030.xml";
+		_backgroundFile = "MapFiles//backgrounds_20180125191123.xml";
+		_mapFile = "world2s_20180125191648.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_size = Map.getElementCountByName(_mapFile, "Line");
 		_sizeW = Map.getElementCountByName(_mapFile, "Area") / _size;
@@ -93,11 +56,11 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		for (int i = 0; i < _blocksTypes.length; i++) {
 			_blocksTypes[i] = new BlockType(_blockSize, i + 1);
 		}
-		setSandBlocks();
-		setStoneBlocks();
+		_sandBlocks = setBlocks("images\\Blocks\\Sand\\");
+		_stoneBlocks = setBlocks("images\\Blocks\\Stone\\");
 		_shark = new Player("images//shark1.png", "images//shark1rev.png", 0, 0, 8 * _blockSize / 10,
 				19 * _blockSize / 10, 8);
-		_map = new Map(_size, _sizeW, _mapFile, _effectsFile);
+		_map = new Map(_size, _sizeW, _mapFile, _effectsFile, _backgroundFile);
 		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_rects = new LinkedList<Rectangle>();
 		_coliList = new LinkedList<Point2D.Double>();
@@ -105,6 +68,27 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		addMouseListener(this);
 		Timer t = new Timer(1000 / 60, this);
 		t.start();
+	}
+
+	public BlockType[] setBlocks(String path) {
+		BlockType[] arr=null;
+		File dir = new File(System.getProperty("user.dir") + "\\bin\\" + path);
+		File[] directoryListing = dir.listFiles();
+		if (directoryListing != null) {
+			arr = new BlockType[directoryListing.length];
+			int counter = 0;
+			for (File child : directoryListing) {
+				// Do something with child
+				System.out.println(path + child.getName());
+				arr[counter++] = new BlockType(_blockSize, path + child.getName());
+			}
+		} else {
+			// Handle the case where dir is not really a directory.
+			// Checking dir.isDirectory() above would not be sufficient
+			// to avoid race conditions with another process that deletes
+			// directories.
+		}
+		return arr;
 	}
 
 	public void movementLogic() {
@@ -187,7 +171,8 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		super.paintComponent(g);
 		g.translate(-_camPoint.x, -_camPoint.y);
 		_backgroundImg.drawImg(g);
-		drawHMap(g);
+		drawHMap(g, _map.getHbackgrounds());
+		drawHMap(g, _map.getHmap());
 		_shark.Paint(g, drawDebug);
 		drawBars(g);
 		if (drawDebug)
@@ -212,18 +197,18 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 				&& row + 1 >= _camPoint.getY() / _blockSize);
 	}
 
-	public void drawHMap(Graphics g) {
-		for (Entry<Integer, Integer> e : _map.getHmap().entrySet()) {
+	public void drawHMap(Graphics g, HashMap<Integer, Integer> hmap) {
+		for (Entry<Integer, Integer> e : hmap.entrySet()) {
 			if (InScreen(e.getKey() / _sizeW, e.getKey() % _sizeW)) {
 				switch (e.getValue()) {
 				case 1: {
-					_blocksTypes[3].paintAt(g, e.getKey() % _sizeW, e.getKey() / _sizeW);
+					// _blocksTypes[3].paintAt(g, e.getKey() % _sizeW, e.getKey() / _sizeW);
 					_sandBlocks[computeTile(e.getKey() / _sizeW, e.getKey() % _sizeW, e.getValue())].paintAt(g,
 							e.getKey() % _sizeW, e.getKey() / _sizeW);
 					break;
 				}
 				case 2: {
-					_blocksTypes[4].paintAt(g, e.getKey() % _sizeW, e.getKey() / _sizeW);
+					// _blocksTypes[4].paintAt(g, e.getKey() % _sizeW, e.getKey() / _sizeW);
 					_stoneBlocks[computeTile(e.getKey() / _sizeW, e.getKey() % _sizeW, e.getValue())].paintAt(g,
 							e.getKey() % _sizeW, e.getKey() / _sizeW);
 					break;

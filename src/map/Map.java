@@ -20,48 +20,36 @@ import org.w3c.dom.NodeList;
 public class Map {
 	private int _size;
 	private int _counter = 0;
-	private HashMap<Integer, Integer> _hmap, _heffects;
+	private HashMap<Integer, Integer> _hmap, _heffects, _hbackgrounds;
 	private int[][] _map;
 	private int[][] _effects;
 
-	public Map(int size, int sizeW, String mapFileName, String effectsFileName) {
+	public Map(int size, int sizeW, String mapFileName, String effectsFileName, String backgroundsFileName) {
 		_hmap = new HashMap<Integer, Integer>();
 		_heffects = new HashMap<Integer, Integer>();
-		//_effects = new int[size][sizeW];
-		//_map = new int[size][sizeW];
+		_hbackgrounds = new HashMap<Integer, Integer>();
+		// _effects = new int[size][sizeW];
+		// _map = new int[size][sizeW];
 		_size = sizeW;
+		readFile(mapFileName,_hmap);
+		readFile(effectsFileName, _heffects);
+		readFile(backgroundsFileName, _hbackgrounds);
+	}
+	private void readFile(String fileName, HashMap<Integer, Integer> hmap) {
+		_counter = 0;
 		try {
-			File file = new File(mapFileName);
+			File file = new File(fileName);
 
 			DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
 			Document doc = docBuilder.parse(file);
 
-			/*if (doc.hasChildNodes()) {
-				readNode(doc.getChildNodes(), _map);
-			}
-			_counter = 0;*/
+			/*
+			 * if (doc.hasChildNodes()) { readNode(doc.getChildNodes(), _map); } _counter =
+			 * 0;
+			 */
 			if (doc.hasChildNodes()) {
-				readNode(doc.getChildNodes(), _hmap);
-			}
-
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-
-		try {
-			File file = new File(effectsFileName);
-
-			DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-
-			Document doc = docBuilder.parse(file);
-			/*_counter = 0;
-			if (doc.hasChildNodes()) {
-				readNode(doc.getChildNodes(), _effects);
-			}*/
-			_counter = 0;
-			if (doc.hasChildNodes()) {
-				readNode(doc.getChildNodes(), _heffects);
+				readNode(doc.getChildNodes(), hmap);
 			}
 
 		} catch (Exception e) {
@@ -174,4 +162,13 @@ public class Map {
 			return -1;
 		}
 	}
+	
+	public HashMap<Integer, Integer> getHbackgrounds() {
+		return _hbackgrounds;
+	}
+
+	public void setHbackgrounds(HashMap<Integer, Integer> hbackgrounds) {
+		_hbackgrounds = hbackgrounds;
+	}
+
 }
