@@ -836,7 +836,7 @@
     <Area value="0" />
     <Area value="1" />
     <Area value="1" />
-    <Area value="1" />
+    <Area value="0" />
     <Area value="0" />
     <Area value="0" />
     <Area value="0" />
@@ -1435,30 +1435,30 @@
     <Area value="0" />
     <Area value="0" />
     <!--*****80*****-->
-    <Area value="0" />
-    <Area value="0" />
-    <Area value="0" />
     <Area value="2" />
     <Area value="2" />
     <Area value="2" />
     <Area value="2" />
     <Area value="2" />
     <Area value="2" />
-    <Area value="0" />
+    <Area value="2" />
+    <Area value="2" />
+    <Area value="2" />
+    <Area value="2" />
     <!--*****90*****-->
-    <Area value="0" />
-    <Area value="0" />
     <Area value="2" />
     <Area value="2" />
     <Area value="2" />
     <Area value="2" />
     <Area value="2" />
     <Area value="2" />
-    <Area value="0" />
-    <Area value="0" />
+    <Area value="2" />
+    <Area value="2" />
+    <Area value="2" />
+    <Area value="2" />
     <!--*****100*****-->
-    <Area value="0" />
-    <Area value="0" />
+    <Area value="2" />
+    <Area value="2" />
     <Area value="0" />
     <Area value="0" />
     <Area value="0" />
@@ -1645,7 +1645,7 @@
     <Area value="0" />
     <Area value="1" />
     <Area value="1" />
-    <Area value="0" />
+    <Area value="1" />
     <Area value="0" />
     <Area value="0" />
     <!--*****30*****-->
@@ -2667,7 +2667,7 @@
     <!--*****220*****-->
     <Area value="0" />
     <Area value="0" />
-    <Area value="0" />
+    <Area value="1" />
     <Area value="1" />
     <Area value="1" />
     <Area value="1" />
@@ -2885,8 +2885,8 @@
     <Area value="0" />
     <Area value="0" />
     <Area value="0" />
-    <Area value="0" />
-    <Area value="0" />
+    <Area value="1" />
+    <Area value="1" />
     <Area value="1" />
     <Area value="1" />
     <!--*****180*****-->
@@ -3185,10 +3185,10 @@
     <Area value="1" />
     <Area value="1" />
     <Area value="1" />
-    <Area value="0" />
-    <Area value="0" />
-    <Area value="0" />
-    <Area value="0" />
+    <Area value="3" />
+    <Area value="3" />
+    <Area value="3" />
+    <Area value="3" />
     <Area value="1" />
     <Area value="1" />
     <!--*****210*****-->
@@ -3455,14 +3455,14 @@
     <Area value="1" />
     <Area value="1" />
     <Area value="1" />
-    <Area value="3" />
-    <Area value="3" />
-    <Area value="3" />
+    <Area value="1" />
+    <Area value="1" />
+    <Area value="1" />
     <Area value="1" />
     <Area value="1" />
     <!--*****210*****-->
     <Area value="1" />
-    <Area value="0" />
+    <Area value="1" />
     <Area value="0" />
     <Area value="0" />
     <Area value="0" />
@@ -3731,7 +3731,7 @@
     <Area value="1" />
     <!--*****210*****-->
     <Area value="1" />
-    <Area value="0" />
+    <Area value="1" />
     <Area value="0" />
     <Area value="0" />
     <Area value="0" />
@@ -3805,7 +3805,7 @@
     <Area value="1" />
     <Area value="1" />
     <Area value="1" />
-    <Area value="0" />
+    <Area value="1" />
     <Area value="0" />
     <Area value="0" />
     <Area value="0" />
@@ -4015,7 +4015,7 @@
     <Area value="0" />
     <Area value="0" />
     <Area value="0" />
-    <Area value="0" />
+    <Area value="1" />
     <Area value="1" />
     <Area value="1" />
     <Area value="1" />
@@ -4538,7 +4538,7 @@
     <Area value="0" />
     <!--*****210*****-->
     <Area value="1" />
-    <Area value="0" />
+    <Area value="1" />
     <Area value="0" />
     <Area value="0" />
     <Area value="2" />
@@ -4807,7 +4807,7 @@
     <Area value="1" />
     <!--*****210*****-->
     <Area value="1" />
-    <Area value="0" />
+    <Area value="1" />
     <Area value="0" />
     <Area value="0" />
     <Area value="2" />
@@ -5163,16 +5163,16 @@
     <Area value="0" />
     <Area value="0" />
     <Area value="0" />
-    <Area value="0" />
-    <Area value="0" />
-    <Area value="0" />
-    <Area value="0" />
+    <Area value="2" />
+    <Area value="2" />
+    <Area value="2" />
+    <Area value="2" />
     <!--*****50*****-->
-    <Area value="0" />
-    <Area value="0" />
-    <Area value="0" />
-    <Area value="0" />
-    <Area value="0" />
+    <Area value="2" />
+    <Area value="2" />
+    <Area value="2" />
+    <Area value="2" />
+    <Area value="2" />
     <Area value="2" />
     <Area value="2" />
     <Area value="2" />

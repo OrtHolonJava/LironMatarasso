@@ -13,7 +13,8 @@ import javax.swing.ImageIcon;
  * @author PC05
  *
  */
-public class Img {
+public class Img
+{
 	private Image _image;
 	private BufferedImage _bImage;
 	private int _x, _y, _width, _height;
@@ -27,14 +28,18 @@ public class Img {
 	 * @param width
 	 * @param height
 	 */
-	public Img(String path, int x, int y, int width, int height) {
-		try {
+	public Img(String path, int x, int y, int width, int height)
+	{
+		try
+		{
 			_image = new ImageIcon(this.getClass().getClassLoader().getResource(path)).getImage();
 			setImgCords(x, y);
 			setImgSize(width, height);
 			_bImage = toBufferedImage(_image);
 			_bImage = resize(_bImage, width, height);
-		} catch (NullPointerException e) {
+		}
+		catch (NullPointerException e)
+		{
 			System.out.println("image: " + path + " doesnt exist");
 		}
 	}
@@ -44,7 +49,8 @@ public class Img {
 	 * 
 	 * @param g
 	 */
-	public void drawImg(Graphics g) {
+	public void drawImg(Graphics g)
+	{
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.drawImage(_image, _x, _y, _width, _height, null);
 	}
@@ -55,7 +61,8 @@ public class Img {
 	 * @param x
 	 * @param y
 	 */
-	public void setImgCords(int x, int y) {
+	public void setImgCords(int x, int y)
+	{
 		this._x = x;
 		this._y = y;
 	}
@@ -66,7 +73,8 @@ public class Img {
 	 * @param width
 	 * @param _height
 	 */
-	public void setImgSize(int width, int height) {
+	public void setImgSize(int width, int height)
+	{
 		_width = width;
 		_height = height;
 	}
@@ -80,16 +88,19 @@ public class Img {
 	 *            The height of required image
 	 * @return The created image
 	 */
-	public static Image getEmptyImage(int width, int height) {
+	public static Image getEmptyImage(int width, int height)
+	{
 		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		return toImage(img);
 	}
 
-	public BufferedImage getbImage() {
+	public BufferedImage getbImage()
+	{
 		return _bImage;
 	}
 
-	public void setbImage(BufferedImage bImage) {
+	public void setbImage(BufferedImage bImage)
+	{
 		_bImage = bImage;
 	}
 
@@ -100,10 +111,9 @@ public class Img {
 	 *            The Image to be converted
 	 * @return The converted BufferedImage
 	 */
-	public static BufferedImage toBufferedImage(Image img) {
-		if (img instanceof BufferedImage) {
-			return (BufferedImage) img;
-		}
+	public static BufferedImage toBufferedImage(Image img)
+	{
+		if (img instanceof BufferedImage) { return (BufferedImage) img; }
 		// Create a buffered image with transparency
 		BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
 		// Draw the image on to the buffered image
@@ -114,7 +124,8 @@ public class Img {
 		return bimage;
 	}
 
-	public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+	public static BufferedImage resize(BufferedImage img, int newW, int newH)
+	{
 		Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
 		BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
 
@@ -132,49 +143,60 @@ public class Img {
 	 *            The BufferedImage to be converted
 	 * @return The converted Image
 	 */
-	public static Image toImage(BufferedImage bimage) {
+	public static Image toImage(BufferedImage bimage)
+	{
 		// Casting is enough to convert from BufferedImage to Image
 		Image img = (Image) bimage;
 		return img;
 	}
 
-	public Image getImage() {
+	public Image getImage()
+	{
 		return _image;
 	}
 
-	public void setImage(Image image) {
+	public void setImage(Image image)
+	{
 		_image = image;
 	}
 
-	public int getX() {
+	public int getX()
+	{
 		return _x;
 	}
 
-	public void setX(int x) {
+	public void setX(int x)
+	{
 		this._x = x;
 	}
 
-	public int getY() {
+	public int getY()
+	{
 		return _y;
 	}
 
-	public void setY(int y) {
+	public void setY(int y)
+	{
 		this._y = y;
 	}
 
-	public int getWidth() {
+	public int getWidth()
+	{
 		return _width;
 	}
 
-	public void setWidth(int width) {
+	public void setWidth(int width)
+	{
 		_width = width;
 	}
 
-	public int getHeight() {
+	public int getHeight()
+	{
 		return _height;
 	}
 
-	public void setHeight(int height) {
+	public void setHeight(int height)
+	{
 		_height = height;
 	}
 }

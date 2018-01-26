@@ -2,10 +2,12 @@ import java.awt.BorderLayout;
 
 import javax.swing.JFrame;
 
-public class MapFrame extends JFrame {
+public class MapFrame extends JFrame
+{
 	private MapPanel _mapPanel;
 
-	public MapFrame() {
+	public MapFrame()
+	{
 		setLayout(new BorderLayout());
 		_mapPanel = new MapPanel();
 		add(_mapPanel, BorderLayout.CENTER);
@@ -13,5 +15,10 @@ public class MapFrame extends JFrame {
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setUndecorated(true);
 		setVisible(true);
+	}
+
+	public void startGame()
+	{
+		_mapPanel.startGame();
 	}
 }

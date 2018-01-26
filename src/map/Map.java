@@ -17,27 +17,28 @@ import org.w3c.dom.NodeList;
  * @author liron
  *
  */
-public class Map {
+public class Map
+{
 	private int _size;
 	private int _counter = 0;
 	private HashMap<Integer, Integer> _hmap, _heffects, _hbackgrounds;
-	private int[][] _map;
-	private int[][] _effects;
 
-	public Map(int size, int sizeW, String mapFileName, String effectsFileName, String backgroundsFileName) {
+	public Map(int size, int sizeW, String mapFileName, String effectsFileName, String backgroundsFileName)
+	{
 		_hmap = new HashMap<Integer, Integer>();
 		_heffects = new HashMap<Integer, Integer>();
 		_hbackgrounds = new HashMap<Integer, Integer>();
-		// _effects = new int[size][sizeW];
-		// _map = new int[size][sizeW];
 		_size = sizeW;
-		readFile(mapFileName,_hmap);
+		readFile(mapFileName, _hmap);
 		readFile(effectsFileName, _heffects);
 		readFile(backgroundsFileName, _hbackgrounds);
 	}
-	private void readFile(String fileName, HashMap<Integer, Integer> hmap) {
+
+	private void readFile(String fileName, HashMap<Integer, Integer> hmap)
+	{
 		_counter = 0;
-		try {
+		try
+		{
 			File file = new File(fileName);
 
 			DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -48,126 +49,111 @@ public class Map {
 			 * if (doc.hasChildNodes()) { readNode(doc.getChildNodes(), _map); } _counter =
 			 * 0;
 			 */
-			if (doc.hasChildNodes()) {
+			if (doc.hasChildNodes())
+			{
 				readNode(doc.getChildNodes(), hmap);
 			}
 
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			System.out.println(e.getMessage());
 		}
 	}
 
-	public int getSize() {
+	public int getSize()
+	{
 		return _size;
 	}
 
-	public void setSize(int size) {
+	public void setSize(int size)
+	{
 		_size = size;
 	}
 
-	public int getCounter() {
+	public int getCounter()
+	{
 		return _counter;
 	}
 
-	public void setCounter(int counter) {
+	public void setCounter(int counter)
+	{
 		_counter = counter;
 	}
 
-	public HashMap<Integer, Integer> getHmap() {
+	public HashMap<Integer, Integer> getHmap()
+	{
 		return _hmap;
 	}
 
-	public void setHmap(HashMap<Integer, Integer> hmap) {
+	public void setHmap(HashMap<Integer, Integer> hmap)
+	{
 		_hmap = hmap;
 	}
 
-	public HashMap<Integer, Integer> getHeffects() {
+	public HashMap<Integer, Integer> getHeffects()
+	{
 		return _heffects;
 	}
 
-	public void setHeffects(HashMap<Integer, Integer> heffects) {
+	public void setHeffects(HashMap<Integer, Integer> heffects)
+	{
 		_heffects = heffects;
 	}
 
-	public void setMap(int[][] map) {
-		_map = map;
-	}
-
-	public void setEffects(int[][] effects) {
-		_effects = effects;
-	}
-
-	public int[][] getMap() {
-		return _map;
-	}
-
-	public int[][] getEffects() {
-		return _effects;
-	}
-
-	private void readNode(NodeList nodeList, int[][] mat) {
-		for (int count = 0; count < nodeList.getLength(); count++) {
+	private void readNode(NodeList nodeList, HashMap<Integer, Integer> map)
+	{
+		for (int count = 0; count < nodeList.getLength(); count++)
+		{
 			Node tempNode = nodeList.item(count);
-
-			if (tempNode.getNodeType() == Node.ELEMENT_NODE) {
-				if (tempNode.hasAttributes()) {
+			if (tempNode.getNodeType() == Node.ELEMENT_NODE)
+			{
+				if (tempNode.hasAttributes())
+				{
 					NamedNodeMap nodeMap = tempNode.getAttributes();
-					for (int i = 0; i < nodeMap.getLength(); i++) {
+					for (int i = 0; i < nodeMap.getLength(); i++)
+					{
 						Node node = nodeMap.item(i);
-						mat[_counter / _size][_counter % _size] = Integer.parseInt(node.getNodeValue());
-						_counter++;
-					}
-				}
-
-				if (tempNode.hasChildNodes()) {
-					readNode(tempNode.getChildNodes(), mat);
-				}
-			}
-		}
-	}
-
-	private void readNode(NodeList nodeList, HashMap<Integer, Integer> map) {
-		for (int count = 0; count < nodeList.getLength(); count++) {
-			Node tempNode = nodeList.item(count);
-
-			if (tempNode.getNodeType() == Node.ELEMENT_NODE) {
-				if (tempNode.hasAttributes()) {
-					NamedNodeMap nodeMap = tempNode.getAttributes();
-					for (int i = 0; i < nodeMap.getLength(); i++) {
-						Node node = nodeMap.item(i);
-						if (Integer.parseInt(node.getNodeValue()) != 0) {
+						if (Integer.parseInt(node.getNodeValue()) != 0)
+						{
 							map.put(_counter, Integer.parseInt(node.getNodeValue()));
 						}
 						_counter++;
 					}
 				}
-
-				if (tempNode.hasChildNodes()) {
+				if (tempNode.hasChildNodes())
+				{
 					readNode(tempNode.getChildNodes(), map);
 				}
 			}
 		}
 	}
 
-	public static int getElementCountByName(String fileName, String name) {
-		try {
+	public static int getElementCountByName(String fileName, String name)
+	{
+		try
+		{
 
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 			Document doc = docBuilder.parse(fileName);
 			NodeList list = doc.getElementsByTagName(name);
 			return list.getLength();
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			System.out.println("exception: " + e.getMessage());
 			return -1;
 		}
 	}
-	
-	public HashMap<Integer, Integer> getHbackgrounds() {
+
+	public HashMap<Integer, Integer> getHbackgrounds()
+	{
 		return _hbackgrounds;
 	}
 
-	public void setHbackgrounds(HashMap<Integer, Integer> hbackgrounds) {
+	public void setHbackgrounds(HashMap<Integer, Integer> hbackgrounds)
+	{
 		_hbackgrounds = hbackgrounds;
 	}
 
