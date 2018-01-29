@@ -5,6 +5,7 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -20,7 +21,7 @@ import javax.swing.Timer;
 import images.Img;
 import map.Map;
 
-public class MapPanel extends JPanel implements ActionListener, MouseMotionListener, MouseListener
+public class MapPanel extends JPanel implements ActionListener
 {
 	private int _size, _sizeW, _blockSize, _mapPixelWidth, _mapPixelHeight;
 	private double _sharkOffsetX, _sharkOffsetY;
@@ -38,8 +39,9 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	public MapPanel()
 	{
 		setKek();
+		MouseAdapter mouseAdapter = setMouseAdapter();
+		_mapFile = "MapFiles//world2s_20180127141427.xml";
 		_backgroundFile = "MapFiles//backgrounds_20180126135426.xml";
-		_mapFile = "MapFiles//world2s_20180126135440.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_size = Map.getElementCountByName(_mapFile, "Line");
 		_sizeW = Map.getElementCountByName(_mapFile, "Area") / _size;
@@ -68,8 +70,8 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_rects = new LinkedList<Rectangle>();
 		_coliList = new LinkedList<Point2D.Double>();
-		addMouseMotionListener(this);
-		addMouseListener(this);
+		addMouseMotionListener(mouseAdapter);
+		addMouseListener(mouseAdapter);
 	}
 
 	public void startGame()
@@ -376,14 +378,6 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 
 	}
 
-	public void printPolygon(Polygon p)
-	{
-		for (int i = 0; i < p.npoints; i++)
-		{
-			System.out.println("x: " + p.xpoints[i] + " y: " + p.ypoints[i]);
-		}
-	}
-
 	public void drawDebug(Graphics g)
 	{
 		g.setColor(Color.red);
@@ -417,69 +411,56 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 	public void drawBars(Graphics g)
 	{
 		g.setColor(Color.red);
-		g.drawString("health: " + String.valueOf(_shark.getHealth()), (int) _camPoint.x, (int) _camPoint.y + 10);
+		g.drawString("health: " + String.valueOf((int) _shark.getHealth()), (int) _camPoint.x, (int) _camPoint.y + 10);
 		g.drawRect((int) _camPoint.x + 70, (int) _camPoint.y, 100, 10);
 		g.fillRect((int) _camPoint.x + 70, (int) _camPoint.y, (int) _shark.getHealth(), 10);
 		g.setColor(Color.green);
-		g.drawString("stamina: " + String.valueOf(_shark.getStamina()), (int) _camPoint.x, (int) _camPoint.y + 20);
+		g.drawString("stamina: " + String.valueOf((int) _shark.getStamina()), (int) _camPoint.x,
+				(int) _camPoint.y + 20);
 		g.drawRect((int) _camPoint.x + 70, (int) _camPoint.y + 10, 100, 10);
 		g.fillRect((int) _camPoint.x + 70, (int) _camPoint.y + 10, (int) _shark.getStamina(), 10);
 		g.setColor(Color.yellow);
-		g.drawString("hunger: " + String.valueOf(_shark.getHunger()), (int) _camPoint.x, (int) _camPoint.y + 30);
+		g.drawString("hunger: " + String.valueOf((int) _shark.getHunger()), (int) _camPoint.x, (int) _camPoint.y + 30);
 		g.drawRect((int) _camPoint.x + 70, (int) _camPoint.y + 20, 100, 10);
 		g.fillRect((int) _camPoint.x + 70, (int) _camPoint.y + 20, (int) _shark.getHunger(), 10);
+	}
+
+	public MouseAdapter setMouseAdapter()
+	{
+		MouseAdapter m = new MouseAdapter()
+		{
+			public void mouseDragged(MouseEvent e)
+			{
+				_mousePoint.setLocation(e.getPoint());
+			}
+
+			public void mouseMoved(MouseEvent e)
+			{
+				_mousePoint.setLocation(e.getPoint());
+			}
+
+			public void mousePressed(MouseEvent e)
+			{
+				if (e.getButton() == MouseEvent.BUTTON1)
+				{
+					_mouseDown = true;
+				}
+			}
+
+			public void mouseReleased(MouseEvent e)
+			{
+				if (e.getButton() == MouseEvent.BUTTON1)
+				{
+					_mouseDown = false;
+				}
+			}
+		};
+		return m;
 	}
 
 	public void checkMouse()
 	{
 		_shark.applyMouseBoost(_mouseDown);
-	}
-
-	@Override
-	public void mouseDragged(MouseEvent e)
-	{
-		_mousePoint.setLocation(e.getPoint());
-	}
-
-	@Override
-	public void mouseMoved(MouseEvent e)
-	{
-		_mousePoint.setLocation(e.getPoint());
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e)
-	{
-
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e)
-	{
-
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e)
-	{
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e)
-	{
-		if (e.getButton() == MouseEvent.BUTTON1)
-		{
-			_mouseDown = true;
-		}
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e)
-	{
-		if (e.getButton() == MouseEvent.BUTTON1)
-		{
-			_mouseDown = false;
-		}
 	}
 
 	public void printMat(int[][] mat, int size, int sizeW)
@@ -493,4 +474,13 @@ public class MapPanel extends JPanel implements ActionListener, MouseMotionListe
 			System.out.println();
 		}
 	}
+
+	public void printPolygon(Polygon p)
+	{
+		for (int i = 0; i < p.npoints; i++)
+		{
+			System.out.println("x: " + p.xpoints[i] + " y: " + p.ypoints[i]);
+		}
+	}
+
 }
