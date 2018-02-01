@@ -46,8 +46,8 @@ public class Map
 			Document doc = docBuilder.parse(file);
 
 			/*
-			 * if (doc.hasChildNodes()) { readNode(doc.getChildNodes(), _map); } _counter =
-			 * 0;
+			 * if (doc.hasChildNodes()) { readNode(doc.getChildNodes(), _map); }
+			 * _counter = 0;
 			 */
 			if (doc.hasChildNodes())
 			{

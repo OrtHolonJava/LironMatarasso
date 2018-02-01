@@ -10,6 +10,7 @@ import java.awt.geom.Area;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.LinkedList;
 
 import javax.swing.Timer;
@@ -19,7 +20,8 @@ import images.Img;
 public class Player implements ActionListener
 {
 	private int _height, _width;
-	private Img _image, _mirrorImage;
+	private double _frameCount;
+	private Img _frames[];
 	private double _angle, _baseSpeed, _speedMouseBoost, _finalSpeed, _stamina, _hunger, _health;
 	private Area _hitbox;
 	private LinkedList<Point2D.Double> _polyList;
@@ -28,13 +30,13 @@ public class Player implements ActionListener
 
 	public Player(String path, String mirrorPath, int x, int y, int width, int height, double speed)
 	{
+		_frameCount = 0;
 		_loc = new Point2D.Double(x, y);
 		_angle = 0;
 		_width = width;
 		_height = height;
 		_baseSpeed = speed;
-		_image = new Img(path, x, y, width, height);
-		_mirrorImage = new Img(mirrorPath, x, y, width, height);
+		_frames = setFrames("images\\SharkFrames\\");
 		_polyList = new LinkedList<Point2D.Double>();
 		_stamina = 100;
 		_hunger = 100;
@@ -42,6 +44,24 @@ public class Player implements ActionListener
 		_isCooldown = false;
 		Timer t = new Timer(1000, this);
 		t.start();
+	}
+
+	public Img[] setFrames(String path)
+	{
+		Img[] arr = null;
+		File dir = new File(System.getProperty("user.dir") + "\\bin\\" + path);
+		File[] directoryListing = dir.listFiles();
+		if (directoryListing != null)
+		{
+			arr = new Img[directoryListing.length];
+			int counter = 0;
+			for (File child : directoryListing)
+			{
+				System.out.println(path + child.getName());
+				arr[counter++] = new Img(path + child.getName(), 0, 0, _width, _height);
+			}
+		}
+		return arr;
 	}
 
 	public double getHunger()
@@ -68,8 +88,7 @@ public class Player implements ActionListener
 	{
 		AffineTransform af = new AffineTransform();
 		af.rotate(Math.toRadians(_angle), _loc.getX(), _loc.getY());
-		Area a = new Area(
-				new Rectangle((int) (_loc.getX() - _width / 2), (int) (_loc.getY() - _height / 2), _width, _height));
+		Area a = new Area(new Rectangle((int) (_loc.getX() - _width / 2), (int) (_loc.getY() - _height / 2), _width, _height));
 		_hitbox = a.createTransformedArea(af);
 		_polyList = getPolygonPoints(toPolygon(_hitbox));
 	}
@@ -152,12 +171,13 @@ public class Player implements ActionListener
 
 	public void Paint(Graphics g, boolean isDebug)
 	{
-
-		BufferedImage use = _image.getbImage();
+		System.out.println(0.5 * (_finalSpeed / _baseSpeed));
+		_frames[(10 * (int) (_angle / 180)) + (int) (_frameCount) % 10].setImgCords((int) _loc.getX(), (int) _loc.getY());
+		_frames[10 * (int) (_angle / 180) + (int) (_frameCount) % 10].setImgSize(_width, _height);
+		BufferedImage use = _frames[10 * (int) (_angle / 180) + (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1))) % 10].getbImage();
 		Graphics2D g2d = (Graphics2D) g.create();
-		use = (_angle < 180) ? _image.getbImage() : _mirrorImage.getbImage();
-		Rectangle rect = new Rectangle((int) (_loc.getX() - use.getWidth() / 2),
-				(int) (_loc.getY() - use.getHeight() / 2), use.getWidth(), use.getHeight());
+		// use = (_angle < 180) ? _image.getbImage() : _mirrorImage.getbImage();
+		Rectangle rect = new Rectangle((int) (_loc.getX() - use.getWidth() / 2), (int) (_loc.getY() - use.getHeight() / 2), use.getWidth(), use.getHeight());
 		// g2d.setColor(Color.orange);
 		// g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		g2d.rotate(Math.toRadians(_angle), _loc.getX(), _loc.getY());
@@ -172,16 +192,16 @@ public class Player implements ActionListener
 	public void setCords(int x, int y)
 	{
 		_loc.setLocation(x, y);
-		_image.setImgCords(x, y);
-		_mirrorImage.setImgCords(x, y);
+		// _image.setImgCords(x, y);
+		// _mirrorImage.setImgCords(x, y);
 	}
 
 	public void setSize(int width, int height)
 	{
 		_width = width;
 		_height = height;
-		_image.setImgSize(width, height);
-		_mirrorImage.setImgSize(width, height);
+		// _image.setImgSize(width, height);
+		// _mirrorImage.setImgSize(width, height);
 
 	}
 
@@ -261,26 +281,6 @@ public class Player implements ActionListener
 	public void setHeight(int height)
 	{
 		_height = height;
-	}
-
-	public Img getImage()
-	{
-		return _image;
-	}
-
-	public void setImage(Img image)
-	{
-		_image = image;
-	}
-
-	public Img getMirrorImage()
-	{
-		return _mirrorImage;
-	}
-
-	public void setMirrorImage(Img mirrorImage)
-	{
-		_mirrorImage = mirrorImage;
 	}
 
 	public double getAngle()
