@@ -20,17 +20,18 @@ import org.w3c.dom.NodeList;
  */
 public class Map
 {
-	private int _size;
+	private int _width, _height;
 	private int _counter = 0;
 	private HashMap<Integer, BitMask> _hmap, _heffects, _hbackgrounds;
 
-	public Map(int size, int sizeW, String mapFileName, String effectsFileName, String backgroundsFileName)
+	public Map(int height, int width, String mapFileName, String effectsFileName, String backgroundsFileName)
 	{
 
 		_hmap = new HashMap<Integer, BitMask>();
 		_heffects = new HashMap<Integer, BitMask>();
 		_hbackgrounds = new HashMap<Integer, BitMask>();
-		_size = sizeW;
+		_width = width;
+		_height = height;
 		readFile(mapFileName, _hmap);
 		readFile(effectsFileName, _heffects);
 		readFile(backgroundsFileName, _hbackgrounds);
@@ -40,7 +41,7 @@ public class Map
 	{
 		for (Entry<Integer, BitMask> e : map.entrySet())
 		{
-			e.getValue().setBitMask(BitMask.computeTile(map, _size, e.getKey() / _size, e.getKey() % _size, e.getValue().getBlockID()));
+			e.getValue().setBitMask(BitMask.computeTile(map, _width, e.getKey() / _width, e.getKey() % _width, e.getValue().getBlockID()));
 		}
 	}
 
@@ -69,16 +70,6 @@ public class Map
 		{
 			System.out.println(e.getMessage());
 		}
-	}
-
-	public int getSize()
-	{
-		return _size;
-	}
-
-	public void setSize(int size)
-	{
-		_size = size;
 	}
 
 	public int getCounter()
@@ -165,6 +156,26 @@ public class Map
 	public void setHbackgrounds(HashMap<Integer, BitMask> hbackgrounds)
 	{
 		_hbackgrounds = hbackgrounds;
+	}
+
+	public int getWidth()
+	{
+		return _width;
+	}
+
+	public void setWidth(int width)
+	{
+		_width = width;
+	}
+
+	public int getHeight()
+	{
+		return _height;
+	}
+
+	public void setHeight(int height)
+	{
+		_height = height;
 	}
 
 }
