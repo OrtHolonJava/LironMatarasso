@@ -28,7 +28,7 @@ public class Player implements ActionListener
 	private Point2D.Double _loc;
 	private boolean _isCooldown;
 
-	public Player(String path, String mirrorPath, int x, int y, int width, int height, double speed)
+	public Player(int x, int y, int width, int height, double speed)
 	{
 		_frameCount = 0;
 		_loc = new Point2D.Double(x, y);
@@ -88,7 +88,8 @@ public class Player implements ActionListener
 	{
 		AffineTransform af = new AffineTransform();
 		af.rotate(Math.toRadians(_angle), _loc.getX(), _loc.getY());
-		Area a = new Area(new Rectangle((int) (_loc.getX() - _width / 2), (int) (_loc.getY() - _height / 2), _width, _height));
+		Area a = new Area(new Rectangle((int) (_loc.getX() - _width / 2),
+										(int) (_loc.getY() - _height / 2), _width, _height));
 		_hitbox = a.createTransformedArea(af);
 		_polyList = getPolygonPoints(toPolygon(_hitbox));
 	}
@@ -171,13 +172,15 @@ public class Player implements ActionListener
 
 	public void Paint(Graphics g, boolean isDebug)
 	{
-		System.out.println(0.5 * (_finalSpeed / _baseSpeed));
-		_frames[(10 * (int) (_angle / 180)) + (int) (_frameCount) % 10].setImgCords((int) _loc.getX(), (int) _loc.getY());
+		_frames[(10 * (int) (_angle / 180)) + (int) (_frameCount) % 10].setImgCords((int) _loc.getX(),
+																					(int) _loc.getY());
 		_frames[10 * (int) (_angle / 180) + (int) (_frameCount) % 10].setImgSize(_width, _height);
 		BufferedImage use = _frames[10 * (int) (_angle / 180) + (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1))) % 10].getbImage();
 		Graphics2D g2d = (Graphics2D) g.create();
 		// use = (_angle < 180) ? _image.getbImage() : _mirrorImage.getbImage();
-		Rectangle rect = new Rectangle((int) (_loc.getX() - use.getWidth() / 2), (int) (_loc.getY() - use.getHeight() / 2), use.getWidth(), use.getHeight());
+		Rectangle rect = new Rectangle(	(int) (_loc.getX() - use.getWidth() / 2),
+										(int) (_loc.getY() - use.getHeight() / 2), use.getWidth(),
+										use.getHeight());
 		// g2d.setColor(Color.orange);
 		// g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		g2d.rotate(Math.toRadians(_angle), _loc.getX(), _loc.getY());
@@ -185,7 +188,8 @@ public class Player implements ActionListener
 		{
 			g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		}
-		g2d.drawImage(use, (int) _loc.getX() - use.getWidth() / 2, (int) _loc.getY() - use.getHeight() / 2, null);
+		g2d.drawImage(	use, (int) _loc.getX() - use.getWidth() / 2,
+						(int) _loc.getY() - use.getHeight() / 2, null);
 		g2d.dispose();
 	}
 
