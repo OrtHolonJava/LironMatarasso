@@ -60,17 +60,19 @@ public class Logic
 		_rects = new LinkedList<Rectangle>();
 		boolean flag = true;
 		_coliList = new LinkedList<Point2D.Double>();
-		for (int i = (int) (_player.getY() / BlockType.getSize()) - 2; i <= (_player.getY() / BlockType.getSize()) + 2; i++)
+		for (int curRow = (int) (_player.getY() / BlockType.getSize()) - 2; curRow <= (_player.getY() / BlockType.getSize()) + 2; curRow++)
 		{
-			for (int j = (int) (_player.getX() / BlockType.getSize()) - 2; j <= (_player.getX() / BlockType.getSize()) + 2; j++)
+			for (	int curCol = (int) (_player.getX() / BlockType.getSize()) - 2; curCol <= (_player.getX() / BlockType.getSize()) + 2;
+					curCol++)
 			{
-				if (i >= 0 && j >= 0 && i < _map.getHeight() && j < _map.getWidth() && _map.getHmap().containsKey(j + i * _map.getWidth()))
+				if (curRow >= 0	&& curCol >= 0 && curRow < _map.getHeight() && curCol < _map.getWidth()
+					&& _map.getHmap().containsKey(curCol + curRow * _map.getWidth()))
 				{
-					Rectangle rect = new Rectangle(j	* BlockType.getSize(), i * BlockType.getSize(), BlockType.getSize(),
+					Rectangle rect = new Rectangle(curCol	* BlockType.getSize(), curRow * BlockType.getSize(), BlockType.getSize(),
 													BlockType.getSize());
 					if (_player.getHitbox().intersects(rect))
 					{
-						if (!_passables.contains(_map.getHmap().get(j + i * _map.getWidth()).getBlockID()))
+						if (!_passables.contains(_map.getHmap().get(curCol + curRow * _map.getWidth()).getBlockID()))
 						{
 							_rects.add(rect);
 							flag = false;
@@ -84,7 +86,8 @@ public class Logic
 								}
 							}
 						}
-						_player.applySeaweedSlowdown(_map.getHmap().get(j + i * _map.getWidth()).getBlockID() == 3);
+						if (_player.getSpeedSeaweedSlowdown() == 1)
+							_player.applySeaweedSlowdown(_map.getHmap().get(curCol + curRow * _map.getWidth()).getBlockID() == 3);
 					}
 				}
 			}

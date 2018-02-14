@@ -66,7 +66,7 @@ public class BitMask
 		return kek;
 	}
 
-	public static int placeMeeting(HashMap<Integer, BitMask> map, int size, int col, int row, int curCol, int curRow, int tileVal)
+	public static int placeMeeting(HashMap<Integer, BitMask> map, int size, int curCol, int curRow, int tileVal)
 	{
 		return (map.containsKey(curRow * size + curCol) && map.get(curRow * size + curCol).getBlockID() == tileVal) ? 1 : 0;
 	}
@@ -74,17 +74,18 @@ public class BitMask
 	public static int computeTile(HashMap<Integer, BitMask> map, int size, int y, int x, int tileVal)
 	{
 		int sum = 0;
-		int north_tile = placeMeeting(map, size, x, y, x, y - 1, tileVal);
-		int south_tile = placeMeeting(map, size, x, y, x, y + 1, tileVal);
-		int west_tile = placeMeeting(map, size, x, y, x - 1, y, tileVal);
-		int east_tile = placeMeeting(map, size, x, y, x + 1, y, tileVal);
-		int north_west_tile = (west_tile == 1 && north_tile == 1 && placeMeeting(map, size, x, y, x - 1, y - 1, tileVal) == 1) ? 1 : 0;
-		int north_east_tile = (north_tile == 1 && east_tile == 1 && placeMeeting(map, size, x, y, x + 1, y - 1, tileVal) == 1) ? 1 : 0;
-		int south_west_tile = (south_tile == 1 && west_tile == 1 && placeMeeting(map, size, x, y, x - 1, y + 1, tileVal) == 1) ? 1 : 0;
-		int south_east_tile = (south_tile == 1 && east_tile == 1 && placeMeeting(map, size, x, y, x + 1, y + 1, tileVal) == 1) ? 1 : 0;
+		int north_tile = placeMeeting(map, size, x, y - 1, tileVal);
+		int south_tile = placeMeeting(map, size, x, y + 1, tileVal);
+		int west_tile = placeMeeting(map, size, x - 1, y, tileVal);
+		int east_tile = placeMeeting(map, size, x + 1, y, tileVal);
+		int north_west_tile = (west_tile == 1 && north_tile == 1 && placeMeeting(map, size, x - 1, y - 1, tileVal) == 1) ? 1 : 0;
+		int north_east_tile = (north_tile == 1 && east_tile == 1 && placeMeeting(map, size, x + 1, y - 1, tileVal) == 1) ? 1 : 0;
+		int south_west_tile = (south_tile == 1 && west_tile == 1 && placeMeeting(map, size, x - 1, y + 1, tileVal) == 1) ? 1 : 0;
+		int south_east_tile = (south_tile == 1 && east_tile == 1 && placeMeeting(map, size, x + 1, y + 1, tileVal) == 1) ? 1 : 0;
 
 		// 8 bit Bitmasking calculation using Directional check booleans values
-		sum = north_west_tile + 2 * north_tile + 4 * north_east_tile + 8 * west_tile + 16 * east_tile + 32 * south_west_tile + 64 * south_tile + 128 * south_east_tile;
+		sum = north_west_tile	+ 2 * north_tile + 4 * north_east_tile + 8 * west_tile + 16 * east_tile + 32 * south_west_tile
+				+ 64 * south_tile + 128 * south_east_tile;
 
 		if (kek.containsKey(sum))
 			return kek.get(sum);

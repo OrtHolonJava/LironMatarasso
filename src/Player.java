@@ -129,7 +129,7 @@ public class Player implements ActionListener
 	{
 		if (touching)
 		{
-			_speedSeaweedSlowdown = 0.25;
+			_speedSeaweedSlowdown = 0.5;
 		}
 		else
 		{
@@ -363,6 +363,36 @@ public class Player implements ActionListener
 	public void setHealth(double health)
 	{
 		_health = health;
+	}
+
+	public double getFrameCount()
+	{
+		return _frameCount;
+	}
+
+	public void setFrameCount(double frameCount)
+	{
+		_frameCount = frameCount;
+	}
+
+	public Img[] getFrames()
+	{
+		return _frames;
+	}
+
+	public void setFrames(Img[] frames)
+	{
+		_frames = frames;
+	}
+
+	public double getSpeedSeaweedSlowdown()
+	{
+		return _speedSeaweedSlowdown;
+	}
+
+	public void setSpeedSeaweedSlowdown(double speedSeaweedSlowdown)
+	{
+		_speedSeaweedSlowdown = speedSeaweedSlowdown;
 	}
 
 }

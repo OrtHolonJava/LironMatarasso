@@ -35,7 +35,7 @@ public class MapPanel extends JPanel
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		MouseAdapter mouseAdapter = getMouseAdapter();
 		_mapFile = "MapFiles//world2s_20180214134301.xml";
-		_backgroundFile = "MapFiles//backgrounds_20180214141727.xml";
+		_backgroundFile = "MapFiles//backgrounds_20180214213333.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		int mapHeight = Map.getElementCountByName(_mapFile, "Line");
 		int mapWidth = Map.getElementCountByName(_mapFile, "Area") / mapHeight;
