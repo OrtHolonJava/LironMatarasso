@@ -34,6 +34,7 @@ public class Logic
 		double disToSpeedRatio = (_cam.getFinalMousePoint().distance(_player.getX(), _player.getY()) / (5 * BlockType.getSize()));
 		disToSpeedRatio = (disToSpeedRatio > 1) ? 1 : disToSpeedRatio;
 		_player.setBaseSpeed(8 * disToSpeedRatio);
+		_player.updateFinalSpeed();
 		_cam.move(_player.getAngle(), _player.getFinalSpeed(), _player);
 		if (!checkCollision())
 		{
@@ -55,6 +56,7 @@ public class Logic
 		_player.setCords(	(int) (_cam.getCenterPoint().x + _cam.getPlayerOffsetX()),
 							(int) (_cam.getCenterPoint().y + _cam.getPlayerOffsetY()));
 		_player.setHitbox();
+		_player.applySeaweedSlowdown(false);
 		_rects = new LinkedList<Rectangle>();
 		boolean flag = true;
 		_coliList = new LinkedList<Point2D.Double>();
@@ -62,26 +64,28 @@ public class Logic
 		{
 			for (int j = (int) (_player.getX() / BlockType.getSize()) - 2; j <= (_player.getX() / BlockType.getSize()) + 2; j++)
 			{
-				if (i >= 0	&& j >= 0 && i < _map.getHeight() && j < _map.getWidth() && _map.getHmap().containsKey(j + i * _map.getWidth())
-					&& !_passables.contains(_map.getHmap().get(j + i * _map.getWidth()).getBlockID()))
+				if (i >= 0 && j >= 0 && i < _map.getHeight() && j < _map.getWidth() && _map.getHmap().containsKey(j + i * _map.getWidth()))
 				{
 					Rectangle rect = new Rectangle(j	* BlockType.getSize(), i * BlockType.getSize(), BlockType.getSize(),
 													BlockType.getSize());
 					if (_player.getHitbox().intersects(rect))
 					{
-						_rects.add(rect);
-						flag = false;
-						for (Point2D p : _player.getPolyList())
+						if (!_passables.contains(_map.getHmap().get(j + i * _map.getWidth()).getBlockID()))
 						{
-							if (rect.contains(p))
+							_rects.add(rect);
+							flag = false;
+							for (Point2D p : _player.getPolyList())
 							{
-								// System.out.println(p + " point at " +
-								// rect.toString());
-								_coliList.add(new Point2D.Double(p.getX(), p.getY()));
+								if (rect.contains(p))
+								{
+									// System.out.println(p + " point at " +
+									// rect.toString());
+									_coliList.add(new Point2D.Double(p.getX(), p.getY()));
+								}
 							}
 						}
+						_player.applySeaweedSlowdown(_map.getHmap().get(j + i * _map.getWidth()).getBlockID() == 3);
 					}
-
 				}
 			}
 		}

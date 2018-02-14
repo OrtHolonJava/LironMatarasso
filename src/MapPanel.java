@@ -25,7 +25,7 @@ public class MapPanel extends JPanel
 {
 	private Img _backgroundImg;
 	private BlockType _blocksTypes[];
-	private BlockType _sandBlocks[], _stoneBlocks[];
+	private BlockType _sandBlocks[], _stoneBlocks[], _seaweedBlock[];
 	private String _mapFile, _effectsFile, _backgroundFile;
 	private boolean _mouseDown;
 	private Logic _logic;
@@ -34,8 +34,8 @@ public class MapPanel extends JPanel
 	{
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		MouseAdapter mouseAdapter = getMouseAdapter();
-		_mapFile = "MapFiles//world2s_20180127141427.xml";
-		_backgroundFile = "MapFiles//backgrounds_20180126135426.xml";
+		_mapFile = "MapFiles//world2s_20180214134301.xml";
+		_backgroundFile = "MapFiles//backgrounds_20180214141727.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		int mapHeight = Map.getElementCountByName(_mapFile, "Line");
 		int mapWidth = Map.getElementCountByName(_mapFile, "Area") / mapHeight;
@@ -54,6 +54,7 @@ public class MapPanel extends JPanel
 		}
 		_sandBlocks = setBlocks("images\\Blocks\\Sand\\");
 		_stoneBlocks = setBlocks("images\\Blocks\\Stone\\");
+		_seaweedBlock = setBlocks("images\\Blocks\\Seaweed\\");
 		addMouseMotionListener(mouseAdapter);
 		addMouseListener(mouseAdapter);
 	}
@@ -118,16 +119,37 @@ public class MapPanel extends JPanel
 				{
 					case 1:
 					{
-						// _blocksTypes[3].paintAt(g, col,
-						// row);
 						_sandBlocks[e.getValue().getBitMask()].paintAt(g, col, row);
 						break;
 					}
 					case 2:
 					{
-						// _blocksTypes[4].paintAt(g, col,
-						// row);
 						_stoneBlocks[e.getValue().getBitMask()].paintAt(g, col, row);
+						break;
+					}
+					case 3:
+					{
+						switch (e.getValue().getBitMask())
+						{
+							case 2:
+							case 5:
+							case 8:
+							case 13:
+							case 24:
+							case 26:
+							case 29:
+							case 34:
+							case 42:
+							case 47:
+							{
+								_seaweedBlock[1].paintAt(g, col, row);
+								break;
+							}
+							default:
+							{
+								_seaweedBlock[0].paintAt(g, col, row);
+							}
+						}
 						break;
 					}
 					default:
@@ -136,11 +158,8 @@ public class MapPanel extends JPanel
 					}
 				}
 			}
-			// g.drawString(Integer.toString(e.getValue().getBitMask()),
-			// (e.getKey() % mapWidth) * BlockType.getSize(), (e.getKey() /
-			// mapWidth) *
-			// BlockType.getSize() +
-			// BlockType.getSize() / 2);
+			g.drawString(	Integer.toString(e.getValue().getBitMask()), (e.getKey() % _logic.getMap().getWidth()) * BlockType.getSize(),
+							(e.getKey() / _logic.getMap().getWidth()) * BlockType.getSize() + BlockType.getSize() / 2);
 
 		}
 		// g.drawString(String.valueOf(i * mapWidth + j), j *

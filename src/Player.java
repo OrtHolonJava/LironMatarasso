@@ -22,7 +22,7 @@ public class Player implements ActionListener
 	private int _height, _width;
 	private double _frameCount;
 	private Img _frames[];
-	private double _angle, _baseSpeed, _speedMouseBoost, _finalSpeed, _stamina, _hunger, _health;
+	private double _angle, _baseSpeed, _speedMouseBoost, _speedSeaweedSlowdown, _finalSpeed, _stamina, _hunger, _health;
 	private Area _hitbox;
 	private LinkedList<Point2D.Double> _polyList;
 	private Point2D.Double _loc;
@@ -88,8 +88,7 @@ public class Player implements ActionListener
 	{
 		AffineTransform af = new AffineTransform();
 		af.rotate(Math.toRadians(_angle), _loc.getX(), _loc.getY());
-		Area a = new Area(new Rectangle((int) (_loc.getX() - _width / 2),
-										(int) (_loc.getY() - _height / 2), _width, _height));
+		Area a = new Area(new Rectangle((int) (_loc.getX() - _width / 2), (int) (_loc.getY() - _height / 2), _width, _height));
 		_hitbox = a.createTransformedArea(af);
 		_polyList = getPolygonPoints(toPolygon(_hitbox));
 	}
@@ -126,6 +125,25 @@ public class Player implements ActionListener
 		return polygon;
 	}
 
+	public void applySeaweedSlowdown(boolean touching)
+	{
+		if (touching)
+		{
+			_speedSeaweedSlowdown = 0.25;
+		}
+		else
+		{
+			_speedSeaweedSlowdown = 1;
+		}
+		updateFinalSpeed();
+	}
+
+	public void updateFinalSpeed()
+	{
+		_finalSpeed = (_baseSpeed + _speedMouseBoost) * _speedSeaweedSlowdown;
+		System.out.println(_finalSpeed);
+	}
+
 	public void applyMouseBoost(boolean mouseDown)
 	{
 		if (mouseDown && _stamina > 0 && !_isCooldown)
@@ -151,7 +169,7 @@ public class Player implements ActionListener
 			_stamina = 100;
 			_isCooldown = false;
 		}
-		_finalSpeed = _baseSpeed + _speedMouseBoost;
+		updateFinalSpeed();
 	}
 
 	public void updateHealth()
@@ -172,14 +190,13 @@ public class Player implements ActionListener
 
 	public void Paint(Graphics g, boolean isDebug)
 	{
-		_frames[(10 * (int) (_angle / 180)) + (int) (_frameCount) % 10].setImgCords((int) _loc.getX(),
-																					(int) _loc.getY());
+		_frames[(10 * (int) (_angle / 180)) + (int) (_frameCount) % 10].setImgCords((int) _loc.getX(), (int) _loc.getY());
 		_frames[10 * (int) (_angle / 180) + (int) (_frameCount) % 10].setImgSize(_width, _height);
-		BufferedImage use = _frames[10 * (int) (_angle / 180) + (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1))) % 10].getbImage();
+		BufferedImage use = _frames[10 * (int) (_angle / 180)
+									+ (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1))) % 10].getbImage();
 		Graphics2D g2d = (Graphics2D) g.create();
 		// use = (_angle < 180) ? _image.getbImage() : _mirrorImage.getbImage();
-		Rectangle rect = new Rectangle(	(int) (_loc.getX() - use.getWidth() / 2),
-										(int) (_loc.getY() - use.getHeight() / 2), use.getWidth(),
+		Rectangle rect = new Rectangle(	(int) (_loc.getX() - use.getWidth() / 2), (int) (_loc.getY() - use.getHeight() / 2), use.getWidth(),
 										use.getHeight());
 		// g2d.setColor(Color.orange);
 		// g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
@@ -188,8 +205,7 @@ public class Player implements ActionListener
 		{
 			g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		}
-		g2d.drawImage(	use, (int) _loc.getX() - use.getWidth() / 2,
-						(int) _loc.getY() - use.getHeight() / 2, null);
+		g2d.drawImage(use, (int) _loc.getX() - use.getWidth() / 2, (int) _loc.getY() - use.getHeight() / 2, null);
 		g2d.dispose();
 	}
 
@@ -329,7 +345,7 @@ public class Player implements ActionListener
 
 	public double getFinalSpeed()
 	{
-		_finalSpeed = _baseSpeed + _speedMouseBoost;
+		updateFinalSpeed();
 		// _finalSpeed = Math.max(_baseSpeed + _speedMouseBoost, 0);
 		return _finalSpeed;
 	}
