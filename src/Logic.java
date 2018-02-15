@@ -26,7 +26,7 @@ public class Logic
 		_cam.getFinalMousePoint().setLocation(_cam.getCamPoint().x + _cam.getMousePoint().x, _cam.getCamPoint().y + _cam.getMousePoint().y);
 		if (_cam.getFinalMousePoint().distance(_player.getLoc()) > 2)
 		{
-			_player.setAngle(Math.toDegrees(-Math.atan2(_cam.getFinalMousePoint().x	- _player.getX(),
+			_player.setAngle(Math.toDegrees(-Math.atan2(_cam.getFinalMousePoint().x- _player.getX(),
 														_cam.getFinalMousePoint().y - _player.getY()))
 								+ 180);
 		}
@@ -35,16 +35,20 @@ public class Logic
 		disToSpeedRatio = (disToSpeedRatio > 1) ? 1 : disToSpeedRatio;
 		_player.setBaseSpeed(8 * disToSpeedRatio);
 		_player.updateFinalSpeed();
-		_cam.move(_player.getAngle(), _player.getFinalSpeed(), _player);
+		_cam.moveCam(_player.getAngle(), _player.getFinalSpeed());
+		_player.updatePlayerPosition(	(int) (_cam.getCenterPoint().x + _cam.getPlayerOffsetX()),
+										(int) (_cam.getCenterPoint().y + _cam.getPlayerOffsetY()));
 		if (!checkCollision())
 		{
 			for (Rectangle r : _rects)
 			{
 				while (_player.getHitbox().intersects(r))
 				{
-					_cam.move(	Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2)	- (_player.getX()),
+					_cam.moveCam(	Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2)- (_player.getX()),
 															(r.y + r.getHeight() / 2) - (_player.getY()))),
-								1, _player);
+									1);
+					_player.updatePlayerPosition(	(int) (_cam.getCenterPoint().x + _cam.getPlayerOffsetX()),
+													(int) (_cam.getCenterPoint().y + _cam.getPlayerOffsetY()));
 				}
 			}
 			checkCollision();
@@ -62,13 +66,13 @@ public class Logic
 		_coliList = new LinkedList<Point2D.Double>();
 		for (int curRow = (int) (_player.getY() / BlockType.getSize()) - 2; curRow <= (_player.getY() / BlockType.getSize()) + 2; curRow++)
 		{
-			for (	int curCol = (int) (_player.getX() / BlockType.getSize()) - 2; curCol <= (_player.getX() / BlockType.getSize()) + 2;
-					curCol++)
+			for (int curCol = (int) (_player.getX() / BlockType.getSize()) - 2; curCol <= (_player.getX() / BlockType.getSize())
+																							+ 2; curCol++)
 			{
-				if (curRow >= 0	&& curCol >= 0 && curRow < _map.getHeight() && curCol < _map.getWidth()
+				if (curRow >= 0&& curCol >= 0 && curRow < _map.getHeight() && curCol < _map.getWidth()
 					&& _map.getHmap().containsKey(curCol + curRow * _map.getWidth()))
 				{
-					Rectangle rect = new Rectangle(curCol	* BlockType.getSize(), curRow * BlockType.getSize(), BlockType.getSize(),
+					Rectangle rect = new Rectangle(curCol* BlockType.getSize(), curRow * BlockType.getSize(), BlockType.getSize(),
 													BlockType.getSize());
 					if (_player.getHitbox().intersects(rect))
 					{

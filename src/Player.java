@@ -46,6 +46,12 @@ public class Player implements ActionListener
 		t.start();
 	}
 
+	public void updatePlayerPosition(int x, int y)
+	{
+		setCords(x, y);
+		setHitbox();
+	}
+
 	public Img[] setFrames(String path)
 	{
 		Img[] arr = null;

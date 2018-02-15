@@ -22,7 +22,7 @@ public class Camera
 
 	}
 
-	public void move(double angle, double speed, Player player)
+	public void moveCam(double angle, double speed)
 	{
 		if (_playerOffsetX == 0)
 		{
@@ -68,8 +68,6 @@ public class Camera
 		_camPoint.x = Math.round(_camPoint.x);
 		_centerPoint.setLocation(_camPoint.x + _panelWidth / 2, _camPoint.y + _panelHeight / 2);
 		_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
-		player.setCords((int) (_centerPoint.x + _playerOffsetX), (int) (_centerPoint.y + _playerOffsetY));
-		player.setHitbox();
 	}
 
 	public double getPlayerOffsetX()

@@ -5,8 +5,6 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -17,11 +15,10 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import javax.swing.JPanel;
-import javax.swing.Timer;
 
 import images.Img;
 
-public class MapPanel extends JPanel
+public class MapPanel extends JPanel implements Runnable
 {
 	private Img _backgroundImg;
 	private BlockType _blocksTypes[];
@@ -29,6 +26,10 @@ public class MapPanel extends JPanel
 	private String _mapFile, _effectsFile, _backgroundFile;
 	private boolean _mouseDown;
 	private Logic _logic;
+
+	private Thread _gameThread;
+	private final double _updateCap = 1.0 / 60.0;
+	private int _fps;
 
 	public MapPanel()
 	{
@@ -59,11 +60,11 @@ public class MapPanel extends JPanel
 		addMouseListener(mouseAdapter);
 	}
 
-	public void startGame()
-	{
-		Timer t = new Timer(1000 / 60, getActionListener());
-		t.start();
-	}
+	// public void startGame()
+	// {
+	// Timer t = new Timer(1000 / 60, getActionListener());
+	// t.start();
+	// }
 
 	public BlockType[] setBlocks(String path)
 	{
@@ -103,7 +104,7 @@ public class MapPanel extends JPanel
 	public boolean InScreen(int row, int col)
 	{
 		return (col <= 1 + ((getWidth() + _logic.getCam().getCamPoint().getX()) / BlockType.getSize())
-					&& col + 1 >= _logic.getCam().getCamPoint().getX() / BlockType.getSize()
+				&& col + 1 >= _logic.getCam().getCamPoint().getX() / BlockType.getSize()
 				&& row <= 1 + ((getHeight() + _logic.getCam().getCamPoint().getY()) / BlockType.getSize())
 				&& row + 1 >= _logic.getCam().getCamPoint().getY() / BlockType.getSize());
 	}
@@ -158,8 +159,10 @@ public class MapPanel extends JPanel
 					}
 				}
 			}
-			g.drawString(	Integer.toString(e.getValue().getBitMask()), (e.getKey() % _logic.getMap().getWidth()) * BlockType.getSize(),
-							(e.getKey() / _logic.getMap().getWidth()) * BlockType.getSize() + BlockType.getSize() / 2);
+			// g.drawString( Integer.toString(e.getValue().getBitMask()),
+			// (e.getKey() % _logic.getMap().getWidth()) * BlockType.getSize(),
+			// (e.getKey() / _logic.getMap().getWidth()) * BlockType.getSize() +
+			// BlockType.getSize() / 2);
 
 		}
 		// g.drawString(String.valueOf(i * mapWidth + j), j *
@@ -199,7 +202,7 @@ public class MapPanel extends JPanel
 		{
 			g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
 		}
-		g.drawOval((int) _logic.getPlayer().getX()	- BlockType.getSize() * 5 / 2,
+		g.drawOval((int) _logic.getPlayer().getX()- BlockType.getSize() * 5 / 2,
 					(int) _logic.getPlayer().getY() - BlockType.getSize() * 5 / 2, BlockType.getSize() * 5, BlockType.getSize() * 5);
 
 	}
@@ -207,22 +210,22 @@ public class MapPanel extends JPanel
 	public void drawBars(Graphics g)
 	{
 		g.setColor(Color.red);
-		g.drawString("health: "	+ String.valueOf((int) _logic.getPlayer().getHealth()), (int) _logic.getCam().getCamPoint().x,
+		g.drawString("health: "+ String.valueOf((int) _logic.getPlayer().getHealth()), (int) _logic.getCam().getCamPoint().x,
 						(int) _logic.getCam().getCamPoint().y + 10);
 		g.drawRect((int) _logic.getCam().getCamPoint().x + 70, (int) _logic.getCam().getCamPoint().y, 100, 10);
-		g.fillRect((int) _logic.getCam().getCamPoint().x	+ 70, (int) _logic.getCam().getCamPoint().y, (int) _logic.getPlayer().getHealth(),
+		g.fillRect((int) _logic.getCam().getCamPoint().x+ 70, (int) _logic.getCam().getCamPoint().y, (int) _logic.getPlayer().getHealth(),
 					10);
 		g.setColor(Color.green);
-		g.drawString("stamina: "	+ String.valueOf((int) _logic.getPlayer().getStamina()), (int) _logic.getCam().getCamPoint().x,
+		g.drawString("stamina: "+ String.valueOf((int) _logic.getPlayer().getStamina()), (int) _logic.getCam().getCamPoint().x,
 						(int) _logic.getCam().getCamPoint().y + 20);
 		g.drawRect((int) _logic.getCam().getCamPoint().x + 70, (int) _logic.getCam().getCamPoint().y + 10, 100, 10);
-		g.fillRect((int) _logic.getCam().getCamPoint().x	+ 70, (int) _logic.getCam().getCamPoint().y + 10,
+		g.fillRect((int) _logic.getCam().getCamPoint().x+ 70, (int) _logic.getCam().getCamPoint().y + 10,
 					(int) _logic.getPlayer().getStamina(), 10);
 		g.setColor(Color.yellow);
-		g.drawString("hunger: "	+ String.valueOf((int) _logic.getPlayer().getHunger()), (int) _logic.getCam().getCamPoint().x,
+		g.drawString("hunger: "+ String.valueOf((int) _logic.getPlayer().getHunger()), (int) _logic.getCam().getCamPoint().x,
 						(int) _logic.getCam().getCamPoint().y + 30);
 		g.drawRect((int) _logic.getCam().getCamPoint().x + 70, (int) _logic.getCam().getCamPoint().y + 20, 100, 10);
-		g.fillRect((int) _logic.getCam().getCamPoint().x	+ 70, (int) _logic.getCam().getCamPoint().y + 20,
+		g.fillRect((int) _logic.getCam().getCamPoint().x+ 70, (int) _logic.getCam().getCamPoint().y + 20,
 					(int) _logic.getPlayer().getHunger(), 10);
 	}
 
@@ -259,26 +262,86 @@ public class MapPanel extends JPanel
 		return m;
 	}
 
-	public ActionListener getActionListener()
+	public void startGame()
 	{
-		ActionListener a = new ActionListener()
+		_gameThread = new Thread(this);
+		_gameThread.setDaemon(true);
+		_gameThread.start();
+
+		/**
+		 * Forcing it to use the high resolution timer, making the sleep call
+		 * within the game loop much more accurate.
+		 */
+		// new Thread()
+		// {
+		// public void run()
+		// {
+		// try
+		// {
+		// Thread.sleep(Long.MAX_VALUE);
+		// }
+		// catch(Exception exc) {}
+		// }
+		// }.start();
+	}
+
+	@Override
+	public void run()
+	{
+		double firstTime = 0, lastTime = System.nanoTime() / 1000000000.0, passedTime = 0, unprocessedTime = 0, frameTime = 0;
+		int frames = 0;
+
+		while (true)
 		{
-			@Override
-			public void actionPerformed(ActionEvent arg0)
+			firstTime = System.nanoTime() / 1000000000.0;
+			passedTime = firstTime - lastTime;
+			lastTime = firstTime;
+			unprocessedTime += passedTime;
+			frameTime += passedTime;
+
+			if (unprocessedTime >= _updateCap)
 			{
-				// long start = System.nanoTime(), end;
-				if (getWidth() != 0 && getHeight() != 0)
+				unprocessedTime -= _updateCap;
+				tick();
+				render();
+				frames++;
+
+				if (frameTime >= 1.0)
 				{
-					checkMouse();
-					_logic.movementLogic();
-					repaint();
+					frameTime = 0;
+					_fps = frames;
+					frames = 0;
+					System.out.println("FPS: " + _fps);
 				}
-				// end = System.nanoTime();
-				// System.out.println((double) (end - start) / 1000000000);
 			}
 
-		};
-		return a;
+			/**
+			 * Preventing over-consumption of the computer's CPU power -
+			 */
+			try
+			{
+				Thread.sleep(1);
+			}
+			catch (InterruptedException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void render()
+	{
+		repaint();
+	}
+
+	private void tick()
+	{
+		if (getWidth() != 0 && getHeight() != 0)
+		{
+			checkMouse();
+			_logic.movementLogic();
+		}
 	}
 
 	public void checkMouse()

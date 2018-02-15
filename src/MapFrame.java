@@ -5,7 +5,6 @@ import javax.swing.JFrame;
 public class MapFrame extends JFrame
 {
 	private MapPanel _mapPanel;
-
 	public MapFrame()
 	{
 		setLayout(new BorderLayout());
