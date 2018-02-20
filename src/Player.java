@@ -63,7 +63,7 @@ public class Player implements ActionListener
 			int counter = 0;
 			for (File child : directoryListing)
 			{
-				System.out.println(path + child.getName());
+				// System.out.println(path + child.getName());
 				arr[counter++] = new Img(path + child.getName(), 0, 0, _width, _height);
 			}
 		}
@@ -147,7 +147,6 @@ public class Player implements ActionListener
 	public void updateFinalSpeed()
 	{
 		_finalSpeed = (_baseSpeed + _speedMouseBoost) * _speedSeaweedSlowdown;
-		System.out.println(_finalSpeed);
 	}
 
 	public void applyMouseBoost(boolean mouseDown)

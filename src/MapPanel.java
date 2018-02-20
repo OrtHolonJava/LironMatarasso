@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import images.Img;
 
@@ -28,8 +29,10 @@ public class MapPanel extends JPanel implements Runnable
 	private Logic _logic;
 
 	private Thread _gameThread;
-	private final double _updateCap = 1.0 / 60.0;
-	private int _fps;
+	private final double _ups = 60.0, _timeBetweenUpdates = 1000000000 / _ups, _targetFPS = 60,
+			_timeBetweenRenders = 1000000000 / _targetFPS;
+
+	private final int _maxUpdatesBeforeRender = 5;
 
 	public MapPanel()
 	{
@@ -40,9 +43,9 @@ public class MapPanel extends JPanel implements Runnable
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		int mapHeight = Map.getElementCountByName(_mapFile, "Line");
 		int mapWidth = Map.getElementCountByName(_mapFile, "Area") / mapHeight;
-		BlockType.setSize(40);
+		BlockType.setSize(60);
 		Player player = new Player(0, 0, 8 * BlockType.getSize() / 10, 19 * BlockType.getSize() / 10, 8);
-		Camera cam = new Camera(0, -10 * BlockType.getSize(), new Point2D.Double(BlockType.getSize() * 3, BlockType.getSize()),
+		Camera cam = new Camera(0, -3*BlockType.getSize(), new Point2D.Double(BlockType.getSize(), BlockType.getSize()),
 								(int) screenSize.getWidth(), (int) screenSize.getHeight(), mapWidth, mapHeight);
 		Map map = new Map(mapHeight, mapWidth, _mapFile, _effectsFile, _backgroundFile);
 		_logic = new Logic(player, cam, map, new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5)));
@@ -59,12 +62,6 @@ public class MapPanel extends JPanel implements Runnable
 		addMouseMotionListener(mouseAdapter);
 		addMouseListener(mouseAdapter);
 	}
-
-	// public void startGame()
-	// {
-	// Timer t = new Timer(1000 / 60, getActionListener());
-	// t.start();
-	// }
 
 	public BlockType[] setBlocks(String path)
 	{
@@ -94,8 +91,8 @@ public class MapPanel extends JPanel implements Runnable
 		g.translate(-_logic.getCam().getCamPoint().x, -_logic.getCam().getCamPoint().y);
 		_backgroundImg.drawImg(g);
 		drawHMap(g, _logic.getMap().getHbackgrounds());
-		drawHMap(g, _logic.getMap().getHmap());
 		_logic.getPlayer().Paint(g, drawDebug);
+		drawHMap(g, _logic.getMap().getHmap());
 		drawBars(g);
 		if (drawDebug)
 			drawDebug(g);
@@ -265,74 +262,91 @@ public class MapPanel extends JPanel implements Runnable
 	public void startGame()
 	{
 		_gameThread = new Thread(this);
-		_gameThread.setDaemon(true);
 		_gameThread.start();
-
-		/**
-		 * Forcing it to use the high resolution timer, making the sleep call
-		 * within the game loop much more accurate.
-		 */
-		// new Thread()
-		// {
-		// public void run()
-		// {
-		// try
-		// {
-		// Thread.sleep(Long.MAX_VALUE);
-		// }
-		// catch(Exception exc) {}
-		// }
-		// }.start();
 	}
 
 	@Override
 	public void run()
 	{
-		double firstTime = 0, lastTime = System.nanoTime() / 1000000000.0, passedTime = 0, unprocessedTime = 0, frameTime = 0;
-		int frames = 0;
+		double lastUpdateTime = System.nanoTime(); // Store the time of the last
+													// update call.
+		double lastRenderTime = System.nanoTime(); // Store the time of the last
+													// render call.
+		double now;
+		int updateCount;
+
+		/**
+		 * FPS Calculation Variables
+		 */
+		int lastSecondTime = (int) (lastUpdateTime / 1000000000);
 
 		while (true)
 		{
-			firstTime = System.nanoTime() / 1000000000.0;
-			passedTime = firstTime - lastTime;
-			lastTime = firstTime;
-			unprocessedTime += passedTime;
-			frameTime += passedTime;
+			now = System.nanoTime();
+			updateCount = 0;
 
-			if (unprocessedTime >= _updateCap)
+			/**
+			 * Doing as many game updates as we currently need to.
+			 */
+			while (now - lastUpdateTime > _timeBetweenUpdates && updateCount < _maxUpdatesBeforeRender)
 			{
-				unprocessedTime -= _updateCap;
-				tick();
-				render();
-				frames++;
+				this.tick();
+				lastUpdateTime += _timeBetweenUpdates;
+				updateCount++;
+			}
 
-				if (frameTime >= 1.0)
-				{
-					frameTime = 0;
-					_fps = frames;
-					frames = 0;
-					System.out.println("FPS: " + _fps);
-				}
+			// If for some reason an update takes forever, we don't want to do
+			// an insane number of catchups.
+			// If you were doing some sort of game that needed to keep EXACT
+			// time, you would get rid of this.
+			if (now - lastUpdateTime > _timeBetweenUpdates)
+			{
+				lastUpdateTime = now - _timeBetweenUpdates;
 			}
 
 			/**
-			 * Preventing over-consumption of the computer's CPU power -
+			 * Render the current (updated) state of the game.
 			 */
-			try
+			this.render();
+			lastRenderTime = now;
+
+			// Update the frames we got.
+			int thisSecond = (int) (lastUpdateTime / 1000000000);
+			if (thisSecond > lastSecondTime)
 			{
-				Thread.sleep(1);
+				lastSecondTime = thisSecond;
 			}
-			catch (InterruptedException e)
+
+			/**
+			 * The timing mechanism. The thread sleeps within this while loop
+			 * until enough time has passed and another update or render call is
+			 * required.
+			 */
+			while (now - lastRenderTime < _timeBetweenRenders && now - lastUpdateTime < _timeBetweenUpdates)
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Thread.yield(); // Yield until it has been at least the target
+								// time between renders. This saves the CPU from
+								// hogging.
+
+				/**
+				 * Preventing over-consumption of the system's CPU power.
+				 */
+				try
+				{
+					Thread.sleep(1);
+				}
+				catch (Exception e)
+				{
+				}
+
+				now = System.nanoTime();
 			}
 		}
 	}
 
 	private void render()
 	{
-		repaint();
+		SwingUtilities.invokeLater(() -> repaint());
 	}
 
 	private void tick()
