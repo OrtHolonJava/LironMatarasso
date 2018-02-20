@@ -2,8 +2,6 @@ import java.awt.Graphics;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-import images.Img;
-
 public class BlockType
 {
 	private Img _blockImage;

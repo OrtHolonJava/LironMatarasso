@@ -1,4 +1,3 @@
-
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
@@ -14,8 +13,6 @@ import java.io.File;
 import java.util.LinkedList;
 
 import javax.swing.Timer;
-
-import images.Img;
 
 public class Player implements ActionListener
 {
