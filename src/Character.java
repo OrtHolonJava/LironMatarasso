@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
@@ -20,6 +21,7 @@ public abstract class Character
 	private LinkedList<Point2D.Double> _polyList, _coliList;
 	private Point2D.Double _loc;
 	private String _framesPath;
+	private LinkedList<Rectangle> _rects;
 
 	public Character(double x, double y, int width, int height, double baseSpeed, String framesPath)
 	{
@@ -31,10 +33,24 @@ public abstract class Character
 		_baseSpeed = baseSpeed;
 		_framesPath = framesPath;
 		_speedSeaweedSlowdown = 1;
-		_frames = setFrames(_framesPath);
+		chooseFrames(framesPath);
 		_polyList = new LinkedList<Point2D.Double>();
 		_coliList = new LinkedList<Point2D.Double>();
+		_rects = new LinkedList<Rectangle>();
+		setHitbox();
+	}
 
+	public void chooseFrames(String framesPath)
+	{
+		switch (framesPath)
+		{
+			case "player":
+				_frames = MapPanel._imageLoader.getPlayerFrames();
+				break;
+
+			default:
+				break;
+		}
 	}
 
 	public void move(double angle, double speed)
@@ -124,10 +140,10 @@ public abstract class Character
 
 	public void Paint(Graphics g, boolean isDebug)
 	{
-		_frames[(10 * (int) (_angle / 180)) + (int) (_frameCount) % 10].setImgCords((int) _loc.getX(), (int) _loc.getY());
-		_frames[10 * (int) (_angle / 180) + (int) (_frameCount) % 10].setImgSize(_width, _height);
 		BufferedImage use = _frames[10 * (int) (_angle / 180)
-									+ (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1))) % 10].getbImage();
+									+ (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1)))
+										% (_frames.length / 2)].getbImage();
+		use = Img.resize(use, _width, _height);
 		Graphics2D g2d = (Graphics2D) g.create();
 		// use = (_angle < 180) ? _image.getbImage() : _mirrorImage.getbImage();
 		Rectangle rect = new Rectangle(	(int) (_loc.getX() - use.getWidth() / 2), (int) (_loc.getY() - use.getHeight() / 2), use.getWidth(),
@@ -137,7 +153,23 @@ public abstract class Character
 		g2d.rotate(Math.toRadians(_angle), _loc.getX(), _loc.getY());
 		if (isDebug)
 		{
+			g2d.setColor(Color.black);
 			g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
+			g.setColor(Color.orange);
+			for (Rectangle r : _rects)
+			{
+				g.fillRect(r.x, r.y, r.width, r.height);
+			}
+			g.setColor(new Color(128, 0, 128));
+			for (Point2D p : _polyList)
+			{
+				g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
+			}
+			g.setColor(Color.magenta);
+			for (Point2D p : _coliList)
+			{
+				g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
+			}
 		}
 		g2d.drawImage(use, (int) _loc.getX() - use.getWidth() / 2, (int) _loc.getY() - use.getHeight() / 2, null);
 		g2d.dispose();
@@ -311,6 +343,16 @@ public abstract class Character
 	public void setFramesPath(String framesPath)
 	{
 		_framesPath = framesPath;
+	}
+
+	public LinkedList<Rectangle> getRects()
+	{
+		return _rects;
+	}
+
+	public void setRects(LinkedList<Rectangle> rects)
+	{
+		_rects = rects;
 	}
 
 }

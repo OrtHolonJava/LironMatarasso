@@ -9,7 +9,7 @@ public class Player extends Character implements ActionListener
 
 	public Player(int x, int y, int width, int height, double baseSpeed)
 	{
-		super(x, y, width, height, baseSpeed, "images\\SharkFrames\\");
+		super(x, y, width, height, baseSpeed, "player");
 		_stamina = 100;
 		_hunger = 100;
 		_health = 100;
@@ -17,7 +17,6 @@ public class Player extends Character implements ActionListener
 		Timer t = new Timer(1000, this);
 		t.start();
 	}
-
 
 	public double getHunger()
 	{

@@ -7,6 +7,7 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.Arrays;
@@ -20,7 +21,7 @@ import javax.swing.SwingUtilities;
 
 public class MapPanel extends JPanel implements Runnable, MyMouseListener
 {
-	private int _frameWidth, _frameHeight, _blockSize, __mapWidth, _mapHeight;
+	private int _blockSize, _mapWidth, _mapHeight;
 	private Img _backgroundImg;
 	private BlockType _blocksTypes[];
 	private BlockType _sandBlocks[], _stoneBlocks[], _seaweedBlock[];
@@ -29,10 +30,13 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 	private Logic _logic;
 	private Point2D.Double _mousePoint;
 	private Thread _gameThread;
+	public static ImageLoader _imageLoader;
+
 	private final double _ups = 60.0, _timeBetweenUpdates = 1000000000 / _ups, _targetFPS = 60,
 			_timeBetweenRenders = 1000000000 / _targetFPS;
-
 	private final int _maxUpdatesBeforeRender = 5;
+
+	boolean drawDebug = false;
 
 	public MapPanel()
 	{
@@ -41,17 +45,17 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		_backgroundFile = "MapFiles//background_20180220162654.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_mapHeight = Map.getElementCountByName(_mapFile, "Line");
-		__mapWidth = Map.getElementCountByName(_mapFile, "Area") / _mapHeight;
+		_mapWidth = Map.getElementCountByName(_mapFile, "Area") / _mapHeight;
 		_blockSize = 60;
 		BlockType.setSize(_blockSize);
-		_frameHeight = (int) screenSize.getHeight();
-		_frameWidth = (int) screenSize.getWidth();
+		_imageLoader = new ImageLoader();
+
 		Player player = new Player(100, 100, 8 * _blockSize / 10, 19 * _blockSize / 10, 8);
-		Camera cam = new Camera(new Point(_blockSize, _blockSize), (int) screenSize.getWidth(), (int) screenSize.getHeight(), __mapWidth,
+		Camera cam = new Camera(new Point(_blockSize, _blockSize), (int) screenSize.getWidth(), (int) screenSize.getHeight(), _mapWidth,
 								_mapHeight);
-		Map map = new Map(_mapHeight, __mapWidth, _mapFile, _effectsFile, _backgroundFile);
+		Map map = new Map(_mapHeight, _mapWidth, _mapFile, _effectsFile, _backgroundFile);
 		_logic = new Logic(player, cam, map, new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5)));
-		_backgroundImg = new Img("images//Background.jpg", 0, 0, __mapWidth * _blockSize, _mapHeight * _blockSize);
+		_backgroundImg = new Img("images//Background.jpg", 0, 0, _mapWidth * _blockSize, _mapHeight * _blockSize);
 		_blocksTypes = new BlockType[5];
 		_mouseDown = false;
 		_mousePoint = new Point2D.Double(0, 0);
@@ -82,8 +86,6 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		return arr;
 	}
 
-	boolean drawDebug = false;
-	
 	@Override
 	protected void paintComponent(Graphics g1)
 	{
@@ -96,19 +98,12 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		drawHMap(g, _logic.getMap().getHmap());
 		for (AICharacter c : _logic.getAiCharacters())
 		{
-			c.Paint(g, drawDebug);
+			if (_logic.getCam().inScreen(c.getHitbox()))
+				c.Paint(g, drawDebug);
 		}
 		drawBars(g);
 		if (drawDebug)
 			drawDebug(g);
-	}
-
-	public boolean InScreen(int row, int col)
-	{
-		return (col <= 1 + ((_frameWidth + _logic.getCam().getCamPoint().getX()) / _blockSize)
-					&& col + 1 >= _logic.getCam().getCamPoint().getX() / _blockSize
-				&& row <= 1 + ((_frameHeight + _logic.getCam().getCamPoint().getY()) / _blockSize)
-				&& row + 1 >= _logic.getCam().getCamPoint().getY() / _blockSize);
 	}
 
 	public void drawHMap(Graphics g, HashMap<Integer, BitMask> hmap)
@@ -121,7 +116,7 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 			// for (Entry<Integer, BitMask> e : hmap.entrySet())
 			// {
 			int row = e.getKey() / _logic.getMap().getWidth(), col = e.getKey() % _logic.getMap().getWidth();
-			if (InScreen(row, col))
+			if (_logic.getCam().inScreen(new Area(new Rectangle(col * _blockSize, row * _blockSize, _blockSize, _blockSize))))
 			{
 				switch (e.getValue().getBlockID())
 				{
@@ -190,23 +185,12 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		g.drawRect((int) _logic.getCam().getFinalMousePoint().x, (int) _logic.getCam().getFinalMousePoint().y, 100, 100);
 		g.setColor(Color.green);
 		g.drawRect((int) _logic.getCam().getCamPoint().x, (int) _logic.getCam().getCamPoint().y, 100, 100);
+		g.setColor(Color.blue);
+		g.drawRect(	_logic.getCam().getScreenRectangle().x, _logic.getCam().getScreenRectangle().y,
+					_logic.getCam().getScreenRectangle().width, _logic.getCam().getScreenRectangle().height);
 		g.setColor(Color.cyan);
 		g.drawRect((int) _logic.getPlayer().getX(), (int) _logic.getPlayer().getY(), 100, 100);
-		g.setColor(Color.orange);
-		for (Rectangle r : _logic.getRects())
-		{
-			g.fillRect(r.x, r.y, r.width, r.height);
-		}
-		g.setColor(new Color(128, 0, 128));
-		for (Point2D p : _logic.getPlayer().getPolyList())
-		{
-			g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
-		}
 		g.setColor(Color.magenta);
-		for (Point2D p : _logic.getPlayer().getColiList())
-		{
-			g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
-		}
 		g.drawOval((int) _logic.getPlayer().getX()	- _blockSize * 5 / 2, (int) _logic.getPlayer().getY() - _blockSize * 5 / 2,
 					_blockSize * 5, _blockSize * 5);
 

@@ -8,7 +8,6 @@ public class Logic
 	private Player _player;
 	private LinkedList<AICharacter> _aiCharacters;
 	private Camera _cam;
-	private LinkedList<Rectangle> _rects;
 	private LinkedList<Integer> _passables;
 
 	public Logic(Player player, Camera cam, Map map, LinkedList<Integer> passables)
@@ -17,9 +16,33 @@ public class Logic
 		_cam = cam;
 		_map = map;
 		_passables = passables;
-		_rects = new LinkedList<Rectangle>();
 		_aiCharacters = new LinkedList<AICharacter>();
-		_aiCharacters.add(new AICharacter(900, 450, _player.getWidth() / 4, _player.getHeight() / 4, 2, _player.getFramesPath()));
+		addAICharacters(10);
+	}
+
+	public void addAICharacters(int count)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			_aiCharacters.add(new AICharacter(900, 450, _player.getWidth() / 4, _player.getHeight() / 4, 2, _player.getFramesPath()));
+		}
+	}
+
+	public boolean collisionHandle(Character c)
+	{
+		if (!checkCollision(c))
+		{
+			for (Rectangle r : c.getRects())
+			{
+				while (c.getHitbox().intersects(r))
+				{
+					c.move(Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (c.getX()), (r.y + r.getHeight() / 2) - (c.getY()))), 1);
+				}
+			}
+			checkCollision(c);
+			return true;
+		}
+		return false;
 	}
 
 	public void doLogic()
@@ -28,30 +51,9 @@ public class Logic
 		for (AICharacter c : _aiCharacters)
 		{
 			c.basicAIMovement();
-			if (!checkCollision(c))
-			{
-				for (Rectangle r : _rects)
-				{
-					while (c.getHitbox().intersects(r))
-					{
-						c.move(	Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (c.getX()), (r.y + r.getHeight() / 2) - (c.getY()))),
-								1);
-					}
-				}
+			if (collisionHandle(c))
 				c.setNewTarget();
-				checkCollision(c);
-				// c.setNewTarget();
-				// c.setNewTarget();
-			}
 			// System.out.println("colido");
-			// for (Rectangle r : _rects)
-			// {
-			// while (c.getHitbox().intersects(r))
-			// {
-			// c.basicAIMovement();
-			// }
-			// }
-			// checkCollision(c);
 		}
 	}
 
@@ -71,34 +73,17 @@ public class Logic
 		_player.updateFinalSpeed();
 		// _cam.moveCam(_player.getAngle(), _player.getFinalSpeed());
 		_player.move(_player.getAngle(), _player.getFinalSpeed());
+		collisionHandle(_player);
 		_cam.updateCamPoint(_player);
-		if (!checkCollision(_player))
-		{
-			for (Rectangle r : _rects)
-			{
-				while (_player.getHitbox().intersects(r))
-				{
-					// _cam.moveCam( Math.toDegrees(-Math.atan2((r.x +
-					// r.getWidth() / 2) - (_player.getX()),
-					// (r.y + r.getHeight() / 2) - (_player.getY()))),
-					// 1);
-					_player.move(	Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2)	- (_player.getX()),
-															(r.y + r.getHeight() / 2) - (_player.getY()))),
-									1);
-					_cam.updateCamPoint(_player);
 
-				}
-			}
-			checkCollision(_player);
-		}
 	}
 
 	public boolean checkCollision(Character c)
 	{
 		c.applySeaweedSlowdown(false);
-		_rects = new LinkedList<Rectangle>();
 		boolean flag = true;
 		c.getColiList().clear();
+		c.getRects().clear();
 		for (int curRow = (int) (c.getY() / BlockType.getSize()) - 1; curRow <= (c.getY() / BlockType.getSize()) + 1; curRow++)
 		{
 			for (int curCol = (int) (c.getX() / BlockType.getSize()) - 1; curCol <= (c.getX() / BlockType.getSize()) + 1; curCol++)
@@ -112,7 +97,7 @@ public class Logic
 					{
 						if (!_passables.contains(_map.getHmap().get(curCol + curRow * _map.getWidth()).getBlockID()))
 						{
-							_rects.add(rect);
+							c.getRects().add(rect);
 							flag = false;
 							for (Point2D p : c.getPolyList())
 							{
@@ -161,16 +146,6 @@ public class Logic
 	public void setCam(Camera cam)
 	{
 		_cam = cam;
-	}
-
-	public LinkedList<Rectangle> getRects()
-	{
-		return _rects;
-	}
-
-	public void setRects(LinkedList<Rectangle> rects)
-	{
-		_rects = rects;
 	}
 
 	public LinkedList<Integer> getPassables()
