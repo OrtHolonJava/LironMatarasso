@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -36,7 +37,7 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 	public MapPanel()
 	{
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		_mapFile = "MapFiles//world_20180220162546.xml";
+		_mapFile = "MapFiles//world_20180221203331.xml";
 		_backgroundFile = "MapFiles//background_20180220162654.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_mapHeight = Map.getElementCountByName(_mapFile, "Line");
@@ -45,9 +46,9 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		BlockType.setSize(_blockSize);
 		_frameHeight = (int) screenSize.getHeight();
 		_frameWidth = (int) screenSize.getWidth();
-		Player player = new Player(0, 0, 8 * _blockSize / 10, 19 * _blockSize / 10, 8);
-		Camera cam = new Camera(0, -3 * _blockSize, new Point2D.Double(_blockSize, _blockSize), (int) screenSize.getWidth(),
-								(int) screenSize.getHeight(), __mapWidth, _mapHeight);
+		Player player = new Player(100, 100, 8 * _blockSize / 10, 19 * _blockSize / 10, 8);
+		Camera cam = new Camera(new Point(_blockSize, _blockSize), (int) screenSize.getWidth(), (int) screenSize.getHeight(), __mapWidth,
+								_mapHeight);
 		Map map = new Map(_mapHeight, __mapWidth, _mapFile, _effectsFile, _backgroundFile);
 		_logic = new Logic(player, cam, map, new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5)));
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, __mapWidth * _blockSize, _mapHeight * _blockSize);
@@ -82,7 +83,7 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 	}
 
 	boolean drawDebug = false;
-
+	
 	@Override
 	protected void paintComponent(Graphics g1)
 	{
@@ -93,6 +94,10 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		drawHMap(g, _logic.getMap().getHbackgrounds());
 		_logic.getPlayer().Paint(g, drawDebug);
 		drawHMap(g, _logic.getMap().getHmap());
+		for (AICharacter c : _logic.getAiCharacters())
+		{
+			c.Paint(g, drawDebug);
+		}
 		drawBars(g);
 		if (drawDebug)
 			drawDebug(g);
@@ -183,8 +188,6 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 	{
 		g.setColor(Color.red);
 		g.drawRect((int) _logic.getCam().getFinalMousePoint().x, (int) _logic.getCam().getFinalMousePoint().y, 100, 100);
-		g.setColor(Color.yellow);
-		g.drawRect((int) _logic.getCam().getCenterPoint().x, (int) _logic.getCam().getCenterPoint().y, 100, 100);
 		g.setColor(Color.green);
 		g.drawRect((int) _logic.getCam().getCamPoint().x, (int) _logic.getCam().getCamPoint().y, 100, 100);
 		g.setColor(Color.cyan);
@@ -200,7 +203,7 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 			g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
 		}
 		g.setColor(Color.magenta);
-		for (Point2D p : _logic.getColiList())
+		for (Point2D p : _logic.getPlayer().getColiList())
 		{
 			g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
 		}
@@ -324,7 +327,7 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 	private void tick()
 	{
 		SwingUtilities.invokeLater(() -> checkMouse());
-		SwingUtilities.invokeLater(() -> _logic.movementLogic());
+		SwingUtilities.invokeLater(() -> _logic.doLogic());
 		// System.out.println(_logic.getCam().getCamPoint());
 	}
 

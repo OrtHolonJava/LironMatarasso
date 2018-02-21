@@ -1,18 +1,15 @@
+import java.awt.Point;
 import java.awt.geom.Point2D;
 
 public class Camera
 {
-	private double _playerOffsetX, _playerOffsetY;
-	private Point2D.Double _mousePoint, _finalMousePoint, _centerPoint, _camPoint;
+	private Point2D.Double _mousePoint, _finalMousePoint;
+	private Point _camPoint;
 	private int _panelWidth, _panelHeight, _mapPixelWidth, _mapPixelHeight;
 
-	public Camera(	double playerOffsetX, double playerOffsetY, Point2D.Double camPoint, int panelWidth, int panelHeight, int mapWidth,
-					int mapHeight)
+	public Camera(Point camPoint, int panelWidth, int panelHeight, int mapWidth, int mapHeight)
 	{
-		_playerOffsetX = playerOffsetX;
-		_playerOffsetY = playerOffsetY;
 		_mousePoint = new Point2D.Double(0, 0);
-		_centerPoint = new Point2D.Double(0, 0);
 		_finalMousePoint = new Point2D.Double(0, 0);
 		_camPoint = camPoint;
 		_panelWidth = panelWidth;
@@ -22,72 +19,17 @@ public class Camera
 
 	}
 
-	public void moveCam(double angle, double speed)
+	public void updateCamPoint(Player p)
 	{
-		if (_playerOffsetX == 0)
+		_camPoint.setLocation(p.getLoc().x - _panelWidth / 2, p.getLoc().y - _panelHeight / 2);
+		if (_camPoint.x < BlockType.getSize() || _camPoint.x > _mapPixelWidth - _panelWidth - BlockType.getSize())
 		{
-			_camPoint.x += speed * Math.sin(Math.toRadians(angle));
-			if (_camPoint.x < 0 || _camPoint.x > _mapPixelWidth - _panelWidth)
-			{
-				_camPoint.x = (_camPoint.x < 0) ? 0 : _mapPixelWidth - _panelWidth;
-				_playerOffsetX += speed * Math.sin(Math.toRadians(angle));
-			}
+			_camPoint.x = (_camPoint.x < BlockType.getSize()) ? BlockType.getSize() : _mapPixelWidth - _panelWidth - BlockType.getSize();
 		}
-		else
+		if (_camPoint.y < BlockType.getSize() || _camPoint.y > _mapPixelHeight - _panelHeight - BlockType.getSize())
 		{
-			int preSignX = (int) Math.signum(_playerOffsetX);
-			_playerOffsetX += speed * Math.sin(Math.toRadians(angle));
-			if (preSignX != (int) Math.signum(_playerOffsetX))
-			{
-				_camPoint.x += _playerOffsetX;
-				_playerOffsetX = 0;
-			}
+			_camPoint.y = (_camPoint.y < BlockType.getSize()) ? BlockType.getSize() : _mapPixelHeight - _panelHeight - BlockType.getSize();
 		}
-
-		if (_playerOffsetY == 0)
-		{
-			_camPoint.y -= speed * Math.cos(Math.toRadians(angle));
-			if (_camPoint.y < BlockType.getSize() || _camPoint.y > _mapPixelHeight - _panelHeight - BlockType.getSize())
-			{
-				_camPoint.y = (_camPoint.y < BlockType.getSize())	? BlockType.getSize()
-																	: _mapPixelHeight - _panelHeight - BlockType.getSize();
-				_playerOffsetY -= speed * Math.cos(Math.toRadians(angle));
-			}
-		}
-		else
-		{
-			int preSignY = (int) Math.signum(_playerOffsetY);
-			_playerOffsetY -= speed * Math.cos(Math.toRadians(angle));
-			if (preSignY != (int) Math.signum(_playerOffsetY))
-			{
-				_camPoint.y += _playerOffsetY;
-				_playerOffsetY = 0;
-			}
-		}
-		_camPoint.y = Math.round(_camPoint.y);
-		_camPoint.x = Math.round(_camPoint.x);
-		_centerPoint.setLocation(_camPoint.x + _panelWidth / 2, _camPoint.y + _panelHeight / 2);
-		_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
-	}
-
-	public double getPlayerOffsetX()
-	{
-		return _playerOffsetX;
-	}
-
-	public void setPlayerOffsetX(double playerOffsetX)
-	{
-		_playerOffsetX = playerOffsetX;
-	}
-
-	public double getPlayerOffsetY()
-	{
-		return _playerOffsetY;
-	}
-
-	public void setPlayerOffsetY(double playerOffsetY)
-	{
-		_playerOffsetY = playerOffsetY;
 	}
 
 	public Point2D.Double getMousePoint()
@@ -110,22 +52,12 @@ public class Camera
 		_finalMousePoint = finalMousePoint;
 	}
 
-	public Point2D.Double getCenterPoint()
-	{
-		return _centerPoint;
-	}
-
-	public void setCenterPoint(Point2D.Double centerPoint)
-	{
-		_centerPoint = centerPoint;
-	}
-
-	public Point2D.Double getCamPoint()
+	public Point getCamPoint()
 	{
 		return _camPoint;
 	}
 
-	public void setCamPoint(Point2D.Double camPoint)
+	public void setCamPoint(Point camPoint)
 	{
 		_camPoint = camPoint;
 	}
@@ -169,5 +101,4 @@ public class Camera
 	{
 		_mapPixelHeight = mapPixelHeight;
 	}
-
 }
