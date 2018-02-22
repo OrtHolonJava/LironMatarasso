@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -50,7 +49,7 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		BlockType.setSize(_blockSize);
 		_imageLoader = new ImageLoader();
 
-		Player player = new Player(100, 100, 8 * _blockSize / 10, 19 * _blockSize / 10, 8);
+		Player player = new Player(900, 400, 8 * _blockSize / 10, 19 * _blockSize / 10, 8);
 		Camera cam = new Camera(new Point(_blockSize, _blockSize), (int) screenSize.getWidth(), (int) screenSize.getHeight(), _mapWidth,
 								_mapHeight);
 		Map map = new Map(_mapHeight, _mapWidth, _mapFile, _effectsFile, _backgroundFile);
@@ -95,15 +94,11 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		_backgroundImg.drawImg(g);
 		drawHMap(g, _logic.getMap().getHbackgrounds());
 		_logic.getPlayer().Paint(g, drawDebug);
+		_logic.paintAICharacters(g, drawDebug);
 		drawHMap(g, _logic.getMap().getHmap());
-		for (AICharacter c : _logic.getAiCharacters())
-		{
-			if (_logic.getCam().inScreen(c.getHitbox()))
-				c.Paint(g, drawDebug);
-		}
-		drawBars(g);
+		_logic.getPlayer().drawBars(g, _logic.getCam().getCamPoint());
 		if (drawDebug)
-			drawDebug(g);
+			_logic.drawDebug(g);
 	}
 
 	public void drawHMap(Graphics g, HashMap<Integer, BitMask> hmap)
@@ -177,45 +172,6 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 	public int rowColToIndex(int row, int col, int width)
 	{
 		return col + row * width;
-	}
-
-	public void drawDebug(Graphics g)
-	{
-		g.setColor(Color.red);
-		g.drawRect((int) _logic.getCam().getFinalMousePoint().x, (int) _logic.getCam().getFinalMousePoint().y, 100, 100);
-		g.setColor(Color.green);
-		g.drawRect((int) _logic.getCam().getCamPoint().x, (int) _logic.getCam().getCamPoint().y, 100, 100);
-		g.setColor(Color.blue);
-		g.drawRect(	_logic.getCam().getScreenRectangle().x, _logic.getCam().getScreenRectangle().y,
-					_logic.getCam().getScreenRectangle().width, _logic.getCam().getScreenRectangle().height);
-		g.setColor(Color.cyan);
-		g.drawRect((int) _logic.getPlayer().getX(), (int) _logic.getPlayer().getY(), 100, 100);
-		g.setColor(Color.magenta);
-		g.drawOval((int) _logic.getPlayer().getX()	- _blockSize * 5 / 2, (int) _logic.getPlayer().getY() - _blockSize * 5 / 2,
-					_blockSize * 5, _blockSize * 5);
-
-	}
-
-	public void drawBars(Graphics g)
-	{
-		g.setColor(Color.red);
-		g.drawString("health: "	+ String.valueOf((int) _logic.getPlayer().getHealth()), (int) _logic.getCam().getCamPoint().x,
-						(int) _logic.getCam().getCamPoint().y + 10);
-		g.drawRect((int) _logic.getCam().getCamPoint().x + 70, (int) _logic.getCam().getCamPoint().y, 100, 10);
-		g.fillRect((int) _logic.getCam().getCamPoint().x	+ 70, (int) _logic.getCam().getCamPoint().y, (int) _logic.getPlayer().getHealth(),
-					10);
-		g.setColor(Color.green);
-		g.drawString("stamina: "	+ String.valueOf((int) _logic.getPlayer().getStamina()), (int) _logic.getCam().getCamPoint().x,
-						(int) _logic.getCam().getCamPoint().y + 20);
-		g.drawRect((int) _logic.getCam().getCamPoint().x + 70, (int) _logic.getCam().getCamPoint().y + 10, 100, 10);
-		g.fillRect((int) _logic.getCam().getCamPoint().x	+ 70, (int) _logic.getCam().getCamPoint().y + 10,
-					(int) _logic.getPlayer().getStamina(), 10);
-		g.setColor(Color.yellow);
-		g.drawString("hunger: "	+ String.valueOf((int) _logic.getPlayer().getHunger()), (int) _logic.getCam().getCamPoint().x,
-						(int) _logic.getCam().getCamPoint().y + 30);
-		g.drawRect((int) _logic.getCam().getCamPoint().x + 70, (int) _logic.getCam().getCamPoint().y + 20, 100, 10);
-		g.fillRect((int) _logic.getCam().getCamPoint().x	+ 70, (int) _logic.getCam().getCamPoint().y + 20,
-					(int) _logic.getPlayer().getHunger(), 10);
 	}
 
 	public void startGame()

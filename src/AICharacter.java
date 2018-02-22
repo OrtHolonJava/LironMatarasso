@@ -1,24 +1,31 @@
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.Random;
 
 public class AICharacter extends Character
 {
-	private Point2D.Double _target;
+	private Point _target;
 
 	public AICharacter(double x, double y, int width, int height, double baseSpeed, String framesPath)
 	{
 		super(x, y, width, height, baseSpeed, framesPath);
-		_target = new Point2D.Double(-1, -1);
+		Random r = new Random();
+		_target = new Point(-1, -1);
+		setAngle(r.nextInt(360));
 		updateFinalSpeed();
 		setNewTarget();
 	}
 
-
-	public void basicAIMovement()
+	public void basicAIMovement(Player p)
 	{
 		updateFinalSpeed();
-		// System.out.println("cur: " + getLoc());
-		// System.out.println("target: " + _target);
+		if (getLoc().distance(p.getLoc()) < BlockType.getSize() * 5)
+		{
+			setAngleAndTarget((Math.toDegrees(-Math.atan2((p.getX() + p.getWidth() / 2)	- (getX() + getWidth() / 2),
+															(p.getY() + p.getHeight() / 2) - (getY() + getHeight() / 2)))));
+		}
 		if (getLoc().distance(_target) < getFinalSpeed())
 		{
 			setNewTarget();
@@ -29,19 +36,32 @@ public class AICharacter extends Character
 	public void setNewTarget()
 	{
 		Random r = new Random();
-		int radius = 100;
 		int a = r.nextInt(90) - 45;
-		setAngle(Math.abs((getAngle() + a) % 360));
-		_target.setLocation(getLoc().x	+ radius * Math.sin(Math.toRadians(getAngle())),
-							getLoc().y - radius * Math.cos(Math.toRadians(getAngle())));
+		setAngleAndTarget((getAngle() + a) % 360);
 	}
 
-	public Point2D.Double getTarget()
+	public void setAngleAndTarget(double a)
+	{
+		int radius = 50;
+		setAngle(a);
+		_target.setLocation(getX() + radius * Math.sin(Math.toRadians(getAngle())), getY() - radius * Math.cos(Math.toRadians(getAngle())));
+	}
+
+	@Override
+	public void Paint(Graphics g, boolean isDebug)
+	{
+		super.Paint(g, isDebug);
+		g.setColor(Color.orange);
+		if (isDebug)
+			g.drawRect(_target.x, _target.y, 100, 100);
+	}
+
+	public Point getTarget()
 	{
 		return _target;
 	}
 
-	public void setTarget(Point2D.Double target)
+	public void setTarget(Point target)
 	{
 		_target = target;
 	}

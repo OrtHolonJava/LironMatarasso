@@ -22,9 +22,9 @@ public class Camera
 		_screenRectangle = new Rectangle(0, 0, _panelWidth, _panelHeight);
 	}
 
-	public void updateCamPoint(Player p)
+	public void updateCamPoint(Character c)
 	{
-		_camPoint.setLocation(p.getLoc().x - _panelWidth / 2, p.getLoc().y - _panelHeight / 2);
+		_camPoint.setLocation(c.getX() - _panelWidth / 2, c.getY() - _panelHeight / 2);
 		if (_camPoint.x < BlockType.getSize() || _camPoint.x > _mapPixelWidth - _panelWidth - BlockType.getSize())
 		{
 			_camPoint.x = (_camPoint.x < BlockType.getSize()) ? BlockType.getSize() : _mapPixelWidth - _panelWidth - BlockType.getSize();
@@ -120,7 +120,5 @@ public class Camera
 	{
 		_screenRectangle = screenRectangle;
 	}
-	
-	
-}
 
+}

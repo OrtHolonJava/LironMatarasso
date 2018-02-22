@@ -1,8 +1,8 @@
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.Timer;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Point;
 
-public class Player extends Character implements ActionListener
+public class Player extends Character
 {
 	private double _speedMouseBoost, _stamina, _hunger, _health;
 	private boolean _isCooldown;
@@ -14,8 +14,8 @@ public class Player extends Character implements ActionListener
 		_hunger = 100;
 		_health = 100;
 		_isCooldown = false;
-		Timer t = new Timer(1000, this);
-		t.start();
+		// Timer t = new Timer(1000, this);
+		// t.start();
 	}
 
 	public double getHunger()
@@ -87,10 +87,24 @@ public class Player extends Character implements ActionListener
 		}
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e)
+	public void drawBars(Graphics g, Point camPoint)
 	{
-		// TODO Auto-generated method stub
+		g.setColor(Color.red);
+		g.drawString("health: " + String.valueOf((int) _health), (int) camPoint.x, (int) camPoint.y + 10);
+		g.drawRect((int) camPoint.x + 70, (int) camPoint.y, 100, 10);
+		g.fillRect((int) camPoint.x + 70, (int) camPoint.y, (int) _health, 10);
+		g.setColor(Color.green);
+		g.drawString("stamina: " + String.valueOf((int) _stamina), (int) camPoint.x, (int) camPoint.y + 20);
+		g.drawRect((int) camPoint.x + 70, (int) camPoint.y + 10, 100, 10);
+		g.fillRect((int) camPoint.x + 70, (int) camPoint.y + 10, (int) _stamina, 10);
+		g.setColor(Color.yellow);
+		g.drawString("hunger: " + String.valueOf((int) _hunger), (int) camPoint.x, (int) camPoint.y + 30);
+		g.drawRect((int) camPoint.x + 70, (int) camPoint.y + 20, 100, 10);
+		g.fillRect((int) camPoint.x + 70, (int) camPoint.y + 20, (int) _hunger, 10);
+	}
+
+	public void updateStats()
+	{
 		updateHunger();
 		updateHealth();
 	}
