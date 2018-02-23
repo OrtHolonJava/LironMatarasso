@@ -1,3 +1,4 @@
+import java.awt.Point;
 import java.util.HashMap;
 
 public class BitMask
@@ -11,7 +12,7 @@ public class BitMask
 		_bitMask = bitMask;
 	}
 
-	public static final HashMap<Integer, Integer> kek = setKek();
+	public static HashMap<Integer, Integer> kek = setKek();
 
 	public static HashMap<Integer, Integer> setKek()
 	{
@@ -66,12 +67,13 @@ public class BitMask
 		return kek;
 	}
 
-	public static int placeMeeting(HashMap<Integer, BitMask> map, int size, int curCol, int curRow, int tileVal)
+	public static int placeMeeting(HashMap<Point, BitMask> map, int size, int curCol, int curRow, int tileVal)
 	{
-		return (map.containsKey(curRow * size + curCol) && map.get(curRow * size + curCol).getBlockID() == tileVal) ? 1 : 0;
+		Point temp = new Point(curCol, curRow);
+		return (map.containsKey(temp) && map.get(temp).getBlockID() == tileVal) ? 1 : 0;
 	}
 
-	public static int computeTile(HashMap<Integer, BitMask> map, int size, int y, int x, int tileVal)
+	public static int computeTile(HashMap<Point, BitMask> map, int size, int y, int x, int tileVal)
 	{
 		int sum = 0;
 		int north_tile = placeMeeting(map, size, x, y - 1, tileVal);

@@ -1,12 +1,9 @@
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.Arrays;
@@ -16,9 +13,8 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
-public class MapPanel extends JPanel implements Runnable, MyMouseListener
+public class MapPanel extends JPanel implements MyMouseListener
 {
 	private int _blockSize, _mapWidth, _mapHeight;
 	private Img _backgroundImg;
@@ -28,17 +24,13 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 	private boolean _mouseDown;
 	private Logic _logic;
 	private Point2D.Double _mousePoint;
-	private Thread _gameThread;
 	public static ImageLoader _imageLoader;
-
-	private final double _ups = 60.0, _timeBetweenUpdates = 1000000000 / _ups, _targetFPS = 60,
-			_timeBetweenRenders = 1000000000 / _targetFPS;
-	private final int _maxUpdatesBeforeRender = 5;
 
 	boolean drawDebug = false;
 
 	public MapPanel()
 	{
+		setOpaque(false);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		_mapFile = "MapFiles//world_20180221203331.xml";
 		_backgroundFile = "MapFiles//background_20180220162654.xml";
@@ -49,7 +41,7 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		BlockType.setSize(_blockSize);
 		_imageLoader = new ImageLoader();
 
-		Player player = new Player(900, 400, 8 * _blockSize / 10, 19 * _blockSize / 10, 8);
+		Player player = new Player(2000, 400, 8 * _blockSize / 10, 19 * _blockSize / 10, 8);
 		Camera cam = new Camera(new Point(_blockSize, _blockSize), (int) screenSize.getWidth(), (int) screenSize.getHeight(), _mapWidth,
 								_mapHeight);
 		Map map = new Map(_mapHeight, _mapWidth, _mapFile, _effectsFile, _backgroundFile);
@@ -86,32 +78,52 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 	}
 
 	@Override
-	protected void paintComponent(Graphics g1)
+	protected void paintComponent(Graphics g)
 	{
-		Graphics2D g = (Graphics2D) g1;
 		super.paintComponent(g);
 		g.translate(-_logic.getCam().getCamPoint().x, -_logic.getCam().getCamPoint().y);
 		_backgroundImg.drawImg(g);
 		drawHMap(g, _logic.getMap().getHbackgrounds());
+		// drawGayMap(g, _logic.getMap().getHbackgrounds());
 		_logic.getPlayer().Paint(g, drawDebug);
 		_logic.paintAICharacters(g, drawDebug);
 		drawHMap(g, _logic.getMap().getHmap());
+		// drawGayMap(g, _logic.getMap().getHmap());
 		_logic.getPlayer().drawBars(g, _logic.getCam().getCamPoint());
 		if (drawDebug)
 			_logic.drawDebug(g);
 	}
 
-	public void drawHMap(Graphics g, HashMap<Integer, BitMask> hmap)
+	public void drawGayMap(Graphics g, HashMap<Point, BitMask> hmap)
 	{
-
-		Iterator<java.util.Map.Entry<Integer, BitMask>> iterator = hmap.entrySet().iterator();
+		Iterator<java.util.Map.Entry<Point, BitMask>> iterator = hmap.entrySet().iterator();
 		while (iterator.hasNext())
 		{
-			Entry<Integer, BitMask> e = iterator.next();
+			Entry<Point, BitMask> e = iterator.next();
 			// for (Entry<Integer, BitMask> e : hmap.entrySet())
 			// {
-			int row = e.getKey() / _logic.getMap().getWidth(), col = e.getKey() % _logic.getMap().getWidth();
-			if (_logic.getCam().inScreen(new Area(new Rectangle(col * _blockSize, row * _blockSize, _blockSize, _blockSize))))
+			int row = e.getKey().y, col = e.getKey().x;
+			if (g.getClipBounds().intersects(col * _blockSize, row * _blockSize, _blockSize, _blockSize))
+			{
+				if (e.getValue().getBlockID() != 0)
+				{
+					g.drawRect(col * _blockSize, row * _blockSize, _blockSize, _blockSize);
+				}
+			}
+		}
+	}
+
+	public void drawHMap(Graphics g, HashMap<Point, BitMask> hmap)
+	{
+
+		Iterator<java.util.Map.Entry<Point, BitMask>> iterator = hmap.entrySet().iterator();
+		while (iterator.hasNext())
+		{
+			Entry<Point, BitMask> e = iterator.next();
+			// for (Entry<Integer, BitMask> e : hmap.entrySet())
+			// {
+			int row = e.getKey().y, col = e.getKey().x;
+			if (g.getClipBounds().intersects(col * _blockSize, row * _blockSize, _blockSize, _blockSize))
 			{
 				switch (e.getValue().getBlockID())
 				{
@@ -174,103 +186,6 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		return col + row * width;
 	}
 
-	public void startGame()
-	{
-		_gameThread = new Thread(this);
-		_gameThread.start();
-	}
-
-	@Override
-	public void run()
-	{
-		double lastUpdateTime = System.nanoTime(); // Store the time of the last
-													// update call.
-		double lastRenderTime = System.nanoTime(); // Store the time of the last
-													// render call.
-		double now;
-		int updateCount;
-
-		/**
-		 * FPS Calculation Variables
-		 */
-		int lastSecondTime = (int) (lastUpdateTime / 1000000000);
-
-		while (true)
-		{
-			now = System.nanoTime();
-			updateCount = 0;
-
-			/**
-			 * Doing as many game updates as we currently need to.
-			 */
-			while (now - lastUpdateTime > _timeBetweenUpdates && updateCount < _maxUpdatesBeforeRender)
-			{
-				this.tick();
-				lastUpdateTime += _timeBetweenUpdates;
-				updateCount++;
-			}
-
-			// If for some reason an update takes forever, we don't want to do
-			// an insane number of catchups.
-			// If you were doing some sort of game that needed to keep EXACT
-			// time, you would get rid of this.
-			if (now - lastUpdateTime > _timeBetweenUpdates)
-			{
-				lastUpdateTime = now - _timeBetweenUpdates;
-			}
-
-			/**
-			 * Render the current (updated) state of the game.
-			 */
-			this.render();
-			lastRenderTime = now;
-
-			// Update the frames we got.
-			int thisSecond = (int) (lastUpdateTime / 1000000000);
-			if (thisSecond > lastSecondTime)
-			{
-				lastSecondTime = thisSecond;
-			}
-
-			/**
-			 * The timing mechanism. The thread sleeps within this while loop
-			 * until enough time has passed and another update or render call is
-			 * required.
-			 */
-			while (now - lastRenderTime < _timeBetweenRenders && now - lastUpdateTime < _timeBetweenUpdates)
-			{
-				Thread.yield(); // Yield until it has been at least the target
-								// time between renders. This saves the CPU from
-								// hogging.
-
-				/**
-				 * Preventing over-consumption of the system's CPU power.
-				 */
-				try
-				{
-					Thread.sleep(1);
-				}
-				catch (Exception e)
-				{
-				}
-
-				now = System.nanoTime();
-			}
-		}
-	}
-
-	private void render()
-	{
-		SwingUtilities.invokeLater(() -> repaint());
-	}
-
-	private void tick()
-	{
-		SwingUtilities.invokeLater(() -> checkMouse());
-		SwingUtilities.invokeLater(() -> _logic.doLogic());
-		// System.out.println(_logic.getCam().getCamPoint());
-	}
-
 	public void checkMouse()
 	{
 
@@ -324,4 +239,13 @@ public class MapPanel extends JPanel implements Runnable, MyMouseListener
 		}
 	}
 
+	public Logic getLogic()
+	{
+		return _logic;
+	}
+
+	public void setLogic(Logic logic)
+	{
+		_logic = logic;
+	}
 }

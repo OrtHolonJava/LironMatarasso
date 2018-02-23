@@ -1,4 +1,5 @@
 
+import java.awt.Point;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -21,30 +22,31 @@ public class Map
 {
 	private int _width, _height;
 	private int _counter = 0;
-	private HashMap<Integer, BitMask> _hmap, _heffects, _hbackgrounds;
+	private HashMap<Point, BitMask> _hmap, _heffects, _hbackgrounds;
 
 	public Map(int height, int width, String mapFileName, String effectsFileName, String backgroundsFileName)
 	{
 
-		_hmap = new HashMap<Integer, BitMask>();
-		_heffects = new HashMap<Integer, BitMask>();
-		_hbackgrounds = new HashMap<Integer, BitMask>();
+		_hmap = new HashMap<Point, BitMask>();
+		_heffects = new HashMap<Point, BitMask>();
+		_hbackgrounds = new HashMap<Point, BitMask>();
 		_width = width;
 		_height = height;
 		readFile(mapFileName, _hmap);
 		readFile(effectsFileName, _heffects);
 		readFile(backgroundsFileName, _hbackgrounds);
+		BitMask.kek.clear();
 	}
 
-	public void setBitMasks(HashMap<Integer, BitMask> map)
+	public void setBitMasks(HashMap<Point, BitMask> map)
 	{
-		for (Entry<Integer, BitMask> e : map.entrySet())
+		for (Entry<Point, BitMask> e : map.entrySet())
 		{
-			e.getValue().setBitMask(BitMask.computeTile(map, _width, e.getKey() / _width, e.getKey() % _width, e.getValue().getBlockID()));
+			e.getValue().setBitMask(BitMask.computeTile(map, _width, e.getKey().y, e.getKey().x, e.getValue().getBlockID()));
 		}
 	}
 
-	private void readFile(String fileName, HashMap<Integer, BitMask> hmap)
+	private void readFile(String fileName, HashMap<Point, BitMask> hmap)
 	{
 		_counter = 0;
 		try
@@ -71,37 +73,7 @@ public class Map
 		}
 	}
 
-	public int getCounter()
-	{
-		return _counter;
-	}
-
-	public void setCounter(int counter)
-	{
-		_counter = counter;
-	}
-
-	public HashMap<Integer, BitMask> getHmap()
-	{
-		return _hmap;
-	}
-
-	public void setHmap(HashMap<Integer, BitMask> hmap)
-	{
-		_hmap = hmap;
-	}
-
-	public HashMap<Integer, BitMask> getHeffects()
-	{
-		return _heffects;
-	}
-
-	public void setHeffects(HashMap<Integer, BitMask> heffects)
-	{
-		_heffects = heffects;
-	}
-
-	private void readNode(NodeList nodeList, HashMap<Integer, BitMask> map)
+	private void readNode(NodeList nodeList, HashMap<Point, BitMask> map)
 	{
 		for (int count = 0; count < nodeList.getLength(); count++)
 		{
@@ -116,7 +88,8 @@ public class Map
 						Node node = nodeMap.item(i);
 						if (Integer.parseInt(node.getNodeValue()) != 0)
 						{
-							map.put(_counter, new BitMask(Integer.parseInt(node.getNodeValue()), -1));
+							map.put(new Point(_counter % _width, _counter / _width),
+									new BitMask(Integer.parseInt(node.getNodeValue()), -1));
 						}
 						_counter++;
 					}
@@ -133,7 +106,6 @@ public class Map
 	{
 		try
 		{
-
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 			Document doc = docBuilder.parse(fileName);
@@ -147,12 +119,42 @@ public class Map
 		}
 	}
 
-	public HashMap<Integer, BitMask> getHbackgrounds()
+	public int getCounter()
+	{
+		return _counter;
+	}
+
+	public void setCounter(int counter)
+	{
+		_counter = counter;
+	}
+
+	public HashMap<Point, BitMask> getHmap()
+	{
+		return _hmap;
+	}
+
+	public void setHmap(HashMap<Point, BitMask> hmap)
+	{
+		_hmap = hmap;
+	}
+
+	public HashMap<Point, BitMask> getHeffects()
+	{
+		return _heffects;
+	}
+
+	public void setHeffects(HashMap<Point, BitMask> heffects)
+	{
+		_heffects = heffects;
+	}
+
+	public HashMap<Point, BitMask> getHbackgrounds()
 	{
 		return _hbackgrounds;
 	}
 
-	public void setHbackgrounds(HashMap<Integer, BitMask> hbackgrounds)
+	public void setHbackgrounds(HashMap<Point, BitMask> hbackgrounds)
 	{
 		_hbackgrounds = hbackgrounds;
 	}

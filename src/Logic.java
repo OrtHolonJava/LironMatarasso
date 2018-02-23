@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Iterator;
@@ -17,10 +18,11 @@ public class Logic
 	{
 		_player = player;
 		_cam = cam;
+		_cam.updateCamPoint(_player);
 		_map = map;
 		_passables = passables;
 		_aiCharacters = new LinkedList<AICharacter>();
-		addAICharacters(1000);
+		addAICharacters(0);
 	}
 
 	public void paintAICharacters(Graphics g, boolean drawDebug)
@@ -29,7 +31,7 @@ public class Logic
 		while (iterator.hasNext())
 		{
 			AICharacter c = iterator.next();
-			if (_cam.inScreen(c.getHitbox()))
+			if ((c.getHitbox().intersects(g.getClipBounds())))
 				c.Paint(g, drawDebug);
 		}
 	}
@@ -101,14 +103,14 @@ public class Logic
 		{
 			for (int curCol = (int) (c.getX() / BlockType.getSize()) - 1; curCol <= (c.getX() / BlockType.getSize()) + 1; curCol++)
 			{
-				if (curRow >= 0	&& curCol >= 0 && curRow < _map.getHeight() && curCol < _map.getWidth()
-					&& _map.getHmap().containsKey(curCol + curRow * _map.getWidth()))
+				Point temp = new Point(curCol, curRow);
+				if (curRow >= 0 && curCol >= 0 && curRow < _map.getHeight() && curCol < _map.getWidth() && _map.getHmap().containsKey(temp))
 				{
 					Rectangle rect = new Rectangle(curCol	* BlockType.getSize(), curRow * BlockType.getSize(), BlockType.getSize(),
 													BlockType.getSize());
 					if (c.getHitbox().intersects(rect))
 					{
-						if (!_passables.contains(_map.getHmap().get(curCol + curRow * _map.getWidth()).getBlockID()))
+						if (!_passables.contains(_map.getHmap().get(temp).getBlockID()))
 						{
 							c.getRects().add(rect);
 							flag = false;
@@ -123,7 +125,7 @@ public class Logic
 							}
 						}
 						if (c.getSpeedSeaweedSlowdown() == 1)
-							c.applySeaweedSlowdown(_map.getHmap().get(curCol + curRow * _map.getWidth()).getBlockID() == 3);
+							c.applySeaweedSlowdown(_map.getHmap().get(temp).getBlockID() == 3);
 					}
 				}
 			}
@@ -138,14 +140,8 @@ public class Logic
 		g.drawString(String.valueOf(_player.getAngle()), (int) _cam.getFinalMousePoint().x, (int) _cam.getFinalMousePoint().y);
 		g.setColor(Color.green);
 		g.drawRect((int) _cam.getCamPoint().x, (int) _cam.getCamPoint().y, 100, 100);
-		g.setColor(Color.blue);
-		g.drawRect(	_cam.getScreenRectangle().x, _cam.getScreenRectangle().y, _cam.getScreenRectangle().width,
-					_cam.getScreenRectangle().height);
 		g.setColor(Color.cyan);
 		g.drawRect((int) _player.getX(), (int) _player.getY(), 100, 100);
-		g.setColor(Color.magenta);
-		g.drawOval((int) _player.getX()	- BlockType.getSize() * 5 / 2, (int) _player.getY() - BlockType.getSize() * 5 / 2,
-					BlockType.getSize() * 5, BlockType.getSize() * 5);
 	}
 
 	public Map getMap()

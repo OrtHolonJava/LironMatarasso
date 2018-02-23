@@ -7,7 +7,7 @@ public class Player extends Character
 	private double _speedMouseBoost, _stamina, _hunger, _health;
 	private boolean _isCooldown;
 
-	public Player(int x, int y, int width, int height, double baseSpeed)
+	public Player(double x, double y, int width, int height, double baseSpeed)
 	{
 		super(x, y, width, height, baseSpeed, "player");
 		_stamina = 100;

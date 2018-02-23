@@ -9,6 +9,7 @@ public class MapFrame extends JFrame
 {
 	private MapPanel _mapPanel;
 	private LinkedList<MyMouseListener> _mouseListeners;
+	private GameLoop _gameLoop;
 
 	public MapFrame()
 	{
@@ -18,17 +19,19 @@ public class MapFrame extends JFrame
 		_mapPanel = new MapPanel();
 		addListener(_mapPanel);
 		add(_mapPanel, BorderLayout.CENTER);
+		_gameLoop = new GameLoop(_mapPanel);
 		addMouseMotionListener(mouseAdapter);
 		addMouseListener(mouseAdapter);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setUndecorated(true);
 		setVisible(true);
+		startGame();
 	}
 
 	public void startGame()
 	{
-		_mapPanel.startGame();
+		_gameLoop.startGame();
 	}
 
 	public void addListener(MyMouseListener e)

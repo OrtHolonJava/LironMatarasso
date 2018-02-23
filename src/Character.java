@@ -168,6 +168,8 @@ public abstract class Character
 			{
 				g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
 			}
+			g.drawOval((int) getX()	- BlockType.getSize() * 5 / 2, (int) getY() - BlockType.getSize() * 5 / 2,
+						BlockType.getSize() * 5, BlockType.getSize() * 5);
 		}
 		g2d.drawImage(use, (int) getX() - use.getWidth() / 2, (int) getY() - use.getHeight() / 2, null);
 		g2d.dispose();
