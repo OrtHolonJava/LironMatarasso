@@ -36,7 +36,6 @@ public class Logic
 				c.Paint(g, drawDebug);
 		}
 	}
-
 	public void addAICharacters(int count)
 	{
 		for (int i = 0; i < count; i++)

@@ -60,7 +60,7 @@ public class AICharacter extends Character
 	}
 
 	@Override
-	public void Paint(Graphics2D g, boolean isDebug)
+	public synchronized void Paint(Graphics2D g, boolean isDebug)
 	{
 		super.Paint(g, isDebug);
 		g.setColor(Color.orange);

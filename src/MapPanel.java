@@ -28,7 +28,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 	private Point2D.Double _mousePoint;
 	public static ImageLoader _imageLoader;
 
-	boolean drawDebug = false;
+	boolean drawDebug = true;
 
 	public MapPanel()
 	{
@@ -84,18 +84,17 @@ public class MapPanel extends JPanel implements MyMouseListener
 	{
 		Graphics2D g2d = (Graphics2D) g;
 		super.paintComponent(g2d);
-		// g.setColor(Color.cyan);
-		g.translate(-_logic.getCam().getCamPoint().x, -_logic.getCam().getCamPoint().y);
-		// g.fillRect(g2d.getClipBounds().x, g2d.getClipBounds().y,
-		// g2d.getClipBounds().width, g2d.getClipBounds().height);
-		_backgroundImg.drawImg(g);
-		drawHMap(g2d, _logic.getMap().getHbackgrounds());
-		// drawGayMap(g, _logic.getMap().getHbackgrounds());
+		g2d.translate(-_logic.getCam().getCamPoint().x, -_logic.getCam().getCamPoint().y);
+		g2d.setColor(Color.blue);
+		g.fillRect(g2d.getClipBounds().x, g2d.getClipBounds().y, g2d.getClipBounds().width, g2d.getClipBounds().height);
+		// _backgroundImg.drawImg(g2d);
+		// drawHMap(g2d, _logic.getMap().getHbackgrounds());
+		drawGayMap(g2d, _logic.getMap().getHbackgrounds());
 		_logic.getPlayer().Paint(g2d, drawDebug);
 		_logic.paintAICharacters(g2d, drawDebug);
-		drawHMap(g2d, _logic.getMap().getHmap());
-		// drawGayMap(g2d, _logic.getMap().getHmap());
-		_logic.getPlayer().drawBars(g2d, _logic.getCam().getCamPoint());
+		// drawHMap(g2d, _logic.getMap().getHmap());
+		drawGayMap(g2d, _logic.getMap().getHmap());
+		_logic.getPlayer().drawBars(g2d);
 		if (drawDebug)
 			_logic.drawDebug(g2d);
 	}
@@ -114,7 +113,36 @@ public class MapPanel extends JPanel implements MyMouseListener
 			{
 				if (e.getValue().getBlockID() != 0)
 				{
-					g.drawRect(col * _blockSize, row * _blockSize, _blockSize, _blockSize);
+					switch (e.getValue().getBlockID())
+					{
+						case 1:
+						{
+							g.setColor(Color.yellow);
+							break;
+						}
+						case 2:
+						{
+							g.setColor(Color.gray);
+							break;
+						}
+						case 3:
+						{
+							g.setColor(Color.green);
+							break;
+						}
+						case 4:
+						{
+							g.setColor(new Color(204, 182, 102));
+							break;
+						}
+						case 5:
+						{
+							g.setColor(Color.darkGray);
+							break;
+						}
+
+					}
+					g.fillRect(col * _blockSize, row * _blockSize, _blockSize, _blockSize);
 				}
 			}
 		}

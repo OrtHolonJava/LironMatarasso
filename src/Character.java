@@ -137,14 +137,14 @@ public abstract class Character
 		return polygon;
 	}
 
-	public void Paint(Graphics2D g, boolean isDebug)
+	public synchronized void Paint(Graphics2D g, boolean isDebug)
 	{
 		BufferedImage use = _frames[10 * (int) (_angle / 180)
 									+ (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1)))
 										% (_frames.length / 2)];
+
 		use = Img.resize(use, _width, _height);
 		Graphics2D g2d = (Graphics2D) g.create();
-		// use = (_angle < 180) ? _image.getbImage() : _mirrorImage.getbImage();
 		// g2d.setColor(Color.orange);
 		// g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		g2d.rotate(Math.toRadians(_angle), getX(), getY());
@@ -167,10 +167,13 @@ public abstract class Character
 			{
 				g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
 			}
-			g.drawOval((int) getX()	- BlockType.getSize() * 5 / 2, (int) getY() - BlockType.getSize() * 5 / 2, BlockType.getSize() * 5,
+			g.drawOval(	(int) (getX() - BlockType.getSize() * 5 / 2), (int) (getY() - BlockType.getSize() * 5 / 2), BlockType.getSize() * 5,
 						BlockType.getSize() * 5);
 		}
-		g2d.drawImage(use, (int) getX() - use.getWidth() / 2, (int) getY() - use.getHeight() / 2, null);
+		g2d.drawImage(use, (int) (getX() - use.getWidth() / 2), (int) (getY() - use.getHeight() / 2), null);
+		// g2d.setColor(Color.black);
+		// g2d.drawRect((int) (getX() - use.getWidth() / 2), (int) (getY() -
+		// use.getHeight() / 2), use.getWidth(), use.getHeight());
 		g2d.dispose();
 	}
 

@@ -108,22 +108,24 @@ public class GameLoop implements Runnable
 
 	private void render()
 	{
-		//long startTime = System.nanoTime();
-		// SwingUtilities.invokeLater(() -> _mapPanel.repaint());
-		RealTimeSwing.invokeNow(() -> _mapPanel.repaint());
-		//_mapPanel.paintImmediately(0, 0, _mapPanel.getWidth(), _mapPanel.getHeight());
-		//long estimatedTime = System.nanoTime() - startTime;
-		//System.out.println("r:" + String.format("%.12f", (double) estimatedTime / 1000000000));
+		// long startTime = System.nanoTime();
+		SwingUtilities.invokeLater(() -> _mapPanel.repaint());
+		// RealTimeSwing.invokeNow(() -> _mapPanel.repaint());
+		// _mapPanel.paintImmediately(0, 0, _mapPanel.getWidth(),
+		// _mapPanel.getHeight());
+		// long estimatedTime = System.nanoTime() - startTime;
+		// System.out.println("r:" + String.format("%.12f", (double)
+		// estimatedTime / 1000000000));
 	}
 
 	private void tick()
 	{
-		long startTime = System.nanoTime();
-		// SwingUtilities.invokeLater(() -> _mapPanel.checkMouse());
-		// SwingUtilities.invokeLater(() -> _mapPanel.getLogic().doLogic());
-		_mapPanel.checkMouse();
-		_mapPanel.getLogic().doLogic();
-		//long estimatedTime = System.nanoTime() - startTime;
+		//long startTime = System.nanoTime();
+		SwingUtilities.invokeLater(() -> _mapPanel.checkMouse());
+		SwingUtilities.invokeLater(() -> _mapPanel.getLogic().doLogic());
+		// _mapPanel.checkMouse();
+		// _mapPanel.getLogic().doLogic();
+		// long estimatedTime = System.nanoTime() - startTime;
 		// System.out.println("t:" + String.format("%.12f", (double)
 		// estimatedTime / 1000000000));
 	}

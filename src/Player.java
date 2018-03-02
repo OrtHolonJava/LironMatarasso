@@ -1,6 +1,5 @@
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
 
 public class Player extends Character
 {
@@ -21,6 +20,23 @@ public class Player extends Character
 	public double getHunger()
 	{
 		return _hunger;
+	}
+	
+	
+	public void drawBars(Graphics g)
+	{
+		g.setColor(Color.red);
+		g.drawString("health: " + String.valueOf((int) _health), (int)  g.getClipBounds().x, (int)  g.getClipBounds().y + 10);
+		g.drawRect((int) g.getClipBounds().x + 70, (int)  g.getClipBounds().y, 100, 10);
+		g.fillRect((int)  g.getClipBounds().x + 70, (int)  g.getClipBounds().y, (int) _health, 10);
+		g.setColor(Color.green);
+		g.drawString("stamina: " + String.valueOf((int) _stamina), (int)  g.getClipBounds().x, (int)  g.getClipBounds().y + 20);
+		g.drawRect((int)  g.getClipBounds().x + 70, (int)  g.getClipBounds().y + 10, 100, 10);
+		g.fillRect((int)  g.getClipBounds().x + 70, (int)  g.getClipBounds().y + 10, (int) _stamina, 10);
+		g.setColor(Color.yellow);
+		g.drawString("hunger: " + String.valueOf((int) _hunger), (int)  g.getClipBounds().x, (int)  g.getClipBounds().y + 30);
+		g.drawRect((int)  g.getClipBounds().x + 70, (int)  g.getClipBounds().y + 20, 100, 10);
+		g.fillRect((int)  g.getClipBounds().x + 70, (int)  g.getClipBounds().y + 20, (int) _hunger, 10);
 	}
 
 	public void setHunger(double hunger)
@@ -85,22 +101,6 @@ public class Player extends Character
 		{
 			_hunger--;
 		}
-	}
-
-	public void drawBars(Graphics g, Point camPoint)
-	{
-		g.setColor(Color.red);
-		g.drawString("health: " + String.valueOf((int) _health), (int) camPoint.x, (int) camPoint.y + 10);
-		g.drawRect((int) camPoint.x + 70, (int) camPoint.y, 100, 10);
-		g.fillRect((int) camPoint.x + 70, (int) camPoint.y, (int) _health, 10);
-		g.setColor(Color.green);
-		g.drawString("stamina: " + String.valueOf((int) _stamina), (int) camPoint.x, (int) camPoint.y + 20);
-		g.drawRect((int) camPoint.x + 70, (int) camPoint.y + 10, 100, 10);
-		g.fillRect((int) camPoint.x + 70, (int) camPoint.y + 10, (int) _stamina, 10);
-		g.setColor(Color.yellow);
-		g.drawString("hunger: " + String.valueOf((int) _hunger), (int) camPoint.x, (int) camPoint.y + 30);
-		g.drawRect((int) camPoint.x + 70, (int) camPoint.y + 20, 100, 10);
-		g.fillRect((int) camPoint.x + 70, (int) camPoint.y + 20, (int) _hunger, 10);
 	}
 
 	public void updateStats()

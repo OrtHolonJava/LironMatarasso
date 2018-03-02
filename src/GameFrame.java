@@ -13,21 +13,12 @@ public class GameFrame extends JFrame
 	private GameLoop _gameLoop;
 	private MenuPanel _menuPanel;
 
-	private GayLoop _gayLoop;
-	private MapCanvas _mapCanvas;
-
 	public GameFrame()
 	{
 		MouseAdapter mouseAdapter = getMouseAdapter();
 		_mouseListeners = new LinkedList<MyMouseListener>();
 		setLayout(new BorderLayout());
-		_mapPanel = new MapPanel();
-		_mapCanvas = new MapCanvas();
 		_menuPanel = new MenuPanel(this);
-		_gameLoop = new GameLoop(_mapPanel);
-		_gayLoop = new GayLoop(_mapCanvas);
-		addListener(_mapPanel);
-		addListener(_mapCanvas);
 		add(_menuPanel, BorderLayout.CENTER);
 		addMouseMotionListener(mouseAdapter);
 		addMouseListener(mouseAdapter);
@@ -42,14 +33,13 @@ public class GameFrame extends JFrame
 	public void startGame()
 	{
 		remove(_menuPanel);
-		if (panel)
-			add(_mapPanel, BorderLayout.CENTER);
-		else add(_mapCanvas, BorderLayout.CENTER);
+		_mapPanel = new MapPanel();
+		add(_mapPanel, BorderLayout.CENTER);
+		addListener(_mapPanel);
 		revalidate();
 		repaint();
-		if (panel)
-			_gameLoop.startGame();
-		else _gayLoop.startGame();
+		_gameLoop = new GameLoop(_mapPanel);
+		_gameLoop.startGame();
 	}
 
 	public void close()
