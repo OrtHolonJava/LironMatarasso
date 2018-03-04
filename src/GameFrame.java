@@ -1,37 +1,60 @@
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
 import java.util.LinkedList;
 
 import javax.swing.JFrame;
 
-public class MapFrame extends JFrame
+public class GameFrame extends JFrame
 {
 	private MapPanel _mapPanel;
 	private LinkedList<MyMouseListener> _mouseListeners;
 	private GameLoop _gameLoop;
+	private MenuPanel _menuPanel;
 
-	public MapFrame()
+	private GayLoop _gayLoop;
+	private MapCanvas _mapCanvas;
+
+	public GameFrame()
 	{
 		MouseAdapter mouseAdapter = getMouseAdapter();
 		_mouseListeners = new LinkedList<MyMouseListener>();
 		setLayout(new BorderLayout());
 		_mapPanel = new MapPanel();
-		addListener(_mapPanel);
-		add(_mapPanel, BorderLayout.CENTER);
+		_mapCanvas = new MapCanvas();
+		_menuPanel = new MenuPanel(this);
 		_gameLoop = new GameLoop(_mapPanel);
+		_gayLoop = new GayLoop(_mapCanvas);
+		addListener(_mapPanel);
+		addListener(_mapCanvas);
+		add(_menuPanel, BorderLayout.CENTER);
 		addMouseMotionListener(mouseAdapter);
 		addMouseListener(mouseAdapter);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setUndecorated(true);
 		setVisible(true);
-		startGame();
 	}
+
+	public boolean panel = true;
 
 	public void startGame()
 	{
-		_gameLoop.startGame();
+		remove(_menuPanel);
+		if (panel)
+			add(_mapPanel, BorderLayout.CENTER);
+		else add(_mapCanvas, BorderLayout.CENTER);
+		revalidate();
+		repaint();
+		if (panel)
+			_gameLoop.startGame();
+		else _gayLoop.startGame();
+	}
+
+	public void close()
+	{
+		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
 
 	public void addListener(MyMouseListener e)

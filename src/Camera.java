@@ -1,4 +1,6 @@
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 
 public class Camera
@@ -6,11 +8,13 @@ public class Camera
 	private Point2D.Double _mousePoint, _finalMousePoint;
 	private Point _camPoint;
 	private int _panelWidth, _panelHeight, _mapPixelWidth, _mapPixelHeight;
+	private Rectangle _screenRect;
 
 	public Camera(Point camPoint, int panelWidth, int panelHeight, int mapWidth, int mapHeight)
 	{
 		_mousePoint = new Point2D.Double(0, 0);
 		_finalMousePoint = new Point2D.Double(0, 0);
+		_screenRect = new Rectangle(0, 0, panelWidth, panelHeight);
 		_camPoint = camPoint;
 		_panelWidth = panelWidth;
 		_panelHeight = panelHeight;
@@ -30,6 +34,12 @@ public class Camera
 			_camPoint.y = (_camPoint.y < BlockType.getSize()) ? BlockType.getSize() : _mapPixelHeight - _panelHeight - BlockType.getSize();
 		}
 		_finalMousePoint.setLocation(_camPoint.x + _mousePoint.x, _camPoint.y + _mousePoint.y);
+		_screenRect.setLocation(_camPoint);
+	}
+
+	public boolean inScreen(Area a)
+	{
+		return a.intersects(_screenRect);
 	}
 
 	public Point2D.Double getMousePoint()
@@ -100,5 +110,11 @@ public class Camera
 	public void setMapPixelHeight(int mapPixelHeight)
 	{
 		_mapPixelHeight = mapPixelHeight;
+	}
+
+	public Rectangle getScreenRectangle()
+	{
+		// TODO Auto-generated method stub
+		return _screenRect;
 	}
 }

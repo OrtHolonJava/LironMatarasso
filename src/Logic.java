@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -22,16 +23,16 @@ public class Logic
 		_map = map;
 		_passables = passables;
 		_aiCharacters = new LinkedList<AICharacter>();
-		addAICharacters(0);
+		addAICharacters(100);
 	}
 
-	public void paintAICharacters(Graphics g, boolean drawDebug)
+	public void paintAICharacters(Graphics2D g, boolean drawDebug)
 	{
 		Iterator<AICharacter> iterator = _aiCharacters.iterator();
 		while (iterator.hasNext())
 		{
 			AICharacter c = iterator.next();
-			if ((c.getHitbox().intersects(g.getClipBounds())))
+			if (_cam.inScreen(c.getHitbox()))
 				c.Paint(g, drawDebug);
 		}
 	}
@@ -71,8 +72,6 @@ public class Logic
 			if (collisionHandle(c))
 				c.setNewTarget();
 		}
-		_cam.updateCamPoint(_player);
-
 	}
 
 	public void movementLogic()
@@ -91,6 +90,7 @@ public class Logic
 		_player.updateFinalSpeed();
 		_player.move(_player.getAngle(), _player.getFinalSpeed());
 		collisionHandle(_player);
+		_cam.updateCamPoint(_player);
 	}
 
 	public boolean checkCollision(Character c)

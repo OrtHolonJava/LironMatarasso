@@ -1,12 +1,19 @@
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferStrategy;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,9 +21,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 
-import javax.swing.JPanel;
-
-public class MapPanel extends JPanel implements MyMouseListener
+public class MapCanvas extends Canvas implements MyMouseListener
 {
 	private int _blockSize, _mapWidth, _mapHeight;
 	private Img _backgroundImg;
@@ -30,10 +35,13 @@ public class MapPanel extends JPanel implements MyMouseListener
 
 	boolean drawDebug = false;
 
-	public MapPanel()
+	public MapCanvas()
 	{
-		setOpaque(false);
+		// setOpaque(false);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		addMouseMotionListener(getMouseMotionAdapter());
+		addMouseListener(getMouseAdapter());
+		// addMouseListener(a);
 		_mapFile = "MapFiles//world_20180221203331.xml";
 		_backgroundFile = "MapFiles//background_20180220162654.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
@@ -61,6 +69,11 @@ public class MapPanel extends JPanel implements MyMouseListener
 		_seaweedBlock = setBlocks("images\\Blocks\\Seaweed\\");
 	}
 
+	public void doLogic()
+	{
+		_logic.doLogic();
+	}
+
 	public BlockType[] setBlocks(String path)
 	{
 		BlockType[] arr = null;
@@ -79,18 +92,24 @@ public class MapPanel extends JPanel implements MyMouseListener
 		return arr;
 	}
 
-	@Override
-	protected void paintComponent(Graphics g)
+	public void drawComponent()
 	{
-		Graphics2D g2d = (Graphics2D) g;
-		super.paintComponent(g2d);
+		BufferStrategy bs = this.getBufferStrategy();
+		if (bs == null)
+		{
+			this.createBufferStrategy(4);
+			return;
+		}
+		Graphics2D g2d = (Graphics2D) bs.getDrawGraphics();
+		g2d.translate(-_logic.getCam().getCamPoint().x, -_logic.getCam().getCamPoint().y);
+
 		// g.setColor(Color.cyan);
-		g.translate(-_logic.getCam().getCamPoint().x, -_logic.getCam().getCamPoint().y);
-		// g.fillRect(g2d.getClipBounds().x, g2d.getClipBounds().y,
-		// g2d.getClipBounds().width, g2d.getClipBounds().height);
-		_backgroundImg.drawImg(g);
+		// g2d.fillRect(_logic.getCam().getCamPoint().x,
+		// _logic.getCam().getCamPoint().y, getWidth(), getHeight());
+
+		_backgroundImg.drawImg(g2d);
 		drawHMap(g2d, _logic.getMap().getHbackgrounds());
-		// drawGayMap(g, _logic.getMap().getHbackgrounds());
+		// drawGayMap(g2d, _logic.getMap().getHbackgrounds());
 		_logic.getPlayer().Paint(g2d, drawDebug);
 		_logic.paintAICharacters(g2d, drawDebug);
 		drawHMap(g2d, _logic.getMap().getHmap());
@@ -98,7 +117,31 @@ public class MapPanel extends JPanel implements MyMouseListener
 		_logic.getPlayer().drawBars(g2d, _logic.getCam().getCamPoint());
 		if (drawDebug)
 			_logic.drawDebug(g2d);
+		g2d.dispose();
+		bs.show();
 	}
+
+	// @Override
+	// protected void paintComponent(Graphics g)
+	// {
+	// Graphics2D g2d = (Graphics2D) g;
+	// super.paintComponent(g2d);
+	// // g.setColor(Color.cyan);
+	// g.translate(-_logic.getCam().getCamPoint().x,
+	// -_logic.getCam().getCamPoint().y);
+	// // g.fillRect(g2d.getClipBounds().x, g2d.getClipBounds().y,
+	// // g2d.getClipBounds().width, g2d.getClipBounds().height);
+	// _backgroundImg.drawImg(g);
+	// drawHMap(g2d, _logic.getMap().getHbackgrounds());
+	// // drawGayMap(g, _logic.getMap().getHbackgrounds());
+	// _logic.getPlayer().Paint(g2d, drawDebug);
+	// _logic.paintAICharacters(g2d, drawDebug);
+	// drawHMap(g2d, _logic.getMap().getHmap());
+	// // drawGayMap(g2d, _logic.getMap().getHmap());
+	// _logic.getPlayer().drawBars(g2d, _logic.getCam().getCamPoint());
+	// if (drawDebug)
+	// _logic.drawDebug(g2d);
+	// }
 
 	public void drawGayMap(Graphics2D g, HashMap<Point, BitMask> hmap)
 	{
@@ -110,7 +153,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 			// for (Entry<Integer, BitMask> e : hmap.entrySet())
 			// {
 			int row = e.getKey().y, col = e.getKey().x;
-			if (g.getClipBounds().intersects(col * _blockSize, row * _blockSize, _blockSize, _blockSize))
+			if (_logic.getCam().inScreen(new Area((new Rectangle(col * _blockSize, row * _blockSize, _blockSize, _blockSize)))))
 			{
 				if (e.getValue().getBlockID() != 0)
 				{
@@ -130,7 +173,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 			// for (Entry<Integer, BitMask> e : hmap.entrySet())
 			// {
 			int row = e.getKey().y, col = e.getKey().x;
-			if (g.getClipBounds().intersects(col * _blockSize, row * _blockSize, _blockSize, _blockSize))
+			if (_logic.getCam().inScreen(new Area((new Rectangle(col * _blockSize, row * _blockSize, _blockSize, _blockSize)))))
 			{
 				switch (e.getValue().getBlockID())
 				{
@@ -195,7 +238,6 @@ public class MapPanel extends JPanel implements MyMouseListener
 
 	public void checkMouse()
 	{
-
 		_logic.getCam().getMousePoint().setLocation(_mousePoint);
 		_logic.getPlayer().applyMouseBoost(_mouseDown);
 	}
@@ -218,6 +260,56 @@ public class MapPanel extends JPanel implements MyMouseListener
 		{
 			System.out.println("x: " + p.xpoints[i] + " y: " + p.ypoints[i]);
 		}
+	}
+
+	public MouseMotionAdapter getMouseMotionAdapter()
+	{
+		MouseMotionAdapter a = new MouseMotionAdapter()
+		{
+			public void mouseDragged(MouseEvent e)
+			{
+				_mousePoint.setLocation(e.getPoint());
+			}
+
+			public void mouseMoved(MouseEvent e)
+			{
+				_mousePoint.setLocation(e.getPoint());
+			}
+		};
+		return a;
+	}
+
+	public MouseAdapter getMouseAdapter()
+	{
+		MouseAdapter a = new MouseAdapter()
+		{
+			public void mouseDragged(MouseEvent e)
+			{
+				_mousePoint.setLocation(e.getPoint());
+			}
+
+			public void mouseMoved(MouseEvent e)
+			{
+				_mousePoint.setLocation(e.getPoint());
+			}
+
+			public void mousePressed(MouseEvent e)
+			{
+				if (e.getButton() == MouseEvent.BUTTON1)
+				{
+					_mouseDown = true;
+				}
+			}
+
+			public void mouseReleased(MouseEvent e)
+			{
+				if (e.getButton() == MouseEvent.BUTTON1)
+				{
+					_mouseDown = false;
+				}
+			}
+		};
+		return a;
 	}
 
 	public void mouseDragged(MouseEvent e)

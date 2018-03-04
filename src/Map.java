@@ -35,7 +35,6 @@ public class Map
 		readFile(mapFileName, _hmap);
 		readFile(effectsFileName, _heffects);
 		readFile(backgroundsFileName, _hbackgrounds);
-		BitMask.kek.clear();
 	}
 
 	public void setBitMasks(HashMap<Point, BitMask> map)

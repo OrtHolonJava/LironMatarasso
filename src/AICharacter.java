@@ -1,5 +1,5 @@
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.Random;
 
@@ -60,7 +60,7 @@ public class AICharacter extends Character
 	}
 
 	@Override
-	public void Paint(Graphics g, boolean isDebug)
+	public void Paint(Graphics2D g, boolean isDebug)
 	{
 		super.Paint(g, isDebug);
 		g.setColor(Color.orange);
