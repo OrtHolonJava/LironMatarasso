@@ -3,13 +3,14 @@ import java.awt.Graphics;
 
 public class Player extends Character
 {
-	private double _speedMouseBoost, _stamina, _hunger, _health;
+	private double _speedMouseBoost, _disToSpeedRatio, _stamina, _hunger, _health;
 	private boolean _isCooldown;
 
 	public Player(double x, double y, int width, int height, double baseSpeed)
 	{
 		super(x, y, width, height, baseSpeed, "player");
 		_stamina = 100;
+		_disToSpeedRatio = 1;
 		_hunger = 100;
 		_health = 100;
 		_isCooldown = false;
@@ -21,22 +22,21 @@ public class Player extends Character
 	{
 		return _hunger;
 	}
-	
-	
+
 	public void drawBars(Graphics g)
 	{
 		g.setColor(Color.red);
-		g.drawString("health: " + String.valueOf((int) _health), (int)  g.getClipBounds().x, (int)  g.getClipBounds().y + 10);
-		g.drawRect((int) g.getClipBounds().x + 70, (int)  g.getClipBounds().y, 100, 10);
-		g.fillRect((int)  g.getClipBounds().x + 70, (int)  g.getClipBounds().y, (int) _health, 10);
+		g.drawString("health: " + String.valueOf((int) _health), g.getClipBounds().x, g.getClipBounds().y + 10);
+		g.drawRect(g.getClipBounds().x + 70, g.getClipBounds().y, 100, 10);
+		g.fillRect(g.getClipBounds().x + 70, g.getClipBounds().y, (int) _health, 10);
 		g.setColor(Color.green);
-		g.drawString("stamina: " + String.valueOf((int) _stamina), (int)  g.getClipBounds().x, (int)  g.getClipBounds().y + 20);
-		g.drawRect((int)  g.getClipBounds().x + 70, (int)  g.getClipBounds().y + 10, 100, 10);
-		g.fillRect((int)  g.getClipBounds().x + 70, (int)  g.getClipBounds().y + 10, (int) _stamina, 10);
+		g.drawString("stamina: " + String.valueOf((int) _stamina), g.getClipBounds().x, g.getClipBounds().y + 20);
+		g.drawRect(g.getClipBounds().x + 70, g.getClipBounds().y + 10, 100, 10);
+		g.fillRect(g.getClipBounds().x + 70, g.getClipBounds().y + 10, (int) _stamina, 10);
 		g.setColor(Color.yellow);
-		g.drawString("hunger: " + String.valueOf((int) _hunger), (int)  g.getClipBounds().x, (int)  g.getClipBounds().y + 30);
-		g.drawRect((int)  g.getClipBounds().x + 70, (int)  g.getClipBounds().y + 20, 100, 10);
-		g.fillRect((int)  g.getClipBounds().x + 70, (int)  g.getClipBounds().y + 20, (int) _hunger, 10);
+		g.drawString("hunger: " + String.valueOf((int) _hunger), g.getClipBounds().x, g.getClipBounds().y + 30);
+		g.drawRect(g.getClipBounds().x + 70, g.getClipBounds().y + 20, 100, 10);
+		g.fillRect(g.getClipBounds().x + 70, g.getClipBounds().y + 20, (int) _hunger, 10);
 	}
 
 	public void setHunger(double hunger)
@@ -54,9 +54,10 @@ public class Player extends Character
 		_isCooldown = isCooldown;
 	}
 
+	@Override
 	public void updateFinalSpeed()
 	{
-		setFinalSpeed((getBaseSpeed() + _speedMouseBoost) * getSpeedSeaweedSlowdown());
+		setFinalSpeed((getBaseSpeed() * _disToSpeedRatio + _speedMouseBoost) * getSpeedSeaweedSlowdown());
 	}
 
 	public void applyMouseBoost(boolean mouseDown)
@@ -137,6 +138,16 @@ public class Player extends Character
 	public void setStamina(double stamina)
 	{
 		_stamina = stamina;
+	}
+
+	public void setDisToSpeedRatio(double disToSpeedRatio)
+	{
+		_disToSpeedRatio = (disToSpeedRatio > 1) ? 1 : disToSpeedRatio;
+	}
+
+	public double getDisToSpeedRatio()
+	{
+		return _disToSpeedRatio;
 	}
 
 }

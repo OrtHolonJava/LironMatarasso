@@ -3,7 +3,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -28,8 +27,8 @@ public class MapPanel extends JPanel implements MyMouseListener
 	private Point2D.Double _mousePoint;
 	public static ImageLoader _imageLoader;
 
-	boolean drawDebug = false;
-	boolean goodGraphics = true;
+	private boolean drawDebug = false;
+	private boolean goodGraphics = true;
 
 	public MapPanel()
 	{
@@ -81,7 +80,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 	}
 
 	@Override
-	protected void paintComponent(Graphics g)
+	protected synchronized void paintComponent(Graphics g)
 	{
 		Graphics2D g2d = (Graphics2D) g;
 		super.paintComponent(g2d);
@@ -102,7 +101,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 		_logic.paintAICharacters(g2d, drawDebug);
 		if (goodGraphics)
 			drawGayMap(g2d, _logic.getMap().getHmap());
-		else 
+		else
 			drawHMap(g2d, _logic.getMap().getHmap());
 		_logic.getPlayer().drawBars(g2d);
 		if (drawDebug)
@@ -152,7 +151,16 @@ public class MapPanel extends JPanel implements MyMouseListener
 						}
 
 					}
-					g.fillRect(col * _blockSize, row * _blockSize, _blockSize, _blockSize);
+					if (e.getValue().getBlockID() != 3)
+					{
+						g.fillRect(col * _blockSize, row * _blockSize, _blockSize, _blockSize);
+					}
+					else
+					{
+						g.fillRect(col * _blockSize + 1 * _blockSize / 7, row * _blockSize, _blockSize / 7, _blockSize);
+						g.fillRect(col * _blockSize + 3 * _blockSize / 7, row * _blockSize, _blockSize / 7, _blockSize);
+						g.fillRect(col * _blockSize + 5 * _blockSize / 7, row * _blockSize, _blockSize / 7, _blockSize);
+					}
 				}
 			}
 		}
@@ -160,7 +168,6 @@ public class MapPanel extends JPanel implements MyMouseListener
 
 	public void drawHMap(Graphics2D g, HashMap<Point, BitMask> hmap)
 	{
-
 		Iterator<java.util.Map.Entry<Point, BitMask>> iterator = hmap.entrySet().iterator();
 		while (iterator.hasNext())
 		{
@@ -250,24 +257,19 @@ public class MapPanel extends JPanel implements MyMouseListener
 		}
 	}
 
-	public void printPolygon(Polygon p)
-	{
-		for (int i = 0; i < p.npoints; i++)
-		{
-			System.out.println("x: " + p.xpoints[i] + " y: " + p.ypoints[i]);
-		}
-	}
-
+	@Override
 	public void mouseDragged(MouseEvent e)
 	{
 		_mousePoint.setLocation(e.getPoint());
 	}
 
+	@Override
 	public void mouseMoved(MouseEvent e)
 	{
 		_mousePoint.setLocation(e.getPoint());
 	}
 
+	@Override
 	public void mousePressed(MouseEvent e)
 	{
 		if (e.getButton() == MouseEvent.BUTTON1)
@@ -276,6 +278,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 		}
 	}
 
+	@Override
 	public void mouseReleased(MouseEvent e)
 	{
 		if (e.getButton() == MouseEvent.BUTTON1)

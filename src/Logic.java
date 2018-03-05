@@ -3,6 +3,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -23,7 +24,7 @@ public class Logic
 		_map = map;
 		_passables = passables;
 		_aiCharacters = new LinkedList<AICharacter>();
-		addAICharacters(100);
+		addAICharacters(10);
 	}
 
 	public void paintAICharacters(Graphics2D g, boolean drawDebug)
@@ -36,6 +37,20 @@ public class Logic
 				c.Paint(g, drawDebug);
 		}
 	}
+
+	public void checkEaten()
+	{
+		Iterator<AICharacter> iterator = _aiCharacters.iterator();
+		while (iterator.hasNext())
+		{
+			AICharacter c = iterator.next();
+			Area temp = (Area) _player.getHitbox().clone();
+			temp.intersect(c.getHitbox());
+			if (!temp.isEmpty())
+				iterator.remove();
+		}
+	}
+
 	public void addAICharacters(int count)
 	{
 		for (int i = 0; i < count; i++)
@@ -50,10 +65,14 @@ public class Logic
 		{
 			for (Rectangle r : c.getRects())
 			{
+				int count = 0;
 				while (c.getHitbox().intersects(r))
 				{
-					c.move(Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (c.getX()), (r.y + r.getHeight() / 2) - (c.getY()))), 2);
+					count++;
+					c.move(	Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (c.getX()), (r.y + r.getHeight() / 2) - (c.getY()))),
+							0.5);
 				}
+				System.out.println(count);
 			}
 			checkCollision(c);
 			return true;
@@ -71,6 +90,7 @@ public class Logic
 			if (collisionHandle(c))
 				c.setNewTarget();
 		}
+		checkEaten();
 	}
 
 	public void movementLogic()
@@ -83,9 +103,7 @@ public class Logic
 								+ 90);
 		}
 
-		double disToSpeedRatio = (_cam.getFinalMousePoint().distance(_player.getX(), _player.getY()) / (5 * BlockType.getSize()));
-		disToSpeedRatio = (disToSpeedRatio > 1) ? 1 : disToSpeedRatio;
-		_player.setBaseSpeed(8 * disToSpeedRatio);
+		_player.setDisToSpeedRatio((_cam.getFinalMousePoint().distance(_player.getX(), _player.getY()) / (5 * BlockType.getSize())));
 		_player.updateFinalSpeed();
 		_player.move(_player.getAngle(), _player.getFinalSpeed());
 		collisionHandle(_player);
@@ -138,7 +156,7 @@ public class Logic
 		g.drawRect((int) _cam.getFinalMousePoint().x, (int) _cam.getFinalMousePoint().y, 100, 100);
 		g.drawString(String.valueOf(_player.getAngle()), (int) _cam.getFinalMousePoint().x, (int) _cam.getFinalMousePoint().y);
 		g.setColor(Color.green);
-		g.drawRect((int) _cam.getCamPoint().x, (int) _cam.getCamPoint().y, 100, 100);
+		g.drawRect(_cam.getCamPoint().x, _cam.getCamPoint().y, 100, 100);
 		g.setColor(Color.cyan);
 		g.drawRect((int) _player.getX(), (int) _player.getY(), 100, 100);
 	}

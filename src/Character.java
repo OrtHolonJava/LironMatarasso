@@ -105,7 +105,7 @@ public abstract class Character
 		_polyList = getPolygonPoints(toPolygon(_hitbox));
 	}
 
-	public LinkedList<Point2D.Double> getPolygonPoints(Polygon p)
+	public static LinkedList<Point2D.Double> getPolygonPoints(Polygon p)
 	{
 		LinkedList<Point2D.Double> list = new LinkedList<Point2D.Double>();
 		for (int i = 0; i < p.npoints; i++)
@@ -115,7 +115,7 @@ public abstract class Character
 		return list;
 	}
 
-	public Polygon toPolygon(Area a)
+	public static Polygon toPolygon(Area a)
 	{
 		PathIterator iterator = a.getPathIterator(null);
 		float[] floats = new float[6];
@@ -137,6 +137,14 @@ public abstract class Character
 		return polygon;
 	}
 
+	public static void printPolygon(Polygon p)
+	{
+		for (int i = 0; i < p.npoints; i++)
+		{
+			System.out.println("x: " + p.xpoints[i] + " y: " + p.ypoints[i]);
+		}
+	}
+
 	public synchronized void Paint(Graphics2D g, boolean isDebug)
 	{
 		BufferedImage use = _frames[10 * (int) (_angle / 180)
@@ -150,8 +158,8 @@ public abstract class Character
 		g2d.rotate(Math.toRadians(_angle), getX(), getY());
 		if (isDebug)
 		{
-			g2d.setColor(Color.black);
-			g2d.drawRect((int) (getX() - use.getWidth() / 2), (int) (getY() - use.getHeight() / 2), use.getWidth(), use.getHeight());
+			g.setColor(Color.black);
+			g.draw(_hitbox);
 			g.setColor(Color.orange);
 			for (Rectangle r : _rects)
 			{
@@ -171,9 +179,6 @@ public abstract class Character
 						BlockType.getSize() * 5);
 		}
 		g2d.drawImage(use, (int) (getX() - use.getWidth() / 2), (int) (getY() - use.getHeight() / 2), null);
-		// g2d.setColor(Color.black);
-		// g2d.drawRect((int) (getX() - use.getWidth() / 2), (int) (getY() -
-		// use.getHeight() / 2), use.getWidth(), use.getHeight());
 		g2d.dispose();
 	}
 
