@@ -28,7 +28,8 @@ public class MapPanel extends JPanel implements MyMouseListener
 	private Point2D.Double _mousePoint;
 	public static ImageLoader _imageLoader;
 
-	boolean drawDebug = true;
+	boolean drawDebug = false;
+	boolean goodGraphics = true;
 
 	public MapPanel()
 	{
@@ -85,15 +86,24 @@ public class MapPanel extends JPanel implements MyMouseListener
 		Graphics2D g2d = (Graphics2D) g;
 		super.paintComponent(g2d);
 		g2d.translate(-_logic.getCam().getCamPoint().x, -_logic.getCam().getCamPoint().y);
-		g2d.setColor(Color.blue);
-		g.fillRect(g2d.getClipBounds().x, g2d.getClipBounds().y, g2d.getClipBounds().width, g2d.getClipBounds().height);
-		// _backgroundImg.drawImg(g2d);
-		// drawHMap(g2d, _logic.getMap().getHbackgrounds());
-		drawGayMap(g2d, _logic.getMap().getHbackgrounds());
+		if (goodGraphics)
+		{
+			g2d.setColor(Color.blue);
+			g.fillRect(g2d.getClipBounds().x, g2d.getClipBounds().y, g2d.getClipBounds().width, g2d.getClipBounds().height);
+			drawGayMap(g2d, _logic.getMap().getHbackgrounds());
+		}
+		else
+		{
+			_backgroundImg.drawImg(g2d);
+			drawHMap(g2d, _logic.getMap().getHbackgrounds());
+
+		}
 		_logic.getPlayer().Paint(g2d, drawDebug);
 		_logic.paintAICharacters(g2d, drawDebug);
-		// drawHMap(g2d, _logic.getMap().getHmap());
-		drawGayMap(g2d, _logic.getMap().getHmap());
+		if (goodGraphics)
+			drawGayMap(g2d, _logic.getMap().getHmap());
+		else 
+			drawHMap(g2d, _logic.getMap().getHmap());
 		_logic.getPlayer().drawBars(g2d);
 		if (drawDebug)
 			_logic.drawDebug(g2d);
