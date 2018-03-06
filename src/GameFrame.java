@@ -5,6 +5,7 @@ import java.awt.event.WindowEvent;
 import java.util.LinkedList;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class GameFrame extends JFrame
 {
@@ -12,9 +13,14 @@ public class GameFrame extends JFrame
 	private LinkedList<MyMouseListener> _mouseListeners;
 	private GameLoop _gameLoop;
 	private MenuPanel _menuPanel;
+	private OptionsPanel _optionsPanel;
+
+	private boolean _drawDebug, _fastGraphics;
 
 	public GameFrame()
 	{
+		_drawDebug = false;
+		_fastGraphics = false;
 		MouseAdapter mouseAdapter = getMouseAdapter();
 		_mouseListeners = new LinkedList<MyMouseListener>();
 		setLayout(new BorderLayout());
@@ -30,10 +36,10 @@ public class GameFrame extends JFrame
 
 	public boolean panel = true;
 
-	public void startGame()
+	public void startGame(JPanel panelToClose)
 	{
-		remove(_menuPanel);
-		_mapPanel = new MapPanel();
+		remove(panelToClose);
+		_mapPanel = new MapPanel(_drawDebug, _fastGraphics);
 		add(_mapPanel, BorderLayout.CENTER);
 		addListener(_mapPanel);
 		revalidate();
@@ -56,6 +62,7 @@ public class GameFrame extends JFrame
 	{
 		MouseAdapter m = new MouseAdapter()
 		{
+			@Override
 			public void mouseDragged(MouseEvent e)
 			{
 				for (MyMouseListener l : _mouseListeners)
@@ -64,6 +71,7 @@ public class GameFrame extends JFrame
 				}
 			}
 
+			@Override
 			public void mouseMoved(MouseEvent e)
 			{
 				for (MyMouseListener l : _mouseListeners)
@@ -72,6 +80,7 @@ public class GameFrame extends JFrame
 				}
 			}
 
+			@Override
 			public void mousePressed(MouseEvent e)
 			{
 				for (MyMouseListener l : _mouseListeners)
@@ -80,6 +89,7 @@ public class GameFrame extends JFrame
 				}
 			}
 
+			@Override
 			public void mouseReleased(MouseEvent e)
 			{
 				for (MyMouseListener l : _mouseListeners)
@@ -90,4 +100,59 @@ public class GameFrame extends JFrame
 		};
 		return m;
 	}
+
+	public void buttonPressed(ImageButton.MyButtonType type)
+	{
+		switch (type)
+		{
+			case PLAY:
+			{
+				startGame(_menuPanel);
+				break;
+			}
+			case OPTIONS:
+			{
+				openOptions();
+				break;
+			}
+			case EXIT:
+			{
+				close();
+				break;
+			}
+
+			case PLAYOPTIONS:
+			{
+				startGame(_optionsPanel);
+				break;
+			}
+		}
+	}
+
+	public void buttonToggled(ImageToggleButton.MyToggleType type, boolean selected)
+	{
+		switch (type)
+		{
+			case GRAPHICS:
+			{
+				_fastGraphics = selected;
+				break;
+			}
+			case DEBUG:
+			{
+
+				break;
+			}
+		}
+	}
+
+	private void openOptions()
+	{
+		remove(_menuPanel);
+		_optionsPanel = new OptionsPanel(this, _drawDebug, _fastGraphics);
+		add(_optionsPanel, BorderLayout.CENTER);
+		revalidate();
+		repaint();
+	}
+
 }

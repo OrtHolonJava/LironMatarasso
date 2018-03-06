@@ -92,7 +92,7 @@ public class Player extends Character
 	{
 		if (_hunger == 0 && _health > 0)
 		{
-			_health--;
+			_health -= 1;
 		}
 	}
 
@@ -100,7 +100,7 @@ public class Player extends Character
 	{
 		if (_hunger > 0)
 		{
-			_hunger--;
+			_hunger -= 1 / 60.0;
 		}
 	}
 
@@ -148,6 +148,13 @@ public class Player extends Character
 	public double getDisToSpeedRatio()
 	{
 		return _disToSpeedRatio;
+	}
+
+	public void eaten(int hungerPoints)
+	{
+		// TODO Auto-generated method stub
+		_hunger += hungerPoints;
+		_hunger = (_hunger > 100) ? 100 : _hunger;
 	}
 
 }

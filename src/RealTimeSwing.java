@@ -119,8 +119,7 @@ public class RealTimeSwing
 		}).start();
 	}
 
-	private static java.util.Map<String,Latest> s_timestamps = new HashMap<String,Latest> ();
-	
+	private static java.util.Map<String, Latest> s_timestamps = new HashMap<String, Latest>();
 
 	private static class Latest
 	{

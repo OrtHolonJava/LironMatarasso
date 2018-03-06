@@ -7,7 +7,9 @@ public class BlockType
 	private Img _blockImage;
 	private int _id;
 	private String _path;
-	private static LinkedList<String> _imgPaths = new LinkedList<String>(Arrays.asList("images//SandBlock2.png", "images/StoneBlock2.png", "images//OneSW.png", "images//SandBackground.png", "images//StoneBackground.png"));
+	private static LinkedList<String> _imgPaths = new LinkedList<String>(Arrays.asList(	"images//SandBlock2.png", "images/StoneBlock2.png",
+																						"images//OneSW.png", "images//SandBackground.png",
+																						"images//StoneBackground.png"));
 	private static int size;
 
 	public BlockType(String path)

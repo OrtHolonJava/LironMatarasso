@@ -1,5 +1,3 @@
-import javax.swing.SwingUtilities;
-
 public class GameLoop implements Runnable
 {
 	Thread _gameThread;
@@ -109,8 +107,8 @@ public class GameLoop implements Runnable
 	private void render()
 	{
 		// long startTime = System.nanoTime();
-		SwingUtilities.invokeLater(() -> _mapPanel.repaint());
-		// RealTimeSwing.invokeNow(() -> _mapPanel.repaint());
+		// SwingUtilities.invokeLater(() -> _mapPanel.repaint());
+		RealTimeSwing.invokeNow(() -> _mapPanel.repaint());
 		// _mapPanel.paintImmediately(0, 0, _mapPanel.getWidth(),
 		// _mapPanel.getHeight());
 		// long estimatedTime = System.nanoTime() - startTime;
@@ -120,9 +118,11 @@ public class GameLoop implements Runnable
 
 	private void tick()
 	{
-		//long startTime = System.nanoTime();
-		SwingUtilities.invokeLater(() -> _mapPanel.checkMouse());
-		SwingUtilities.invokeLater(() -> _mapPanel.getLogic().doLogic());
+		// long startTime = System.nanoTime();
+		// SwingUtilities.invokeLater(() -> _mapPanel.checkMouse());
+		// SwingUtilities.invokeLater(() -> _mapPanel.getLogic().doLogic());
+		RealTimeSwing.invokeNow(() -> _mapPanel.checkMouse());
+		RealTimeSwing.invokeNow(() -> _mapPanel.getLogic().doLogic());
 		// _mapPanel.checkMouse();
 		// _mapPanel.getLogic().doLogic();
 		// long estimatedTime = System.nanoTime() - startTime;

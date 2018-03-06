@@ -27,11 +27,12 @@ public class MapPanel extends JPanel implements MyMouseListener
 	private Point2D.Double _mousePoint;
 	public static ImageLoader _imageLoader;
 
-	private boolean drawDebug = false;
-	private boolean goodGraphics = true;
+	private boolean _drawDebug, _fastGraphics;
 
-	public MapPanel()
+	public MapPanel(boolean drawDebug, boolean fastGraphics)
 	{
+		_drawDebug = drawDebug;
+		_fastGraphics = fastGraphics;
 		setOpaque(false);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		_mapFile = "MapFiles//world_20180221203331.xml";
@@ -85,7 +86,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 		Graphics2D g2d = (Graphics2D) g;
 		super.paintComponent(g2d);
 		g2d.translate(-_logic.getCam().getCamPoint().x, -_logic.getCam().getCamPoint().y);
-		if (goodGraphics)
+		if (_fastGraphics)
 		{
 			g2d.setColor(Color.blue);
 			g.fillRect(g2d.getClipBounds().x, g2d.getClipBounds().y, g2d.getClipBounds().width, g2d.getClipBounds().height);
@@ -97,14 +98,14 @@ public class MapPanel extends JPanel implements MyMouseListener
 			drawHMap(g2d, _logic.getMap().getHbackgrounds());
 
 		}
-		_logic.getPlayer().Paint(g2d, drawDebug);
-		_logic.paintAICharacters(g2d, drawDebug);
-		if (goodGraphics)
+		_logic.getPlayer().Paint(g2d, _drawDebug);
+		_logic.paintAICharacters(g2d, _drawDebug);
+		if (_fastGraphics)
 			drawGayMap(g2d, _logic.getMap().getHmap());
 		else
 			drawHMap(g2d, _logic.getMap().getHmap());
 		_logic.getPlayer().drawBars(g2d);
-		if (drawDebug)
+		if (_drawDebug)
 			_logic.drawDebug(g2d);
 	}
 

@@ -27,6 +27,19 @@ public class Logic
 		addAICharacters(10);
 	}
 
+	public void doLogic()
+	{
+		checkEaten();
+		movementLogic();
+		_player.updateStats();
+		for (AICharacter c : _aiCharacters)
+		{
+			c.basicAIMovement(_player);
+			if (collisionHandle(c))
+				c.setNewTarget();
+		}
+	}
+
 	public void paintAICharacters(Graphics2D g, boolean drawDebug)
 	{
 		Iterator<AICharacter> iterator = _aiCharacters.iterator();
@@ -47,7 +60,10 @@ public class Logic
 			Area temp = (Area) _player.getHitbox().clone();
 			temp.intersect(c.getHitbox());
 			if (!temp.isEmpty())
+			{
 				iterator.remove();
+				_player.eaten(1);
+			}
 		}
 	}
 
@@ -65,32 +81,15 @@ public class Logic
 		{
 			for (Rectangle r : c.getRects())
 			{
-				int count = 0;
 				while (c.getHitbox().intersects(r))
 				{
-					count++;
-					c.move(	Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (c.getX()), (r.y + r.getHeight() / 2) - (c.getY()))),
-							0.5);
+					c.move(Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (c.getX()), (r.y + r.getHeight() / 2) - (c.getY()))), 0.5);
 				}
-				System.out.println(count);
 			}
 			checkCollision(c);
 			return true;
 		}
 		return false;
-	}
-
-	public void doLogic()
-	{
-		movementLogic();
-		_player.updateStats();
-		for (AICharacter c : _aiCharacters)
-		{
-			c.basicAIMovement(_player);
-			if (collisionHandle(c))
-				c.setNewTarget();
-		}
-		checkEaten();
 	}
 
 	public void movementLogic()
