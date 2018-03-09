@@ -15,7 +15,6 @@ import javax.swing.ImageIcon;
 public class Img
 {
 	private Image _image;
-	private BufferedImage _bImage;
 	private int _x, _y, _width, _height;
 
 	/**
@@ -34,8 +33,6 @@ public class Img
 			_image = new ImageIcon(this.getClass().getClassLoader().getResource(path)).getImage();
 			setImgCords(x, y);
 			setImgSize(width, height);
-			_bImage = toBufferedImage(_image);
-			_bImage = resize(_bImage, width, height);
 		}
 		catch (NullPointerException e)
 		{
@@ -50,8 +47,7 @@ public class Img
 	 */
 	public void drawImg(Graphics g)
 	{
-		Graphics2D g2d = (Graphics2D) g;
-		g2d.drawImage(_image, _x, _y, _width, _height, null);
+		g.drawImage(_image, _x, _y, _width, _height, null);
 	}
 
 	/**
@@ -91,16 +87,6 @@ public class Img
 	{
 		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		return toImage(img);
-	}
-
-	public BufferedImage getbImage()
-	{
-		return _bImage;
-	}
-
-	public void setbImage(BufferedImage bImage)
-	{
-		_bImage = bImage;
 	}
 
 	/**
@@ -145,7 +131,7 @@ public class Img
 	public static Image toImage(BufferedImage bimage)
 	{
 		// Casting is enough to convert from BufferedImage to Image
-		Image img = (Image) bimage;
+		Image img = bimage;
 		return img;
 	}
 

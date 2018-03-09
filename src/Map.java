@@ -26,7 +26,6 @@ public class Map
 
 	public Map(int height, int width, String mapFileName, String effectsFileName, String backgroundsFileName)
 	{
-
 		_hmap = new HashMap<Point, BitMask>();
 		_heffects = new HashMap<Point, BitMask>();
 		_hbackgrounds = new HashMap<Point, BitMask>();

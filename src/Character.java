@@ -19,37 +19,57 @@ public abstract class Character
 	private Area _hitbox;
 	private LinkedList<Point2D.Double> _polyList, _coliList;
 	private Point2D.Double _loc;
-	private String _framesPath;
 	private LinkedList<Rectangle> _rects;
 
-	public Character(double x, double y, int width, int height, double baseSpeed, String framesPath)
+	public Character(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
 	{
 		_loc = new Point2D.Double(x, y);
-		_frameCount = 0;
 		_angle = 0;
 		_width = width;
 		_height = height;
 		_baseSpeed = baseSpeed;
-		_framesPath = framesPath;
+		_frames = frames;
+		_frameCount = _frames.length;
 		_speedSeaweedSlowdown = 1;
-		chooseFrames(framesPath);
 		_polyList = new LinkedList<Point2D.Double>();
 		_coliList = new LinkedList<Point2D.Double>();
 		_rects = new LinkedList<Rectangle>();
 		setHitbox();
 	}
 
-	public void chooseFrames(String framesPath)
+	public synchronized void Paint(Graphics2D g, boolean isDebug)
 	{
-		switch (framesPath)
+		BufferedImage use = _frames[10 * (int) (_angle / 180)
+									+ (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1)))
+										% (_frames.length / 2)];
+		Graphics2D g2d = (Graphics2D) g.create();
+		// g2d.setColor(Color.orange);
+		// g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
+		g2d.rotate(Math.toRadians(_angle), getX(), getY());
+		if (isDebug)
 		{
-			case "player":
-				_frames = MapPanel._imageLoader.getPlayerFrames();
-				break;
-
-			default:
-				break;
+			g.setColor(Color.black);
+			g.draw(_hitbox);
+			g.setColor(Color.orange);
+			for (Rectangle r : _rects)
+			{
+				g.fillRect(r.x, r.y, r.width, r.height);
+			}
+			g.setColor(new Color(128, 0, 128));
+			for (Point2D p : _polyList)
+			{
+				g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
+			}
+			g.setColor(Color.magenta);
+			for (Point2D p : _coliList)
+			{
+				g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
+			}
+			g.drawOval(	(int) (getX() - BlockType.getSize() * 5 / 2), (int) (getY() - BlockType.getSize() * 5 / 2), BlockType.getSize() * 5,
+						BlockType.getSize() * 5);
 		}
+		g2d.drawImage(use, (int) (getX() - use.getWidth() / 2), (int) (getY() - use.getHeight() / 2), null);
+		g2d.dispose();
 	}
 
 	public void move(double angle, double speed)
@@ -143,43 +163,6 @@ public abstract class Character
 		{
 			System.out.println("x: " + p.xpoints[i] + " y: " + p.ypoints[i]);
 		}
-	}
-
-	public synchronized void Paint(Graphics2D g, boolean isDebug)
-	{
-		BufferedImage use = _frames[10 * (int) (_angle / 180)
-									+ (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1)))
-										% (_frames.length / 2)];
-
-		use = Img.resize(use, _width, _height);
-		Graphics2D g2d = (Graphics2D) g.create();
-		// g2d.setColor(Color.orange);
-		// g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
-		g2d.rotate(Math.toRadians(_angle), getX(), getY());
-		if (isDebug)
-		{
-			g.setColor(Color.black);
-			g.draw(_hitbox);
-			g.setColor(Color.orange);
-			for (Rectangle r : _rects)
-			{
-				g.fillRect(r.x, r.y, r.width, r.height);
-			}
-			g.setColor(new Color(128, 0, 128));
-			for (Point2D p : _polyList)
-			{
-				g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
-			}
-			g.setColor(Color.magenta);
-			for (Point2D p : _coliList)
-			{
-				g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
-			}
-			g.drawOval(	(int) (getX() - BlockType.getSize() * 5 / 2), (int) (getY() - BlockType.getSize() * 5 / 2), BlockType.getSize() * 5,
-						BlockType.getSize() * 5);
-		}
-		g2d.drawImage(use, (int) (getX() - use.getWidth() / 2), (int) (getY() - use.getHeight() / 2), null);
-		g2d.dispose();
 	}
 
 	public void updateFinalSpeed()
@@ -340,16 +323,6 @@ public abstract class Character
 	public void setSpeedSeaweedSlowdown(double speedSeaweedSlowdown)
 	{
 		_speedSeaweedSlowdown = speedSeaweedSlowdown;
-	}
-
-	public String getFramesPath()
-	{
-		return _framesPath;
-	}
-
-	public void setFramesPath(String framesPath)
-	{
-		_framesPath = framesPath;
 	}
 
 	public LinkedList<Rectangle> getRects()

@@ -7,7 +7,7 @@ import javax.swing.JPanel;
 public class OptionsPanel extends JPanel
 {
 	private Img _background;
-	private ImageToggleButton _graphicsToggle;
+	private ImageToggleButton _graphicsToggle, _debugToggle;
 	private ImageButton _playButton;
 	private final int BUTTON_WIDTH = 600, BUTTON_HEIGHT = 80;
 
@@ -21,11 +21,16 @@ public class OptionsPanel extends JPanel
 												BUTTON_HEIGHT, frame, ImageToggleButton.MyToggleType.GRAPHICS);
 		_graphicsToggle.setSelected(fastGraphics);
 
+		_debugToggle = new ImageToggleButton(	"images//Buttons//debugButtonOff.png", "images//Buttons//debugButtonOn.png",
+												screenSize.width / 2 - BUTTON_WIDTH / 2, 3 * screenSize.height / 8, BUTTON_WIDTH,
+												BUTTON_HEIGHT, frame, ImageToggleButton.MyToggleType.DEBUG);
+		_debugToggle.setSelected(drawDebug);
 		_playButton =
 					new ImageButton("images//Buttons//playButtonM.png", screenSize.width / 2 - BUTTON_WIDTH / 2, 7 * screenSize.height / 8,
 									BUTTON_WIDTH, BUTTON_HEIGHT, ImageButton.MyButtonType.PLAYOPTIONS, frame);
 
 		add(_graphicsToggle);
+		add(_debugToggle);
 		add(_playButton);
 	}
 

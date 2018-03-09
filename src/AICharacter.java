@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.util.Random;
 
 public class AICharacter extends Character
@@ -8,9 +9,9 @@ public class AICharacter extends Character
 	private Point _target;
 	private double _tempSpeedBoost;
 
-	public AICharacter(double x, double y, int width, int height, double baseSpeed, String framesPath)
+	public AICharacter(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
 	{
-		super(x, y, width, height, baseSpeed, framesPath);
+		super(x, y, width, height, baseSpeed, frames);
 		Random r = new Random();
 		_tempSpeedBoost = 0;
 		_target = new Point(-1, -1);

@@ -140,7 +140,7 @@ public class GameFrame extends JFrame
 			}
 			case DEBUG:
 			{
-
+				_drawDebug = selected;
 				break;
 			}
 		}

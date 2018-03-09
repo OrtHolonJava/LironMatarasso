@@ -1,12 +1,19 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
+
+import javax.swing.ImageIcon;
 
 public class Logic
 {
@@ -15,16 +22,44 @@ public class Logic
 	private LinkedList<AICharacter> _aiCharacters;
 	private Camera _cam;
 	private LinkedList<Integer> _passables;
+	private BufferedImage[] _playerFrames, _simpleFishFrames;
 
-	public Logic(Player player, Camera cam, Map map, LinkedList<Integer> passables)
+	private final int PLAYER_WIDTH = 8 * BlockType.getSize() / 10, PLAYER_HEIGHT = 19 * BlockType.getSize() / 10,
+			SIMPLE_FISH_WIDTH = PLAYER_WIDTH / 4, SIMPLE_FISH_HEIGHT = PLAYER_HEIGHT / 4;
+
+	public Logic(Map map)
 	{
-		_player = player;
-		_cam = cam;
-		_cam.updateCamPoint(_player);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		_playerFrames = setFrames("images//SharkFrames//", PLAYER_WIDTH, PLAYER_HEIGHT);
+		_simpleFishFrames = setFrames("images//SharkFrames//", SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT);
 		_map = map;
-		_passables = passables;
+		_player = new Player(2000, 400, PLAYER_WIDTH, PLAYER_HEIGHT, 8, _playerFrames);
+		_cam = new Camera(	new Point(BlockType.getSize(), BlockType.getSize()), (int) screenSize.getWidth(), (int) screenSize.getHeight(),
+							_map.getWidth(), _map.getHeight());
+		_cam.updateCamPoint(_player);
+		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_aiCharacters = new LinkedList<AICharacter>();
-		addAICharacters(10);
+		addAICharacters(1000);
+	}
+
+	public BufferedImage[] setFrames(String path, int width, int height)
+	{
+		BufferedImage[] arr = null;
+		File dir = new File(System.getProperty("user.dir") + "\\bin\\" + path);
+		File[] directoryListing = dir.listFiles();
+		if (directoryListing != null)
+		{
+			arr = new BufferedImage[directoryListing.length];
+			int counter = 0;
+			for (File child : directoryListing)
+			{
+				// System.out.println(path + child.getName());
+				arr[counter] = Img.toBufferedImage(new ImageIcon(this	.getClass().getClassLoader()
+																		.getResource(path + child.getName())).getImage());
+				arr[counter++] = Img.resize(arr[counter - 1], width, height);
+			}
+		}
+		return arr;
 	}
 
 	public void doLogic()
@@ -71,7 +106,7 @@ public class Logic
 	{
 		for (int i = 0; i < count; i++)
 		{
-			_aiCharacters.add(new AICharacter(900, 450, _player.getWidth() / 4, _player.getHeight() / 4, 2, _player.getFramesPath()));
+			_aiCharacters.add(new AICharacter(900, 450, SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT, 2, _simpleFishFrames));
 		}
 	}
 

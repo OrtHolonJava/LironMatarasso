@@ -1,14 +1,15 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 
 public class Player extends Character
 {
 	private double _speedMouseBoost, _disToSpeedRatio, _stamina, _hunger, _health;
 	private boolean _isCooldown;
 
-	public Player(double x, double y, int width, int height, double baseSpeed)
+	public Player(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
 	{
-		super(x, y, width, height, baseSpeed, "player");
+		super(x, y, width, height, baseSpeed, frames);
 		_stamina = 100;
 		_disToSpeedRatio = 1;
 		_hunger = 100;
@@ -92,7 +93,7 @@ public class Player extends Character
 	{
 		if (_hunger == 0 && _health > 0)
 		{
-			_health -= 1;
+			_health -= 1 / 60.0;
 		}
 	}
 
@@ -102,6 +103,7 @@ public class Player extends Character
 		{
 			_hunger -= 1 / 60.0;
 		}
+		_hunger = (_hunger < 0) ? 0 : _hunger;
 	}
 
 	public void updateStats()
@@ -154,7 +156,7 @@ public class Player extends Character
 	{
 		// TODO Auto-generated method stub
 		_hunger += hungerPoints;
-		_hunger = (_hunger > 100) ? 100 : _hunger;
+		_hunger = (_hunger > 101) ? 101 : _hunger;
 	}
 
 }

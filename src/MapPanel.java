@@ -1,16 +1,12 @@
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import javax.swing.JPanel;
@@ -21,20 +17,18 @@ public class MapPanel extends JPanel implements MyMouseListener
 	private Img _backgroundImg;
 	private BlockType _blocksTypes[];
 	private BlockType _sandBlocks[], _stoneBlocks[], _seaweedBlock[];
-	private String _mapFile, _effectsFile, _backgroundFile;
 	private boolean _mouseDown;
 	private Logic _logic;
 	private Point2D.Double _mousePoint;
-	public static ImageLoader _imageLoader;
 
 	private boolean _drawDebug, _fastGraphics;
+	private String _mapFile, _effectsFile, _backgroundFile;
 
 	public MapPanel(boolean drawDebug, boolean fastGraphics)
 	{
+		setOpaque(false);
 		_drawDebug = drawDebug;
 		_fastGraphics = fastGraphics;
-		setOpaque(false);
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		_mapFile = "MapFiles//world_20180221203331.xml";
 		_backgroundFile = "MapFiles//background_20180220162654.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
@@ -42,13 +36,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 		_mapWidth = Map.getElementCountByName(_mapFile, "Area") / _mapHeight;
 		_blockSize = 60;
 		BlockType.setSize(_blockSize);
-		_imageLoader = new ImageLoader();
-
-		Player player = new Player(2000, 400, 8 * _blockSize / 10, 19 * _blockSize / 10, 8);
-		Camera cam = new Camera(new Point(_blockSize, _blockSize), (int) screenSize.getWidth(), (int) screenSize.getHeight(), _mapWidth,
-								_mapHeight);
-		Map map = new Map(_mapHeight, _mapWidth, _mapFile, _effectsFile, _backgroundFile);
-		_logic = new Logic(player, cam, map, new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5)));
+		_logic = new Logic(new Map(_mapHeight, _mapWidth, _mapFile, _effectsFile, _backgroundFile));
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _mapWidth * _blockSize, _mapHeight * _blockSize);
 		_blocksTypes = new BlockType[5];
 		_mouseDown = false;
