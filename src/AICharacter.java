@@ -1,12 +1,12 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
 public class AICharacter extends Character
 {
-	private Point _target;
+	private Point2D.Double _target;
 	private double _tempSpeedBoost;
 
 	public AICharacter(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
@@ -14,10 +14,15 @@ public class AICharacter extends Character
 		super(x, y, width, height, baseSpeed, frames);
 		Random r = new Random();
 		_tempSpeedBoost = 0;
-		_target = new Point(-1, -1);
+		_target = new Point2D.Double(-1, -1);
 		setAngle(r.nextInt(360));
 		updateFinalSpeed();
 		setNewTarget();
+	}
+
+	public void chase(Player p)
+	{
+		setAngleAndTarget(p.getLoc());
 	}
 
 	public void basicAIMovement(Player p)
@@ -25,8 +30,7 @@ public class AICharacter extends Character
 		if (getLoc().distance(p.getLoc()) < BlockType.getSize() * 2.5)
 		{
 			_tempSpeedBoost = 2;
-			setAngleAndTarget((Math.toDegrees(-Math.atan2((p.getX() + p.getWidth() / 2)	- (getX() + getWidth() / 2),
-															(p.getY() + p.getHeight() / 2) - (getY() + getHeight() / 2)))));
+			setAngleAndTarget(180 + (Math.toDegrees(Math.atan2(p.getY() - getY(), p.getX() - getX()))));
 		}
 		else
 		{
@@ -44,7 +48,13 @@ public class AICharacter extends Character
 	{
 		Random r = new Random();
 		int a = r.nextInt(90) - 45;
-		setAngleAndTarget((getAngle() + a) % 360);
+		setAngleAndTarget((getAngle() + a - 90));
+	}
+
+	public void setAngleAndTarget(Point2D.Double target)
+	{
+		_target.setLocation(target);
+		setAngle(Math.toDegrees(Math.atan2(_target.getY() - getY(), _target.getX() - getX())));
 	}
 
 	public void setAngleAndTarget(double a)
@@ -66,15 +76,18 @@ public class AICharacter extends Character
 		super.Paint(g, isDebug);
 		g.setColor(Color.orange);
 		if (isDebug)
-			g.drawRect(_target.x, _target.y, 100, 100);
+		{
+			g.drawRect((int) _target.x, (int) _target.y, 100, 100);
+			g.drawString(String.valueOf(getAngle()), (int) _target.x, (int) _target.y);
+		}
 	}
 
-	public Point getTarget()
+	public Point2D.Double getTarget()
 	{
 		return _target;
 	}
 
-	public void setTarget(Point target)
+	public void setTarget(Point2D.Double target)
 	{
 		_target = target;
 	}

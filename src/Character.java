@@ -270,9 +270,15 @@ public abstract class Character
 		return _angle;
 	}
 
+	public double getCorrectedAngle(double angle)
+	{
+		return (((angle < 0) ? 360 + angle : angle) + 90) % 360;
+
+	}
+
 	public void setAngle(double angle)
 	{
-		_angle = (angle < 0) ? 360 + angle : angle;
+		_angle = getCorrectedAngle(angle);
 	}
 
 	public double getBaseSpeed()

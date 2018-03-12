@@ -1,11 +1,16 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 
 public class Player extends Character
 {
 	private double _speedMouseBoost, _disToSpeedRatio, _stamina, _hunger, _health;
 	private boolean _isCooldown;
+	private Area _mouthHitbox;
 
 	public Player(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
 	{
@@ -48,6 +53,36 @@ public class Player extends Character
 	public boolean isCooldown()
 	{
 		return _isCooldown;
+	}
+
+	@Override
+	public void setHitbox()
+	{
+		super.setHitbox();
+		AffineTransform af = new AffineTransform();
+		af.rotate(Math.toRadians(getAngle()), getX(), getY());
+		Area a = new Area(new Rectangle((int) (getX() - getWidth() / 2), (int) (getY() - getHeight() / 2), getWidth(), getHeight() / 4));
+		_mouthHitbox = a.createTransformedArea(af);
+	}
+
+	@Override
+	public synchronized void Paint(Graphics2D g, boolean isDebug)
+	{
+		// TODO Auto-generated method stub
+		super.Paint(g, isDebug);
+
+		g.setColor(Color.magenta);
+		g.draw(_mouthHitbox);
+	}
+
+	public Area getMouthHitbox()
+	{
+		return _mouthHitbox;
+	}
+
+	public void setMouthHitbox(Area mouthHitbox)
+	{
+		_mouthHitbox = mouthHitbox;
 	}
 
 	public void setCooldown(boolean isCooldown)

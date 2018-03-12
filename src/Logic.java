@@ -33,13 +33,13 @@ public class Logic
 		_playerFrames = setFrames("images//SharkFrames//", PLAYER_WIDTH, PLAYER_HEIGHT);
 		_simpleFishFrames = setFrames("images//SharkFrames//", SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT);
 		_map = map;
-		_player = new Player(2000, 400, PLAYER_WIDTH, PLAYER_HEIGHT, 8, _playerFrames);
+		_player = new Player(2000, 400, PLAYER_WIDTH, PLAYER_HEIGHT, Block.getSize() / 8, _playerFrames);
 		_cam = new Camera(	new Point(BlockType.getSize(), BlockType.getSize()), (int) screenSize.getWidth(), (int) screenSize.getHeight(),
 							_map.getWidth(), _map.getHeight());
 		_cam.updateCamPoint(_player);
 		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_aiCharacters = new LinkedList<AICharacter>();
-		addAICharacters(1000);
+		addAICharacters(10);
 	}
 
 	public BufferedImage[] setFrames(String path, int width, int height)
@@ -92,7 +92,7 @@ public class Logic
 		while (iterator.hasNext())
 		{
 			AICharacter c = iterator.next();
-			Area temp = (Area) _player.getHitbox().clone();
+			Area temp = (Area) _player.getMouthHitbox().clone();
 			temp.intersect(c.getHitbox());
 			if (!temp.isEmpty())
 			{
@@ -106,7 +106,8 @@ public class Logic
 	{
 		for (int i = 0; i < count; i++)
 		{
-			_aiCharacters.add(new AICharacter(900, 450, SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT, 2, _simpleFishFrames));
+			_aiCharacters.add(new AICharacter(10	* Block.getSize(), 5 * Block.getSize(), SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT, 2,
+												_simpleFishFrames));
 		}
 	}
 
@@ -133,8 +134,7 @@ public class Logic
 		if (_cam.getFinalMousePoint().distance(_player.getLoc()) > 2)
 		{
 			_player.setAngle(Math.toDegrees(Math.atan2(_cam.getFinalMousePoint().y	- _player.getY(),
-														_cam.getFinalMousePoint().x - _player.getX()))
-								+ 90);
+														_cam.getFinalMousePoint().x - _player.getX())));
 		}
 
 		_player.setDisToSpeedRatio((_cam.getFinalMousePoint().distance(_player.getX(), _player.getY()) / (5 * BlockType.getSize())));
@@ -157,11 +157,10 @@ public class Logic
 				Point temp = new Point(curCol, curRow);
 				if (curRow >= 0 && curCol >= 0 && curRow < _map.getHeight() && curCol < _map.getWidth() && _map.getHmap().containsKey(temp))
 				{
-					Rectangle rect = new Rectangle(curCol	* BlockType.getSize(), curRow * BlockType.getSize(), BlockType.getSize(),
-													BlockType.getSize());
+					Rectangle rect = _map.getHmap().get(temp).getRectangle();
 					if (c.getHitbox().intersects(rect))
 					{
-						if (!_passables.contains(_map.getHmap().get(temp).getBlockID()))
+						if (!_passables.contains(_map.getHmap().get(temp).getBitMask().getBlockID()))
 						{
 							c.getRects().add(rect);
 							flag = false;
@@ -176,7 +175,7 @@ public class Logic
 							}
 						}
 						if (c.getSpeedSeaweedSlowdown() == 1)
-							c.applySeaweedSlowdown(_map.getHmap().get(temp).getBlockID() == 3);
+							c.applySeaweedSlowdown(_map.getHmap().get(temp).getBitMask().getBlockID() == 3);
 					}
 				}
 			}

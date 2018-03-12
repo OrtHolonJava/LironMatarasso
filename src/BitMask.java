@@ -67,13 +67,13 @@ public class BitMask
 		return kek;
 	}
 
-	public static int placeMeeting(HashMap<Point, BitMask> map, int size, int curCol, int curRow, int tileVal)
+	public static int placeMeeting(HashMap<Point, Block> map, int size, int curCol, int curRow, int tileVal)
 	{
 		Point temp = new Point(curCol, curRow);
-		return (map.containsKey(temp) && map.get(temp).getBlockID() == tileVal) ? 1 : 0;
+		return (map.containsKey(temp) && map.get(temp).getBitMask()._blockID == tileVal) ? 1 : 0;
 	}
 
-	public static int computeTile(HashMap<Point, BitMask> map, int size, int y, int x, int tileVal)
+	public static int computeTile(HashMap<Point, Block> map, int size, int y, int x, int tileVal)
 	{
 		int sum = 0;
 		int north_tile = placeMeeting(map, size, x, y - 1, tileVal);

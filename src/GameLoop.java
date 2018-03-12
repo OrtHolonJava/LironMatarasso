@@ -108,8 +108,8 @@ public class GameLoop implements Runnable
 	{
 		// long startTime = System.nanoTime();
 		// SwingUtilities.invokeLater(() -> _mapPanel.repaint());
-		RealTimeSwing.invokeNow(() -> _mapPanel.repaint());
-		// _mapPanel.paintImmediately(0, 0, _mapPanel.getWidth(),
+
+		RealTimeSwing.invokeNow(() -> _mapPanel.repaint(10));
 		// _mapPanel.getHeight());
 		// long estimatedTime = System.nanoTime() - startTime;
 		// System.out.println("r:" + String.format("%.12f", (double)

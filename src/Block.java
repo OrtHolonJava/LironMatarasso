@@ -2,25 +2,25 @@ import java.awt.Rectangle;
 
 public class Block
 {
-	private BlockType _blockType;
 	private BitMask _bitMask;
 	private Rectangle _rectangle;
 
-	public Block(BlockType blockType, BitMask bitMask, Rectangle rectangle)
+	private static int size;
+
+	public Block(BitMask bitMask, int x, int y)
 	{
-		_blockType = blockType;
 		_bitMask = bitMask;
-		_rectangle = rectangle;
+		_rectangle = new Rectangle(x * size, y * size, size, size);
 	}
 
-	public BlockType getBlockType()
+	public static int getSize()
 	{
-		return _blockType;
+		return size;
 	}
 
-	public void setBlockType(BlockType blockType)
+	public static void setSize(int size)
 	{
-		_blockType = blockType;
+		Block.size = size;
 	}
 
 	public BitMask getBitMask()

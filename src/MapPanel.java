@@ -36,6 +36,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 		_mapWidth = Map.getElementCountByName(_mapFile, "Area") / _mapHeight;
 		_blockSize = 60;
 		BlockType.setSize(_blockSize);
+		Block.setSize(_blockSize);
 		_logic = new Logic(new Map(_mapHeight, _mapWidth, _mapFile, _effectsFile, _backgroundFile));
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _mapWidth * _blockSize, _mapHeight * _blockSize);
 		_blocksTypes = new BlockType[5];
@@ -72,7 +73,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 	protected synchronized void paintComponent(Graphics g)
 	{
 		Graphics2D g2d = (Graphics2D) g;
-		super.paintComponent(g2d);
+		// super.paintComponent(g2d);
 		g2d.translate(-_logic.getCam().getCamPoint().x, -_logic.getCam().getCamPoint().y);
 		if (_fastGraphics)
 		{
@@ -95,23 +96,24 @@ public class MapPanel extends JPanel implements MyMouseListener
 		_logic.getPlayer().drawBars(g2d);
 		if (_drawDebug)
 			_logic.drawDebug(g2d);
+		g.dispose();
 	}
 
-	public void drawGayMap(Graphics2D g, HashMap<Point, BitMask> hmap)
+	public void drawGayMap(Graphics2D g, HashMap<Point, Block> hmap)
 	{
 		g.setColor(Color.black);
-		Iterator<java.util.Map.Entry<Point, BitMask>> iterator = hmap.entrySet().iterator();
+		Iterator<java.util.Map.Entry<Point, Block>> iterator = hmap.entrySet().iterator();
 		while (iterator.hasNext())
 		{
-			Entry<Point, BitMask> e = iterator.next();
+			Entry<Point, Block> e = iterator.next();
 			// for (Entry<Integer, BitMask> e : hmap.entrySet())
 			// {
 			int row = e.getKey().y, col = e.getKey().x;
 			if (g.getClipBounds().intersects(col * _blockSize, row * _blockSize, _blockSize, _blockSize))
 			{
-				if (e.getValue().getBlockID() != 0)
+				if (e.getValue().getBitMask().getBlockID() != 0)
 				{
-					switch (e.getValue().getBlockID())
+					switch (e.getValue().getBitMask().getBlockID())
 					{
 						case 1:
 						{
@@ -140,7 +142,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 						}
 
 					}
-					if (e.getValue().getBlockID() != 3)
+					if (e.getValue().getBitMask().getBlockID() != 3)
 					{
 						g.fillRect(col * _blockSize, row * _blockSize, _blockSize, _blockSize);
 					}
@@ -155,32 +157,32 @@ public class MapPanel extends JPanel implements MyMouseListener
 		}
 	}
 
-	public void drawHMap(Graphics2D g, HashMap<Point, BitMask> hmap)
+	public void drawHMap(Graphics2D g, HashMap<Point, Block> hmap)
 	{
-		Iterator<java.util.Map.Entry<Point, BitMask>> iterator = hmap.entrySet().iterator();
+		Iterator<java.util.Map.Entry<Point, Block>> iterator = hmap.entrySet().iterator();
 		while (iterator.hasNext())
 		{
-			Entry<Point, BitMask> e = iterator.next();
+			Entry<Point, Block> e = iterator.next();
 			// for (Entry<Integer, BitMask> e : hmap.entrySet())
 			// {
 			int row = e.getKey().y, col = e.getKey().x;
 			if (g.getClipBounds().intersects(col * _blockSize, row * _blockSize, _blockSize, _blockSize))
 			{
-				switch (e.getValue().getBlockID())
+				switch (e.getValue().getBitMask().getBlockID())
 				{
 					case 1:
 					{
-						_sandBlocks[e.getValue().getBitMask()].paintAt(g, col, row);
+						_sandBlocks[e.getValue().getBitMask().getBitMask()].paintAt(g, col, row);
 						break;
 					}
 					case 2:
 					{
-						_stoneBlocks[e.getValue().getBitMask()].paintAt(g, col, row);
+						_stoneBlocks[e.getValue().getBitMask().getBitMask()].paintAt(g, col, row);
 						break;
 					}
 					case 3:
 					{
-						switch (e.getValue().getBitMask())
+						switch (e.getValue().getBitMask().getBitMask())
 						{
 							case 2:
 							case 5:
@@ -205,7 +207,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 					}
 					default:
 					{
-						_blocksTypes[e.getValue().getBlockID() - 1].paintAt(g, col, row);
+						_blocksTypes[e.getValue().getBitMask().getBlockID() - 1].paintAt(g, col, row);
 					}
 				}
 			}
