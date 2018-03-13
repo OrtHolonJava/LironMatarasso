@@ -13,6 +13,14 @@ public class Block
 		_rectangle = new Rectangle(x * size, y * size, size, size);
 	}
 
+	@Override
+	public String toString()
+	{
+		// TODO Auto-generated method stub
+
+		return _bitMask.toString() + " " + _rectangle.toString();
+	}
+
 	public static int getSize()
 	{
 		return size;

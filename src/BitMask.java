@@ -1,4 +1,3 @@
-import java.awt.Point;
 import java.util.HashMap;
 
 public class BitMask
@@ -10,6 +9,13 @@ public class BitMask
 	{
 		_blockID = blockID;
 		_bitMask = bitMask;
+	}
+
+	@Override
+	public String toString()
+	{
+		// TODO Auto-generated method stub
+		return _blockID + " " + _bitMask;
 	}
 
 	public static HashMap<Integer, Integer> kek = setKek();
@@ -67,13 +73,17 @@ public class BitMask
 		return kek;
 	}
 
-	public static int placeMeeting(HashMap<Point, Block> map, int size, int curCol, int curRow, int tileVal)
+	public static boolean inBounds(Block[][] map, int x, int y)
 	{
-		Point temp = new Point(curCol, curRow);
-		return (map.containsKey(temp) && map.get(temp).getBitMask()._blockID == tileVal) ? 1 : 0;
+		return x >= 0 && y >= 0 && y < map.length && x < map[0].length;
 	}
 
-	public static int computeTile(HashMap<Point, Block> map, int size, int y, int x, int tileVal)
+	public static int placeMeeting(Block[][] map, int size, int x, int y, int tileVal)
+	{
+		return (inBounds(map, x, y) && map[y][x] != null && map[y][x].getBitMask()._blockID == tileVal) ? 1 : 0;
+	}
+
+	public static int computeTile(Block[][] map, int size, int y, int x, int tileVal)
 	{
 		int sum = 0;
 		int north_tile = placeMeeting(map, size, x, y - 1, tileVal);

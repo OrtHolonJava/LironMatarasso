@@ -18,22 +18,20 @@ public class GameLoop implements Runnable
 		_gameThread.start();
 	}
 
-	double lastUpdateTime = System.nanoTime(); // Store the time of the last
-	double lastRenderTime = System.nanoTime(); // Store the time of the last
-	double now;
-	int updateCount;
+	// double lastUpdateTime = System.nanoTime();
+	// double lastRenderTime = System.nanoTime();
+	// double now;
+	// int updateCount;
 
 	@Override
 	public void run()
 	{
-		// double lastUpdateTime = System.nanoTime(); // Store the time of the
-		// last
-		// update call.
-		// double lastRenderTime = System.nanoTime(); // Store the time of the
-		// last
-		// render call.
-		// double now;
-		// int updateCount;
+		double lastUpdateTime = System.nanoTime(); // Store the time of the last
+													// update call.
+		double lastRenderTime = System.nanoTime(); // Store the time of the last
+													// render call.
+		double now;
+		int updateCount;
 
 		/**
 		 * FPS Calculation Variables
@@ -108,8 +106,8 @@ public class GameLoop implements Runnable
 	{
 		// long startTime = System.nanoTime();
 		// SwingUtilities.invokeLater(() -> _mapPanel.repaint());
-
-		RealTimeSwing.invokeNow(() -> _mapPanel.repaint(10));
+		_mapPanel.repaint();
+		// RealTimeSwing.invokeNow(() -> _mapPanel.repaint(10));
 		// _mapPanel.getHeight());
 		// long estimatedTime = System.nanoTime() - startTime;
 		// System.out.println("r:" + String.format("%.12f", (double)
@@ -119,12 +117,10 @@ public class GameLoop implements Runnable
 	private void tick()
 	{
 		// long startTime = System.nanoTime();
-		// SwingUtilities.invokeLater(() -> _mapPanel.checkMouse());
-		// SwingUtilities.invokeLater(() -> _mapPanel.getLogic().doLogic());
-		RealTimeSwing.invokeNow(() -> _mapPanel.checkMouse());
-		RealTimeSwing.invokeNow(() -> _mapPanel.getLogic().doLogic());
-		// _mapPanel.checkMouse();
-		// _mapPanel.getLogic().doLogic();
+		// SwingUtilities.invokeLater(() -> _mapPanel.doLogic());
+		// RealTimeSwing.invokeNow(() -> _mapPanel.checkMouse());
+		// RealTimeSwing.invokeNow(() -> _mapPanel.getLogic().doLogic());
+		_mapPanel.doLogic();
 		// long estimatedTime = System.nanoTime() - startTime;
 		// System.out.println("t:" + String.format("%.12f", (double)
 		// estimatedTime / 1000000000));

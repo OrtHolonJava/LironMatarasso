@@ -1,13 +1,9 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
 
 import javax.swing.JPanel;
 
@@ -96,132 +92,132 @@ public class MapPanel extends JPanel implements MyMouseListener
 		_logic.getPlayer().drawBars(g2d);
 		if (_drawDebug)
 			_logic.drawDebug(g2d);
+		g2d.dispose();
 		g.dispose();
 	}
 
-	public void drawGayMap(Graphics2D g, HashMap<Point, Block> hmap)
+	public void drawGayMap(Graphics2D g, Block[][] hmap)
 	{
 		g.setColor(Color.black);
-		Iterator<java.util.Map.Entry<Point, Block>> iterator = hmap.entrySet().iterator();
-		while (iterator.hasNext())
+		for (int y = 0; y < hmap.length; y++)
 		{
-			Entry<Point, Block> e = iterator.next();
-			// for (Entry<Integer, BitMask> e : hmap.entrySet())
-			// {
-			int row = e.getKey().y, col = e.getKey().x;
-			if (g.getClipBounds().intersects(col * _blockSize, row * _blockSize, _blockSize, _blockSize))
+			for (int x = 0; x < hmap[y].length; x++)
 			{
-				if (e.getValue().getBitMask().getBlockID() != 0)
+				if (hmap[y][x] != null)
 				{
-					switch (e.getValue().getBitMask().getBlockID())
+					if (g.getClipBounds().intersects(hmap[y][x].getRectangle()))
 					{
-						case 1:
+						switch (hmap[y][x].getBitMask().getBlockID())
 						{
-							g.setColor(Color.yellow);
-							break;
-						}
-						case 2:
-						{
-							g.setColor(Color.gray);
-							break;
-						}
-						case 3:
-						{
-							g.setColor(Color.green);
-							break;
-						}
-						case 4:
-						{
-							g.setColor(new Color(204, 182, 102));
-							break;
-						}
-						case 5:
-						{
-							g.setColor(Color.darkGray);
-							break;
-						}
+							case 1:
+							{
+								g.setColor(Color.yellow);
+								break;
+							}
+							case 2:
+							{
+								g.setColor(Color.gray);
+								break;
+							}
+							case 3:
+							{
+								g.setColor(Color.green);
+								break;
+							}
+							case 4:
+							{
+								g.setColor(new Color(204, 182, 102));
+								break;
+							}
+							case 5:
+							{
+								g.setColor(Color.darkGray);
+								break;
+							}
 
-					}
-					if (e.getValue().getBitMask().getBlockID() != 3)
-					{
-						g.fillRect(col * _blockSize, row * _blockSize, _blockSize, _blockSize);
-					}
-					else
-					{
-						g.fillRect(col * _blockSize + 1 * _blockSize / 7, row * _blockSize, _blockSize / 7, _blockSize);
-						g.fillRect(col * _blockSize + 3 * _blockSize / 7, row * _blockSize, _blockSize / 7, _blockSize);
-						g.fillRect(col * _blockSize + 5 * _blockSize / 7, row * _blockSize, _blockSize / 7, _blockSize);
+						}
+						if (hmap[y][x].getBitMask().getBlockID() != 3)
+						{
+							g.fill(hmap[y][x].getRectangle());
+						}
+						else
+						{
+							g.fillRect(x * _blockSize + 1 * _blockSize / 7, y * _blockSize, _blockSize / 7, _blockSize);
+							g.fillRect(x * _blockSize + 3 * _blockSize / 7, y * _blockSize, _blockSize / 7, _blockSize);
+							g.fillRect(x * _blockSize + 5 * _blockSize / 7, y * _blockSize, _blockSize / 7, _blockSize);
+						}
 					}
 				}
 			}
 		}
 	}
 
-	public void drawHMap(Graphics2D g, HashMap<Point, Block> hmap)
+	public void drawHMap(Graphics2D g, Block[][] hmap)
 	{
-		Iterator<java.util.Map.Entry<Point, Block>> iterator = hmap.entrySet().iterator();
-		while (iterator.hasNext())
+		for (int y = 0; y < hmap.length; y++)
 		{
-			Entry<Point, Block> e = iterator.next();
-			// for (Entry<Integer, BitMask> e : hmap.entrySet())
-			// {
-			int row = e.getKey().y, col = e.getKey().x;
-			if (g.getClipBounds().intersects(col * _blockSize, row * _blockSize, _blockSize, _blockSize))
+			for (int x = 0; x < hmap[y].length; x++)
 			{
-				switch (e.getValue().getBitMask().getBlockID())
+				if (hmap[y][x] != null)
 				{
-					case 1:
+					if (g.getClipBounds().intersects(hmap[y][x].getRectangle()))
 					{
-						_sandBlocks[e.getValue().getBitMask().getBitMask()].paintAt(g, col, row);
-						break;
-					}
-					case 2:
-					{
-						_stoneBlocks[e.getValue().getBitMask().getBitMask()].paintAt(g, col, row);
-						break;
-					}
-					case 3:
-					{
-						switch (e.getValue().getBitMask().getBitMask())
+						switch (hmap[y][x].getBitMask().getBlockID())
 						{
-							case 2:
-							case 5:
-							case 8:
-							case 13:
-							case 24:
-							case 26:
-							case 29:
-							case 34:
-							case 42:
-							case 47:
+							case 1:
 							{
-								_seaweedBlock[1].paintAt(g, col, row);
+								_sandBlocks[hmap[y][x].getBitMask().getBitMask()].paintAt(g, x, y);
+								break;
+							}
+							case 2:
+							{
+								_stoneBlocks[hmap[y][x].getBitMask().getBitMask()].paintAt(g, x, y);
+								break;
+							}
+							case 3:
+							{
+								switch (hmap[y][x].getBitMask().getBitMask())
+								{
+									case 2:
+									case 5:
+									case 8:
+									case 13:
+									case 24:
+									case 26:
+									case 29:
+									case 34:
+									case 42:
+									case 47:
+									{
+										_seaweedBlock[1].paintAt(g, x, y);
+										break;
+									}
+									default:
+									{
+										_seaweedBlock[0].paintAt(g, x, y);
+									}
+								}
 								break;
 							}
 							default:
 							{
-								_seaweedBlock[0].paintAt(g, col, row);
+								_blocksTypes[hmap[y][x].getBitMask().getBlockID() - 1].paintAt(g, x, y);
 							}
 						}
-						break;
-					}
-					default:
-					{
-						_blocksTypes[e.getValue().getBitMask().getBlockID() - 1].paintAt(g, col, row);
 					}
 				}
-			}
-			// g.drawString( Integer.toString(e.getValue().getBitMask()),
-			// (e.getKey() % _logic.getMap().getWidth()) * _blockSize,
-			// (e.getKey() / _logic.getMap().getWidth()) * _blockSize +
-			// _blockSize / 2);
+				// g.drawString( Integer.toString(e.getValue().getBitMask()),
+				// (e.getKey() % _logic.getMap().getWidth()) * _blockSize,
+				// (e.getKey() / _logic.getMap().getWidth()) * _blockSize +
+				// _blockSize / 2);
 
+				// g.drawString(String.valueOf(i * _mapWidth + j), j *
+				// _blockSize,
+				// i *
+				// _blockSize +
+				// _blockSize / 2);
+			}
 		}
-		// g.drawString(String.valueOf(i * _mapWidth + j), j *
-		// _blockSize,
-		// i *
-		// _blockSize +
-		// _blockSize / 2);
 	}
 
 	public int rowColToIndex(int row, int col, int width)
@@ -229,23 +225,17 @@ public class MapPanel extends JPanel implements MyMouseListener
 		return col + row * width;
 	}
 
+	public void doLogic()
+	{
+		checkMouse();
+		_logic.doLogic();
+	}
+
 	public void checkMouse()
 	{
 
 		_logic.getCam().getMousePoint().setLocation(_mousePoint);
 		_logic.getPlayer().applyMouseBoost(_mouseDown);
-	}
-
-	public void printMat(int[][] mat, int size, int sizeW)
-	{
-		for (int i = 0; i < size; i++)
-		{
-			for (int j = 0; j < sizeW; j++)
-			{
-				System.out.print(mat[i][j] + " ");
-			}
-			System.out.println();
-		}
 	}
 
 	@Override

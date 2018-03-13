@@ -278,7 +278,7 @@ public abstract class Character
 
 	public void setAngle(double angle)
 	{
-		_angle = getCorrectedAngle(angle);
+		_angle = Math.floor(getCorrectedAngle(angle));
 	}
 
 	public double getBaseSpeed()

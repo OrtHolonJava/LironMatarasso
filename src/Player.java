@@ -70,9 +70,11 @@ public class Player extends Character
 	{
 		// TODO Auto-generated method stub
 		super.Paint(g, isDebug);
-
-		g.setColor(Color.magenta);
-		g.draw(_mouthHitbox);
+		if (isDebug)
+		{
+			g.setColor(Color.magenta);
+			g.draw(_mouthHitbox);
+		}
 	}
 
 	public Area getMouthHitbox()

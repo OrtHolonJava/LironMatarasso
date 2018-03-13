@@ -1,8 +1,5 @@
 
-import java.awt.Point;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -22,30 +19,47 @@ public class Map
 {
 	private int _width, _height;
 	private int _counter = 0;
-	private HashMap<Point, Block> _hmap, _heffects, _hbackgrounds;
+	private Block[][] _hmap, _heffects, _hbackgrounds;
 
 	public Map(int height, int width, String mapFileName, String effectsFileName, String backgroundsFileName)
 	{
-		_hmap = new HashMap<Point, Block>();
-		_heffects = new HashMap<Point, Block>();
-		_hbackgrounds = new HashMap<Point, Block>();
 		_width = width;
 		_height = height;
+		_hmap = new Block[_height][_width];
+		_heffects = new Block[_height][_width];
+		_hbackgrounds = new Block[_height][_width];
 		readFile(mapFileName, _hmap);
 		readFile(effectsFileName, _heffects);
 		readFile(backgroundsFileName, _hbackgrounds);
 	}
 
-	public void setBitMasks(HashMap<Point, Block> map)
+	public void printMat(Block[][] mat)
 	{
-		for (Entry<Point, Block> e : map.entrySet())
+		for (int y = 0; y < mat.length; y++)
 		{
-			e	.getValue().getBitMask()
-				.setBitMask(BitMask.computeTile(map, _width, e.getKey().y, e.getKey().x, e.getValue().getBitMask().getBlockID()));
+			for (int x = 0; x < mat[y].length; x++)
+			{
+				if (mat[y][x] != null)
+				{
+					System.out.println(mat[y][x].toString());
+				}
+			}
 		}
 	}
 
-	private void readFile(String fileName, HashMap<Point, Block> hmap)
+	public void setBitMasks(Block[][] map)
+	{
+		for (int y = 0; y < map.length; y++)
+		{
+			for (int x = 0; x < map[y].length; x++)
+			{
+				if (map[y][x] != null)
+					map[y][x].getBitMask().setBitMask(BitMask.computeTile(map, _width, y, x, map[y][x].getBitMask().getBlockID()));
+			}
+		}
+	}
+
+	private void readFile(String fileName, Block[][] hmap)
 	{
 		_counter = 0;
 		try
@@ -72,7 +86,7 @@ public class Map
 		}
 	}
 
-	private void readNode(NodeList nodeList, HashMap<Point, Block> map)
+	private void readNode(NodeList nodeList, Block[][] map)
 	{
 		for (int count = 0; count < nodeList.getLength(); count++)
 		{
@@ -87,9 +101,8 @@ public class Map
 						Node node = nodeMap.item(i);
 						if (Integer.parseInt(node.getNodeValue()) != 0)
 						{
-							map.put(new Point(_counter % _width, _counter / _width),
-									new Block(	new BitMask(Integer.parseInt(node.getNodeValue()), -1), _counter % _width,
-												_counter / _width));
+							map[_counter / _width][_counter % _width] = new Block(	new BitMask(Integer.parseInt(node.getNodeValue()), -1),
+																					_counter % _width, _counter / _width);
 						}
 						_counter++;
 					}
@@ -129,32 +142,32 @@ public class Map
 		_counter = counter;
 	}
 
-	public HashMap<Point, Block> getHmap()
+	public Block[][] getHmap()
 	{
 		return _hmap;
 	}
 
-	public void setHmap(HashMap<Point, Block> hmap)
+	public void setHmap(Block[][] hmap)
 	{
 		_hmap = hmap;
 	}
 
-	public HashMap<Point, Block> getHeffects()
+	public Block[][] getHeffects()
 	{
 		return _heffects;
 	}
 
-	public void setHeffects(HashMap<Point, Block> heffects)
+	public void setHeffects(Block[][] heffects)
 	{
 		_heffects = heffects;
 	}
 
-	public HashMap<Point, Block> getHbackgrounds()
+	public Block[][] getHbackgrounds()
 	{
 		return _hbackgrounds;
 	}
 
-	public void setHbackgrounds(HashMap<Point, Block> hbackgrounds)
+	public void setHbackgrounds(Block[][] hbackgrounds)
 	{
 		_hbackgrounds = hbackgrounds;
 	}

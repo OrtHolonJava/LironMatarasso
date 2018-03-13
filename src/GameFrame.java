@@ -19,7 +19,7 @@ public class GameFrame extends JFrame
 
 	public GameFrame()
 	{
-		_drawDebug = true;
+		_drawDebug = false;
 		_fastGraphics = false;
 		MouseAdapter mouseAdapter = getMouseAdapter();
 		_mouseListeners = new LinkedList<MyMouseListener>();
