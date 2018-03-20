@@ -4,6 +4,8 @@ import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.util.Arrays;
+import java.util.LinkedList;
 
 import javax.swing.JPanel;
 
@@ -17,6 +19,8 @@ public class MapPanel extends JPanel implements MyMouseListener
 	private Logic _logic;
 	private Point2D.Double _mousePoint;
 
+	public static LinkedList<Integer> _passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
+
 	private boolean _drawDebug, _fastGraphics;
 	private String _mapFile, _effectsFile, _backgroundFile;
 
@@ -25,6 +29,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 		setOpaque(false);
 		_drawDebug = drawDebug;
 		_fastGraphics = fastGraphics;
+		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_mapFile = "MapFiles//world_20180221203331.xml";
 		_backgroundFile = "MapFiles//background_20180220162654.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
@@ -66,7 +71,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 	}
 
 	@Override
-	protected synchronized void paintComponent(Graphics g)
+	protected void paintComponent(Graphics g)
 	{
 		Graphics2D g2d = (Graphics2D) g;
 		// super.paintComponent(g2d);
@@ -85,6 +90,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 		}
 		_logic.getPlayer().Paint(g2d, _drawDebug);
 		_logic.paintAICharacters(g2d, _drawDebug);
+
 		if (_fastGraphics)
 			drawGayMap(g2d, _logic.getMap().getHmap());
 		else
@@ -277,4 +283,15 @@ public class MapPanel extends JPanel implements MyMouseListener
 	{
 		_logic = logic;
 	}
+
+	public LinkedList<Integer> getPassables()
+	{
+		return _passables;
+	}
+
+	public void setPassables(LinkedList<Integer> passables)
+	{
+		_passables = passables;
+	}
+
 }

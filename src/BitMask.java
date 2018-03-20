@@ -73,14 +73,9 @@ public class BitMask
 		return kek;
 	}
 
-	public static boolean inBounds(Block[][] map, int x, int y)
-	{
-		return x >= 0 && y >= 0 && y < map.length && x < map[0].length;
-	}
-
 	public static int placeMeeting(Block[][] map, int size, int x, int y, int tileVal)
 	{
-		return (inBounds(map, x, y) && map[y][x] != null && map[y][x].getBitMask()._blockID == tileVal) ? 1 : 0;
+		return (Logic.inBounds(x, y, map[0].length, map.length) && map[y][x] != null && map[y][x].getBitMask()._blockID == tileVal) ? 1 : 0;
 	}
 
 	public static int computeTile(Block[][] map, int size, int y, int x, int tileVal)

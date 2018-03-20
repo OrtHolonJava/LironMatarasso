@@ -20,6 +20,7 @@ public class Map
 	private int _width, _height;
 	private int _counter = 0;
 	private Block[][] _hmap, _heffects, _hbackgrounds;
+	private static DjikstraVertex[][] _dMap;
 
 	public Map(int height, int width, String mapFileName, String effectsFileName, String backgroundsFileName)
 	{
@@ -31,6 +32,16 @@ public class Map
 		readFile(mapFileName, _hmap);
 		readFile(effectsFileName, _heffects);
 		readFile(backgroundsFileName, _hbackgrounds);
+		_dMap = new DjikstraVertex[_hmap.length][_hmap[0].length];
+		for (int y = 0; y < _hmap.length; y++)
+		{
+			for (int x = 0; x < _hmap[0].length; x++)
+			{
+				_dMap[y][x] =
+							new DjikstraVertex(	x, y,
+												_hmap[y][x] == null || MapPanel._passables.contains(_hmap[y][x].getBitMask().getBlockID()));
+			}
+		}
 	}
 
 	public void printMat(Block[][] mat)
@@ -192,4 +203,13 @@ public class Map
 		_height = height;
 	}
 
+	public static DjikstraVertex[][] getdMap()
+	{
+		return _dMap;
+	}
+
+	public static void setdMap(DjikstraVertex[][] dMap)
+	{
+		_dMap = dMap;
+	}
 }

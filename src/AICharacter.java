@@ -22,7 +22,12 @@ public class AICharacter extends Character
 
 	public void chase(Player p)
 	{
-		setAngleAndTarget(p.getLoc());
+		setAngleAndTarget(new Point2D.Double(p.getLoc().x, p.getLoc().y));
+	}
+
+	public boolean nearTarget()
+	{
+		return getLoc().distance(_target) < getFinalSpeed();
 	}
 
 	public void basicAIMovement(Player p)
@@ -37,7 +42,7 @@ public class AICharacter extends Character
 			_tempSpeedBoost = 0;
 		}
 		updateFinalSpeed();
-		if (getLoc().distance(_target) < getFinalSpeed())
+		if (nearTarget())
 		{
 			setNewTarget();
 		}
@@ -53,6 +58,7 @@ public class AICharacter extends Character
 
 	public void setAngleAndTarget(Point2D.Double target)
 	{
+
 		_target.setLocation(target);
 		setAngle(Math.toDegrees(Math.atan2(_target.getY() - getY(), _target.getX() - getX())));
 	}
@@ -77,8 +83,8 @@ public class AICharacter extends Character
 		g.setColor(Color.orange);
 		if (isDebug)
 		{
-			g.drawRect((int) _target.x, (int) _target.y, 100, 100);
-			g.drawString(String.valueOf(getAngle()), (int) _target.x, (int) _target.y);
+			g.drawRect((int) _target.getX(), (int) _target.getY(), 100, 100);
+			g.drawString(String.valueOf(getAngle()), (int) _target.getX(), (int) _target.getY());
 		}
 	}
 
@@ -91,5 +97,4 @@ public class AICharacter extends Character
 	{
 		_target = target;
 	}
-
 }

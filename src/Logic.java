@@ -10,6 +10,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -21,7 +22,7 @@ public class Logic
 	private Player _player;
 	private LinkedList<AICharacter> _aiCharacters;
 	private Camera _cam;
-	private LinkedList<Integer> _passables;
+	public static LinkedList<Integer> _passables;
 	private BufferedImage[] _playerFrames, _simpleFishFrames;
 
 	private final int PLAYER_WIDTH = 8 * BlockType.getSize() / 10, PLAYER_HEIGHT = 19 * BlockType.getSize() / 10,
@@ -39,7 +40,8 @@ public class Logic
 		_cam.updateCamPoint(_player);
 		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_aiCharacters = new LinkedList<AICharacter>();
-		addAICharacters(100);
+		addAICharacters(10);
+		addFollowers(1);
 	}
 
 	public BufferedImage[] setFrames(String path, int width, int height)
@@ -69,10 +71,30 @@ public class Logic
 		_player.updateStats();
 		for (AICharacter c : _aiCharacters)
 		{
-			c.basicAIMovement(_player);
+			if (c instanceof Follower)
+			{
+				Follower f = (Follower) c;
+				if (f.getLoc().distance(_player.getLoc()) < Block.getSize() * 10)
+				{
+					followPlayer(f);
+				}
+				if (f.getPath().isEmpty())
+				{
+					f.basicAIMovement(_player);
+				}
+				else
+				{
+					f.followPath();
+				}
+			}
+			else
+			{
+				c.basicAIMovement(_player);
+			}
 			if (collisionHandle(c))
 				c.setNewTarget();
 		}
+
 	}
 
 	public void paintAICharacters(Graphics2D g, boolean drawDebug)
@@ -109,6 +131,21 @@ public class Logic
 			_aiCharacters.add(new AICharacter(16	* Block.getSize(), 7 * Block.getSize(), SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT, 2,
 												_simpleFishFrames));
 		}
+	}
+
+	private void addFollowers(int count)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			_aiCharacters.add(new Follower(16 * Block.getSize()	+ i * Block.getSize(), 5 * Block.getSize() + i * Block.getSize(),
+											SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT, 2, _simpleFishFrames));
+		}
+	}
+
+	public void followPlayer(Follower c)
+	{
+		startDjikstra(c, _player.getLoc());
+		// startDjikstraFromEnd(c, _player.getLoc());
 	}
 
 	public boolean collisionHandle(Character c)
@@ -244,4 +281,120 @@ public class Logic
 		_aiCharacters = aiCharacters;
 	}
 
+	public void startDjikstra(Follower c, Point2D.Double endLoc)
+	{
+		LinkedList<DjikstraVertex> Q = new LinkedList<DjikstraVertex>();
+		DjikstraVertex[][] dMap = new DjikstraVertex[Map.getdMap().length][Map.getdMap()[0].length];
+		for (int y = 0; y < Map.getdMap().length; y++)
+		{
+			for (int x = 0; x < Map.getdMap()[0].length; x++)
+			{
+				dMap[y][x] = new DjikstraVertex(x, y, Map.getdMap()[y][x].isClear());
+				Q.add(dMap[y][x]);
+			}
+		}
+		dMap[(int) c.getLoc().y / Block.getSize()][(int) c.getLoc().x / Block.getSize()].setDistance(0);
+
+		while (!Q.isEmpty())
+		{
+			DjikstraVertex u = Collections.min(Q);
+			if (u.getLoc().y == (int) endLoc.y / Block.getSize() && u.getLoc().x == (int) endLoc.x / Block.getSize())
+				break;
+			Q.remove(u);
+			changeNeighbours(dMap, u);
+		}
+		c.getPath().clear();
+		DjikstraVertex next = dMap[(int) endLoc.y / Block.getSize()][(int) endLoc.x / Block.getSize()];
+		while (next.getPrev().x != -1 && next.getPrev().y != -1)
+		{
+			c.getPath().addFirst(new Point2D.Double(next.getLoc().x * Block.getSize()	+ Block.getSize() / 2,
+													next.getLoc().y * Block.getSize() + Block.getSize() / 2));
+			next = dMap[next.getPrev().y][next.getPrev().x];
+		}
+		c.getPath().addLast((Point2D.Double) endLoc.clone());
+	}
+
+	public void startDjikstraFromEnd(Follower c, Point2D.Double endLoc)
+	{
+		LinkedList<DjikstraVertex> Q = new LinkedList<DjikstraVertex>();
+		LinkedList<Point2D.Double> addList = new LinkedList<Point2D.Double>();
+		DjikstraVertex[][] dMap = new DjikstraVertex[Map.getdMap().length][Map.getdMap()[0].length];
+		for (int y = 0; y < Map.getdMap().length; y++)
+		{
+			for (int x = 0; x < Map.getdMap()[0].length; x++)
+			{
+				dMap[y][x] = new DjikstraVertex(x, y, Map.getdMap()[y][x].isClear());
+				Q.add(dMap[y][x]);
+			}
+		}
+		Point2D.Double startLoc = (c.getPath().isEmpty()) ? c.getLoc() : c.getPath().getLast();
+		dMap[(int) startLoc.y / Block.getSize()][(int) startLoc.x / Block.getSize()].setDistance(0);
+
+		while (!Q.isEmpty())
+		{
+			DjikstraVertex u = Collections.min(Q);
+			if (u.getLoc().y == (int) endLoc.y / Block.getSize() && u.getLoc().x == (int) endLoc.x / Block.getSize())
+				break;
+			Q.remove(u);
+			changeNeighbours(dMap, u);
+		}
+		// c.getPath().clear();
+		DjikstraVertex next = dMap[(int) endLoc.y / Block.getSize()][(int) endLoc.x / Block.getSize()];
+		while (next.getPrev().x != -1 && next.getPrev().y != -1)
+		{
+			Point2D.Double temp = new Point2D.Double(next.getLoc().x * Block.getSize()	+ Block.getSize() / 2,
+														next.getLoc().y * Block.getSize() + Block.getSize() / 2);
+			if (c.getPath().contains(temp))
+			{
+				c.getPath().subList(findIndex(c.getPath(), temp), c.getPath().size()).clear();
+			}
+			else
+			{
+				addList.addFirst(temp);
+			}
+			next = dMap[next.getPrev().y][next.getPrev().x];
+		}
+		c.getPath().addAll(c.getPath().size(), addList);
+	}
+
+	public <T> int findIndex(LinkedList<T> l, T e)
+	{
+		for (int i = 0; i < l.size(); i++)
+		{
+			if (l.get(i).equals(e))
+				return i;
+		}
+		return -1;
+	}
+
+	public void changeNeighbours(DjikstraVertex[][] dMap, DjikstraVertex u)
+	{
+		changeNeighbour(dMap, u.getX() - 1, u.getY() - 1, u, 1.5);
+		changeNeighbour(dMap, u.getX() - 1, u.getY(), u, 1);
+		changeNeighbour(dMap, u.getX() - 1, u.getY() + 1, u, 1.5);
+		changeNeighbour(dMap, u.getX(), u.getY() - 1, u, 1);
+		changeNeighbour(dMap, u.getX(), u.getY() + 1, u, 1);
+		changeNeighbour(dMap, u.getX() + 1, u.getY() - 1, u, 1.5);
+		changeNeighbour(dMap, u.getX() + 1, u.getY(), u, 1);
+		changeNeighbour(dMap, u.getX() + 1, u.getY() + 1, u, 1.5);
+
+	}
+
+	public void changeNeighbour(DjikstraVertex[][] dMap, int x, int y, DjikstraVertex u, double add)
+	{
+		if (inBounds(x, y, dMap[0].length, dMap.length) && dMap[y][x].isClear())
+		{
+			double dis = u.getDistance() + add;
+			if (dis < dMap[y][x].getDistance())
+			{
+				dMap[y][x].setDistance(dis);
+				dMap[y][x].setPrev(u.getLoc());
+			}
+		}
+	}
+
+	public static boolean inBounds(int x, int y, int width, int height)
+	{
+		return x >= 0 && y >= 0 && y < height && x < width;
+	}
 }
