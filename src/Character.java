@@ -20,6 +20,7 @@ public abstract class Character
 	private LinkedList<Point2D.Double> _polyList, _coliList;
 	private Point2D.Double _loc;
 	private LinkedList<Rectangle> _rects;
+	private Area _mouthHitbox;
 
 	public Character(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
 	{
@@ -67,6 +68,8 @@ public abstract class Character
 			}
 			g.drawOval(	(int) (getX() - BlockType.getSize() * 5 / 2), (int) (getY() - BlockType.getSize() * 5 / 2), BlockType.getSize() * 5,
 						BlockType.getSize() * 5);
+			g.setColor(Color.magenta);
+			g.draw(_mouthHitbox);
 		}
 		g2d.drawImage(use, (int) (getX() - use.getWidth() / 2), (int) (getY() - use.getHeight() / 2), null);
 		g2d.dispose();
@@ -123,6 +126,8 @@ public abstract class Character
 		Area a = new Area(new Rectangle((int) (getX() - _width / 2), (int) (getY() - _height / 2), _width, _height));
 		_hitbox = a.createTransformedArea(af);
 		_polyList = getPolygonPoints(toPolygon(_hitbox));
+		Area mh = new Area(new Rectangle((int) (getX() - getWidth() / 2), (int) (getY() - getHeight() / 2), getWidth(), getHeight() / 4));
+		_mouthHitbox = mh.createTransformedArea(af);
 	}
 
 	public static LinkedList<Point2D.Double> getPolygonPoints(Polygon p)
@@ -339,6 +344,16 @@ public abstract class Character
 	public void setRects(LinkedList<Rectangle> rects)
 	{
 		_rects = rects;
+	}
+
+	public Area getMouthHitbox()
+	{
+		return _mouthHitbox;
+	}
+
+	public void setMouthHitbox(Area mouthHitbox)
+	{
+		_mouthHitbox = mouthHitbox;
 	}
 
 }

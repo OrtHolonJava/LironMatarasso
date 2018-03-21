@@ -20,28 +20,34 @@ public class Logic
 {
 	private Map _map;
 	private Player _player;
-	private LinkedList<AICharacter> _aiCharacters;
+	private LinkedList<AICharacter> _aiCharacters, _basicCharacters;
+	private LinkedList<Follower> _followers;
 	private Camera _cam;
 	public static LinkedList<Integer> _passables;
-	private BufferedImage[] _playerFrames, _simpleFishFrames;
+	private BufferedImage[] _playerFrames, _simpleFishFrames, _followerFrames;
 
 	private final int PLAYER_WIDTH = 8 * BlockType.getSize() / 10, PLAYER_HEIGHT = 19 * BlockType.getSize() / 10,
-			SIMPLE_FISH_WIDTH = PLAYER_WIDTH / 4, SIMPLE_FISH_HEIGHT = PLAYER_HEIGHT / 4;
+			SIMPLE_FISH_WIDTH = PLAYER_WIDTH / 4, SIMPLE_FISH_HEIGHT = PLAYER_HEIGHT / 4, FOLLOWER_WIDTH = 7 * PLAYER_WIDTH / 10,
+			FOLLOWER_HEIGHT = PLAYER_HEIGHT;
 
 	public Logic(Map map)
 	{
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		_playerFrames = setFrames("images//SharkFrames//", PLAYER_WIDTH, PLAYER_HEIGHT);
 		_simpleFishFrames = setFrames("images//SharkFrames//", SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT);
+		_followerFrames = setFrames("images//SharkFrames//", FOLLOWER_WIDTH, FOLLOWER_HEIGHT);
 		_map = map;
-		_player = new Player(33 * Block.getSize(), 7 * Block.getSize(), PLAYER_WIDTH, PLAYER_HEIGHT, Block.getSize() / 8, _playerFrames);
+		_player = new Player(33 * Block.getSize()	+ Block.getSize() / 2, 7 * Block.getSize() + Block.getSize() / 2, PLAYER_WIDTH,
+								PLAYER_HEIGHT, Block.getSize() / 8, _playerFrames);
 		_cam = new Camera(	new Point(BlockType.getSize(), BlockType.getSize()), (int) screenSize.getWidth(), (int) screenSize.getHeight(),
 							_map.getWidth(), _map.getHeight());
 		_cam.updateCamPoint(_player);
 		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_aiCharacters = new LinkedList<AICharacter>();
+		_basicCharacters = new LinkedList<AICharacter>();
+		_followers = new LinkedList<Follower>();
 		addAICharacters(10);
-		addFollowers(1);
+		addFollowers(2);
 	}
 
 	public BufferedImage[] setFrames(String path, int width, int height)
@@ -74,11 +80,14 @@ public class Logic
 			if (c instanceof Follower)
 			{
 				Follower f = (Follower) c;
-				if (f.getLoc().distance(_player.getLoc()) < Block.getSize() * 10)
+				if (true /*
+							 * || f.getLoc().distance(_player.getLoc()) <
+							 * Block.getSize() * 10
+							 */)
 				{
-					followPlayer(f);
+					followCharacter(f, _player);
 				}
-				if (f.getPath().isEmpty())
+				if (f.getPath().size() <= 1)
 				{
 					f.basicAIMovement(_player);
 				}
@@ -110,7 +119,7 @@ public class Logic
 
 	public void checkEaten()
 	{
-		Iterator<AICharacter> iterator = _aiCharacters.iterator();
+		Iterator<AICharacter> iterator = _basicCharacters.iterator();
 		while (iterator.hasNext())
 		{
 			AICharacter c = iterator.next();
@@ -119,6 +128,7 @@ public class Logic
 			if (!temp.isEmpty())
 			{
 				iterator.remove();
+				_aiCharacters.remove(c);
 				_player.eaten(1);
 			}
 		}
@@ -128,8 +138,11 @@ public class Logic
 	{
 		for (int i = 0; i < count; i++)
 		{
-			_aiCharacters.add(new AICharacter(16	* Block.getSize(), 7 * Block.getSize(), SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT, 2,
-												_simpleFishFrames));
+			AICharacter b = new AICharacter(16	* Block.getSize(), 7 * Block.getSize(), SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT, 2,
+											_simpleFishFrames);
+			_aiCharacters.add(b);
+			_basicCharacters.add(b);
+
 		}
 	}
 
@@ -137,15 +150,29 @@ public class Logic
 	{
 		for (int i = 0; i < count; i++)
 		{
-			_aiCharacters.add(new Follower(16 * Block.getSize()	+ i * Block.getSize(), 5 * Block.getSize() + i * Block.getSize(),
-											SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT, 2, _simpleFishFrames));
+			Follower f = new Follower(16 * Block.getSize()	+ i * Block.getSize() + Block.getSize() / 2,
+										5 * Block.getSize() + i * Block.getSize() + Block.getSize() / 2, FOLLOWER_WIDTH, FOLLOWER_HEIGHT, 5,
+										_followerFrames);
+			_aiCharacters.add(f);
+			_followers.add(f);
 		}
 	}
 
-	public void followPlayer(Follower c)
+	public void followCharacter(Follower f, Character c)
 	{
-		startDjikstra(c, _player.getLoc());
-		// startDjikstraFromEnd(c, _player.getLoc());
+		Point2D.Double centerTileChar = new Point2D.Double((int) (c.getLoc().x / Block.getSize()) * Block.getSize()	+ Block.getSize() / 2,
+															c.getLoc().y / Block.getSize() * Block.getSize() + Block.getSize() / 2);
+		int i = findIndex(f.getPath(), centerTileChar);
+		if (i != -1)
+		{
+			f.getPath().subList(i, f.getPath().size()).clear();
+			System.out.println("lol cya");
+		}
+		else
+		{
+			startDjikstra(f, centerTileChar);
+			// startDjikstraFromEnd(c, _player.getLoc());
+		}
 	}
 
 	public boolean collisionHandle(Character c)
@@ -284,32 +311,70 @@ public class Logic
 	public void startDjikstra(Follower c, Point2D.Double endLoc)
 	{
 		LinkedList<DjikstraVertex> Q = new LinkedList<DjikstraVertex>();
-		DjikstraVertex[][] dMap = new DjikstraVertex[Map.getdMap().length][Map.getdMap()[0].length];
-		for (int y = 0; y < Map.getdMap().length; y++)
+		c.getSearchRect().y = (int) ((c.getLoc().y < endLoc.y) ? c.getLoc().y / Block.getSize() : endLoc.y / Block.getSize());
+		c.getSearchRect().x = (int) ((c.getLoc().x < endLoc.x) ? c.getLoc().x / Block.getSize() : endLoc.x / Block.getSize());
+		c.getSearchRect().y -= 3;
+		c.getSearchRect().x -= 3;
+		c.getSearchRect().y = (c.getSearchRect().y < 0) ? 0 : c.getSearchRect().y;
+		c.getSearchRect().x = (c.getSearchRect().x < 0) ? 0 : c.getSearchRect().x;
+		c.getSearchRect().width = (int) ((c.getLoc().x > endLoc.x) ? c.getLoc().x / Block.getSize() : endLoc.x / Block.getSize())
+									- c.getSearchRect().x + 5;
+		c.getSearchRect().height = (int) ((c.getLoc().y > endLoc.y) ? c.getLoc().y / Block.getSize() : endLoc.y / Block.getSize())
+									- c.getSearchRect().y + 5;
+
+		c.getSearchRect().width = (c.getSearchRect().width + c.getSearchRect().x > _map.getWidth())	? _map.getWidth() - c.getSearchRect().x
+																									: c.getSearchRect().width;
+		c.getSearchRect().height = (c.getSearchRect().height + c.getSearchRect().y > _map.getHeight())
+																											? _map.getHeight()
+																											- c.getSearchRect().y
+																										: c.getSearchRect().height;
+
+		DjikstraVertex[][] dMap = new DjikstraVertex[c.getSearchRect().height][c.getSearchRect().width];
+
+		// System.out.println("start: " + startX + " " + startY + " w:" + width
+		// + " h:" + height);
+
+		for (int y = 0; y < c.getSearchRect().height; y++)
 		{
-			for (int x = 0; x < Map.getdMap()[0].length; x++)
+			for (int x = 0; x < c.getSearchRect().width; x++)
 			{
-				dMap[y][x] = new DjikstraVertex(x, y, Map.getdMap()[y][x].isClear());
+				// System.out.println((x + startX) + " " + (y + startY));
+				dMap[y][x] = new DjikstraVertex(x	+ c.getSearchRect().x, y + c.getSearchRect().y,
+												Map.getdMap()[y + c.getSearchRect().y][x + c.getSearchRect().x].isClear());
 				Q.add(dMap[y][x]);
 			}
 		}
-		dMap[(int) c.getLoc().y / Block.getSize()][(int) c.getLoc().x / Block.getSize()].setDistance(0);
 
+		// System.out.println("done");
+		// for (int y = 0; y < Map.getdMap().length; y++)
+		// {
+		// for (int x = 0; x < Map.getdMap()[0].length; x++)
+		// {
+		// dMap[y][x] = new DjikstraVertex(x, y, Map.getdMap()[y][x].isClear());
+		// Q.add(dMap[y][x]);
+		// }
+		// }
+		dMap[(int) c.getLoc().y / Block.getSize() - c.getSearchRect().y][(int) c.getLoc().x / Block.getSize()
+																			- c.getSearchRect().x].setDistance(0);
+		int count = 0;
 		while (!Q.isEmpty())
 		{
 			DjikstraVertex u = Collections.min(Q);
 			if (u.getLoc().y == (int) endLoc.y / Block.getSize() && u.getLoc().x == (int) endLoc.x / Block.getSize())
 				break;
 			Q.remove(u);
-			changeNeighbours(dMap, u);
+			changeNeighbours(dMap, u, c.getSearchRect().x, c.getSearchRect().y);
+			count++;
 		}
+		System.out.println(count);
 		c.getPath().clear();
-		DjikstraVertex next = dMap[(int) endLoc.y / Block.getSize()][(int) endLoc.x / Block.getSize()];
+		DjikstraVertex next = dMap[(int) endLoc.y / Block.getSize() - c.getSearchRect().y][(int) endLoc.x / Block.getSize()
+																							- c.getSearchRect().x];
 		while (next.getPrev().x != -1 && next.getPrev().y != -1)
 		{
 			c.getPath().addFirst(new Point2D.Double(next.getLoc().x * Block.getSize()	+ Block.getSize() / 2,
 													next.getLoc().y * Block.getSize() + Block.getSize() / 2));
-			next = dMap[next.getPrev().y][next.getPrev().x];
+			next = dMap[next.getPrev().y - c.getSearchRect().y][next.getPrev().x - c.getSearchRect().x];
 		}
 		c.getPath().addLast((Point2D.Double) endLoc.clone());
 	}
@@ -336,7 +401,7 @@ public class Logic
 			if (u.getLoc().y == (int) endLoc.y / Block.getSize() && u.getLoc().x == (int) endLoc.x / Block.getSize())
 				break;
 			Q.remove(u);
-			changeNeighbours(dMap, u);
+			// changeNeighbours(dMap, u, startX, startY);
 		}
 		// c.getPath().clear();
 		DjikstraVertex next = dMap[(int) endLoc.y / Block.getSize()][(int) endLoc.x / Block.getSize()];
@@ -367,22 +432,24 @@ public class Logic
 		return -1;
 	}
 
-	public void changeNeighbours(DjikstraVertex[][] dMap, DjikstraVertex u)
+	public void changeNeighbours(DjikstraVertex[][] dMap, DjikstraVertex u, int startX, int startY)
 	{
-		changeNeighbour(dMap, u.getX() - 1, u.getY() - 1, u, 1.5);
-		changeNeighbour(dMap, u.getX() - 1, u.getY(), u, 1);
-		changeNeighbour(dMap, u.getX() - 1, u.getY() + 1, u, 1.5);
-		changeNeighbour(dMap, u.getX(), u.getY() - 1, u, 1);
-		changeNeighbour(dMap, u.getX(), u.getY() + 1, u, 1);
-		changeNeighbour(dMap, u.getX() + 1, u.getY() - 1, u, 1.5);
-		changeNeighbour(dMap, u.getX() + 1, u.getY(), u, 1);
-		changeNeighbour(dMap, u.getX() + 1, u.getY() + 1, u, 1.5);
+		changeNeighbour(dMap, u.getX() - 1, u.getY() - 1, u, Math.sqrt(2), startX, startY);
+		changeNeighbour(dMap, u.getX() - 1, u.getY() + 1, u, Math.sqrt(2), startX, startY);
+		changeNeighbour(dMap, u.getX() + 1, u.getY() - 1, u, Math.sqrt(2), startX, startY);
+		changeNeighbour(dMap, u.getX() + 1, u.getY() + 1, u, Math.sqrt(2), startX, startY);
+		changeNeighbour(dMap, u.getX() - 1, u.getY(), u, 1, startX, startY);
+		changeNeighbour(dMap, u.getX(), u.getY() - 1, u, 1, startX, startY);
+		changeNeighbour(dMap, u.getX(), u.getY() + 1, u, 1, startX, startY);
+		changeNeighbour(dMap, u.getX() + 1, u.getY(), u, 1, startX, startY);
 
 	}
 
-	public void changeNeighbour(DjikstraVertex[][] dMap, int x, int y, DjikstraVertex u, double add)
+	public void changeNeighbour(DjikstraVertex[][] dMap, int x, int y, DjikstraVertex u, double add, int startX, int startY)
 	{
-		if (inBounds(x, y, dMap[0].length, dMap.length) && dMap[y][x].isClear())
+		x -= startX;
+		y -= startY;
+		if (inBounds(x, y, dMap[0].length, dMap.length) && dMap[y][x] != null && dMap[y][x].isClear())
 		{
 			double dis = u.getDistance() + add;
 			if (dis < dMap[y][x].getDistance())

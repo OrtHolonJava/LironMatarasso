@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
@@ -8,11 +9,12 @@ import java.util.LinkedList;
 public class Follower extends AICharacter
 {
 	private LinkedList<Point2D.Double> _path;
-
+	private Rectangle _searchRect;
 	public Follower(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
 	{
 		super(x, y, width, height, baseSpeed, frames);
 		_path = new LinkedList<Point2D.Double>();
+		_searchRect = new Rectangle(0, 0, 0, 0);
 	}
 
 	public void followPath()
@@ -68,9 +70,18 @@ public class Follower extends AICharacter
 		g.setColor(Color.orange);
 		g.drawRect((int) getTarget().getX(), (int) getTarget().getY(), 100, 100);
 		g.drawString(String.valueOf(getAngle()), (int) getTarget().getX(), (int) getTarget().getY());
+		g.setColor(Color.YELLOW);
+		drawSearchRect(g);
 
 		// }
 
+	}
+
+	public void drawSearchRect(Graphics2D g)
+	{
+		g.setColor(Color.yellow);
+		g.drawRect(_searchRect.x	* Block.getSize(), _searchRect.y * Block.getSize(), _searchRect.width * Block.getSize(),
+					_searchRect.height * Block.getSize());
 	}
 
 	public void setPath(LinkedList<Point2D.Double> path)
@@ -83,4 +94,13 @@ public class Follower extends AICharacter
 		return _path;
 	}
 
+	public Rectangle getSearchRect()
+	{
+		return _searchRect;
+	}
+
+	public void setSearchRect(Rectangle searchRect)
+	{
+		_searchRect = searchRect;
+	}
 }
