@@ -38,7 +38,7 @@ public abstract class Character
 		setHitbox();
 	}
 
-	public synchronized void Paint(Graphics2D g, boolean isDebug)
+	public void Paint(Graphics2D g, boolean isDebug)
 	{
 		BufferedImage use = _frames[10 * (int) (_angle / 180)
 									+ (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1)))

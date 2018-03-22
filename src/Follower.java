@@ -10,6 +10,7 @@ public class Follower extends AICharacter
 {
 	private LinkedList<Point2D.Double> _path;
 	private Rectangle _searchRect;
+
 	public Follower(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
 	{
 		super(x, y, width, height, baseSpeed, frames);
@@ -17,9 +18,9 @@ public class Follower extends AICharacter
 		_searchRect = new Rectangle(0, 0, 0, 0);
 	}
 
+
 	public void followPath()
 	{
-		setAngleAndTarget(_path.getFirst());
 		if (nearTarget())
 		{
 			if (_path.size() > 1)
@@ -27,6 +28,8 @@ public class Follower extends AICharacter
 				_path.removeFirst();
 			}
 		}
+		setAngleAndTarget(_path.getFirst());
+
 		move(getAngle(), getFinalSpeed());
 	}
 
@@ -42,14 +45,15 @@ public class Follower extends AICharacter
 		move(getAngle(), getFinalSpeed());
 	}
 
-	public void drawPath(Graphics2D g)
+	public static void drawPath(Graphics2D g, LinkedList<Point2D.Double> path)
 	{
-		Iterator<Point2D.Double> iterator = _path.iterator();
+		Iterator<Point2D.Double> iterator = path.iterator();
 		g.setColor(Color.red);
-		if (!_path.isEmpty())
+		if (!path.isEmpty())
 		{
-			Point2D.Double start = getLoc();
-			g.drawLine((int) start.x, (int) start.y, (int) getLoc().x, (int) getLoc().y);
+			Point2D.Double start = iterator.next();
+			// g.drawLine((int) start.x, (int) start.y, (int) getLoc().x, (int)
+			// getLoc().y);
 			while (iterator.hasNext())
 			{
 				Point2D.Double p = iterator.next();
@@ -66,7 +70,7 @@ public class Follower extends AICharacter
 		super.Paint(g, isDebug);
 		// if (isDebug)
 		// {
-		drawPath(g);
+		drawPath(g, _path);
 		g.setColor(Color.orange);
 		g.drawRect((int) getTarget().getX(), (int) getTarget().getY(), 100, 100);
 		g.drawString(String.valueOf(getAngle()), (int) getTarget().getX(), (int) getTarget().getY());

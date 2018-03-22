@@ -19,7 +19,7 @@ public class GameFrame extends JFrame
 
 	public GameFrame()
 	{
-		_drawDebug = false;
+		_drawDebug = true;
 		_fastGraphics = false;
 		MouseAdapter mouseAdapter = getMouseAdapter();
 		_mouseListeners = new LinkedList<MyMouseListener>();
@@ -27,11 +27,14 @@ public class GameFrame extends JFrame
 		_menuPanel = new MenuPanel(this);
 		add(_menuPanel, BorderLayout.CENTER);
 		addMouseMotionListener(mouseAdapter);
+		setFocusable(true);
+		requestFocus();
 		addMouseListener(mouseAdapter);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setUndecorated(true);
 		setVisible(true);
+
 	}
 
 	public boolean panel = true;

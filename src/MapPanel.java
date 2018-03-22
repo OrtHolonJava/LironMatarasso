@@ -29,7 +29,6 @@ public class MapPanel extends JPanel implements MyMouseListener
 		setOpaque(false);
 		_drawDebug = drawDebug;
 		_fastGraphics = fastGraphics;
-		_passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));
 		_mapFile = "MapFiles//world_20180221203331.xml";
 		_backgroundFile = "MapFiles//background_20180220162654.xml";
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
@@ -89,7 +88,6 @@ public class MapPanel extends JPanel implements MyMouseListener
 
 		}
 		_logic.getPlayer().Paint(g2d, _drawDebug);
-		_logic.paintAICharacters(g2d, _drawDebug);
 
 		if (_fastGraphics)
 			drawGayMap(g2d, _logic.getMap().getHmap());
@@ -98,6 +96,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 		_logic.getPlayer().drawBars(g2d);
 		if (_drawDebug)
 			_logic.drawDebug(g2d);
+		_logic.paintAICharacters(g2d, _drawDebug);
 		g2d.dispose();
 		g.dispose();
 	}
@@ -293,5 +292,4 @@ public class MapPanel extends JPanel implements MyMouseListener
 	{
 		_passables = passables;
 	}
-
 }

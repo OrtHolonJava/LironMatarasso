@@ -91,9 +91,17 @@ public class Player extends Character
 
 	public void updateHealth()
 	{
+
 		if (_hunger == 0 && _health > 0)
 		{
 			_health -= 1 / 60.0;
+		}
+		else
+		{
+			if(_health<100)
+			{
+				_health += _hunger / 1000;
+			}
 		}
 	}
 
@@ -154,9 +162,14 @@ public class Player extends Character
 
 	public void eaten(int hungerPoints)
 	{
-		// TODO Auto-generated method stub
 		_hunger += hungerPoints;
 		_hunger = (_hunger > 101) ? 101 : _hunger;
+	}
+
+	public void hurt(int hitPoints)
+	{
+		_health -= hitPoints;
+		_health = (_health < 0) ? 0 : _health;
 	}
 
 }
