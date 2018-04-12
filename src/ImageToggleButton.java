@@ -16,20 +16,7 @@ public class ImageToggleButton extends JToggleButton
 
 	private MyToggleType _type;
 
-	public void setIcon(String path, int width, int height)
-	{
-		ImageIcon icon = new ImageIcon(this.getClass().getClassLoader().getResource(path));
-		Image newimg = icon.getImage().getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
-		icon = new ImageIcon(newimg);
-		setMargin(new Insets(0, 0, 0, 0));
-		setOpaque(false);
-		setContentAreaFilled(false);
-		setBorderPainted(false);
-		setBorder(null);
-		setIcon(icon);
-	}
-
-	public ImageToggleButton(String pathFalse, String pathTrue, int x, int y, int width, int height, GameFrame frame, MyToggleType type)
+	public ImageToggleButton(String pathFalse, String pathTrue, int x, int y, int width, int height, MyToggleType type, GameFrame frame)
 	{
 		_type = type;
 		setIcon(pathFalse, width, height);
@@ -37,7 +24,6 @@ public class ImageToggleButton extends JToggleButton
 
 		addActionListener(new ActionListener()
 		{
-
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
@@ -53,6 +39,19 @@ public class ImageToggleButton extends JToggleButton
 			}
 		});
 
+	}
+
+	public void setIcon(String path, int width, int height)
+	{
+		ImageIcon icon = new ImageIcon(this.getClass().getClassLoader().getResource(path));
+		Image newimg = icon.getImage().getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+		icon = new ImageIcon(newimg);
+		setMargin(new Insets(0, 0, 0, 0));
+		setOpaque(false);
+		setContentAreaFilled(false);
+		setBorderPainted(false);
+		setBorder(null);
+		setIcon(icon);
 	}
 
 }

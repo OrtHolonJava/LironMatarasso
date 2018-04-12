@@ -6,10 +6,12 @@ public class GameLoop implements Runnable
 	private final double _ups = 60.0, _timeBetweenUpdates = 1000000000 / _ups, _targetFPS = 60,
 			_timeBetweenRenders = 1000000000 / _targetFPS;
 	private final int _maxUpdatesBeforeRender = 5;
+	private boolean _paused;
 
 	public GameLoop(MapPanel mapPanel)
 	{
 		_mapPanel = mapPanel;
+		_paused = false;
 	}
 
 	public void startGame()
@@ -62,10 +64,16 @@ public class GameLoop implements Runnable
 				lastUpdateTime = now - _timeBetweenUpdates;
 			}
 
+
+			while (_paused)
+			{
+				Thread.yield();
+			}
 			/**
 			 * Render the current (updated) state of the game.
 			 */
 			render();
+
 			lastRenderTime = now;
 
 			// Update the frames we got.
@@ -85,18 +93,6 @@ public class GameLoop implements Runnable
 				Thread.yield(); // Yield until it has been at least the target
 								// time between renders. This saves the CPU from
 								// hogging.
-
-				/**
-				 * Preventing over-consumption of the system's CPU power.
-				 */
-				try
-				{
-					Thread.sleep(1);
-				}
-				catch (Exception e)
-				{
-				}
-
 				now = System.nanoTime();
 			}
 		}
@@ -125,4 +121,20 @@ public class GameLoop implements Runnable
 		// System.out.println("t:" + String.format("%.12f", (double)
 		// estimatedTime / 1000000000));
 	}
+
+	public void setPaused(boolean paused)
+	{
+		_paused = paused;
+	}
+
+	public boolean getPaused()
+	{
+		return _paused;
+	}
+
+	public void flipPaused()
+	{
+		_paused = !_paused;
+	}
+
 }

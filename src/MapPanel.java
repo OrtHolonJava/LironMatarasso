@@ -1,6 +1,9 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -9,7 +12,7 @@ import java.util.LinkedList;
 
 import javax.swing.JPanel;
 
-public class MapPanel extends JPanel implements MyMouseListener
+public class MapPanel extends JPanel implements MyMouseListener, MyKeyListener
 {
 	private int _blockSize, _mapWidth, _mapHeight;
 	private Img _backgroundImg;
@@ -24,8 +27,10 @@ public class MapPanel extends JPanel implements MyMouseListener
 	private boolean _drawDebug, _fastGraphics;
 	private String _mapFile, _effectsFile, _backgroundFile;
 
-	public MapPanel(boolean drawDebug, boolean fastGraphics)
+	public MapPanel(boolean drawDebug, boolean fastGraphics, GameFrame frame)
 	{
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		setSize(screenSize);
 		setOpaque(false);
 		_drawDebug = drawDebug;
 		_fastGraphics = fastGraphics;
@@ -37,7 +42,7 @@ public class MapPanel extends JPanel implements MyMouseListener
 		_blockSize = 60;
 		BlockType.setSize(_blockSize);
 		Block.setSize(_blockSize);
-		_logic = new Logic(new Map(_mapHeight, _mapWidth, _mapFile, _effectsFile, _backgroundFile));
+		_logic = new Logic(new Map(_mapHeight, _mapWidth, _mapFile, _effectsFile, _backgroundFile), frame);
 		_backgroundImg = new Img("images//Background.jpg", 0, 0, _mapWidth * _blockSize, _mapHeight * _blockSize);
 		_blocksTypes = new BlockType[5];
 		_mouseDown = false;
@@ -78,25 +83,32 @@ public class MapPanel extends JPanel implements MyMouseListener
 		if (_fastGraphics)
 		{
 			g2d.setColor(Color.blue);
-			g.fillRect(g2d.getClipBounds().x, g2d.getClipBounds().y, g2d.getClipBounds().width, g2d.getClipBounds().height);
+			g2d.fill(g2d.getClipBounds());
 			drawGayMap(g2d, _logic.getMap().getHbackgrounds());
 		}
 		else
 		{
 			_backgroundImg.drawImg(g2d);
 			drawHMap(g2d, _logic.getMap().getHbackgrounds());
-
 		}
-		_logic.getPlayer().Paint(g2d, _drawDebug);
+
+		_logic.getPlayer().draw(g2d, _drawDebug);
 
 		if (_fastGraphics)
+		{
 			drawGayMap(g2d, _logic.getMap().getHmap());
+		}
 		else
+		{
 			drawHMap(g2d, _logic.getMap().getHmap());
+		}
 		_logic.getPlayer().drawBars(g2d);
 		if (_drawDebug)
+		{
 			_logic.drawDebug(g2d);
+		}
 		_logic.paintAICharacters(g2d, _drawDebug);
+		// _logic.drawSearchOrder(g2d);
 		g2d.dispose();
 		g.dispose();
 	}
@@ -216,11 +228,8 @@ public class MapPanel extends JPanel implements MyMouseListener
 				// (e.getKey() / _logic.getMap().getWidth()) * _blockSize +
 				// _blockSize / 2);
 
-				// g.drawString(String.valueOf(i * _mapWidth + j), j *
-				// _blockSize,
-				// i *
-				// _blockSize +
-				// _blockSize / 2);
+				// g.drawString(String.valueOf("x: " + x + "y: " + y), x *
+				// _blockSize, y * _blockSize);
 			}
 		}
 	}
@@ -271,6 +280,27 @@ public class MapPanel extends JPanel implements MyMouseListener
 		{
 			_mouseDown = false;
 		}
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e)
+	{
+		// TODO Auto-generated method stub
+		switch (e.getKeyCode())
+		{
+			case KeyEvent.VK_ESCAPE:
+			{
+				break;
+			}
+		}
+
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e)
+	{
+		// TODO Auto-generated method stub
+
 	}
 
 	public Logic getLogic()

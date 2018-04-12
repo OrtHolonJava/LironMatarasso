@@ -39,7 +39,8 @@ public class Map
 			{
 				_dMap[y][x] =
 							new DjikstraVertex(	x, y,
-												_hmap[y][x] == null || MapPanel._passables.contains(_hmap[y][x].getBitMask().getBlockID()));
+												_hmap[y][x] == null || MapPanel._passables.contains(_hmap[y][x].getBitMask().getBlockID()),
+												0, 0);
 			}
 		}
 	}

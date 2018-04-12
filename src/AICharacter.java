@@ -77,11 +77,11 @@ public class AICharacter extends Character
 	}
 
 	@Override
-	public synchronized void Paint(Graphics2D g, boolean isDebug)
+	public synchronized void draw(Graphics2D g, boolean drawDebug)
 	{
-		super.Paint(g, isDebug);
+		super.draw(g, drawDebug);
 		g.setColor(Color.orange);
-		if (isDebug)
+		if (drawDebug)
 		{
 			g.drawRect((int) _target.getX(), (int) _target.getY(), 100, 100);
 			g.drawString(String.valueOf(getAngle()), (int) _target.getX(), (int) _target.getY());

@@ -38,7 +38,7 @@ public abstract class Character
 		setHitbox();
 	}
 
-	public void Paint(Graphics2D g, boolean isDebug)
+	public void draw(Graphics2D g, boolean drawDebug)
 	{
 		BufferedImage use = _frames[10 * (int) (_angle / 180)
 									+ (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1)))
@@ -47,7 +47,7 @@ public abstract class Character
 		// g2d.setColor(Color.orange);
 		// g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		g2d.rotate(Math.toRadians(_angle), getX(), getY());
-		if (isDebug)
+		if (drawDebug)
 		{
 			g.setColor(Color.black);
 			g.draw(_hitbox);
@@ -178,16 +178,12 @@ public abstract class Character
 	public void setCords(double x, double y)
 	{
 		_loc.setLocation(x, y);
-		// _image.setImgCords(x, y);
-		// _mirrorImage.setImgCords(x, y);
 	}
 
 	public void setSize(int width, int height)
 	{
 		_width = width;
 		_height = height;
-		// _image.setImgSize(width, height);
-		// _mirrorImage.setImgSize(width, height);
 	}
 
 	public Point2D.Double getLoc()

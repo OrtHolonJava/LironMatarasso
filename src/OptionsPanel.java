@@ -15,22 +15,25 @@ public class OptionsPanel extends JPanel
 	{
 		setLayout(null);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		setSize(screenSize);
 		_background = new Img("images//menuBackground.jpg", 0, 0, screenSize.width, screenSize.height);
 		_graphicsToggle = new ImageToggleButton("images//Buttons//graphicsButtonFancy.png", "images//Buttons//graphicsButtonFast.png",
 												screenSize.width / 2 - BUTTON_WIDTH / 2, 2 * screenSize.height / 8, BUTTON_WIDTH,
-												BUTTON_HEIGHT, frame, ImageToggleButton.MyToggleType.GRAPHICS);
-		_graphicsToggle.setSelected(fastGraphics);
+												BUTTON_HEIGHT, ImageToggleButton.MyToggleType.GRAPHICS, frame);
 
 		_debugToggle = new ImageToggleButton(	"images//Buttons//debugButtonOff.png", "images//Buttons//debugButtonOn.png",
 												screenSize.width / 2 - BUTTON_WIDTH / 2, 3 * screenSize.height / 8, BUTTON_WIDTH,
-												BUTTON_HEIGHT, frame, ImageToggleButton.MyToggleType.DEBUG);
-		_debugToggle.setSelected(drawDebug);
+												BUTTON_HEIGHT, ImageToggleButton.MyToggleType.DEBUG, frame);
 		_playButton =
 					new ImageButton("images//Buttons//playButtonM.png", screenSize.width / 2 - BUTTON_WIDTH / 2, 7 * screenSize.height / 8,
 									BUTTON_WIDTH, BUTTON_HEIGHT, ImageButton.MyButtonType.PLAYOPTIONS, frame);
 
 		add(_graphicsToggle);
+		if (fastGraphics)
+			_graphicsToggle.doClick();
 		add(_debugToggle);
+		if (drawDebug)
+			_debugToggle.doClick();
 		add(_playButton);
 	}
 

@@ -11,7 +11,7 @@ public class ImageButton extends JButton
 
 	public enum MyButtonType
 	{
-		PLAY, OPTIONS, EXIT, PLAYOPTIONS
+		PLAY, OPTIONS, EXITTODESKTOP, PLAYOPTIONS, BACKTOGAME, BACKTOMENU
 	};
 
 	private MyButtonType _type;
@@ -31,7 +31,6 @@ public class ImageButton extends JButton
 		setBounds(x, y, width, height);
 		addActionListener(new ActionListener()
 		{
-
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{

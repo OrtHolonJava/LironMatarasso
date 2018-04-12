@@ -9,10 +9,6 @@ import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -27,32 +23,34 @@ public class Logic
 	private LinkedList<AICharacter> _aiCharacters, _basicCharacters;
 	private LinkedList<Follower> _followers;
 	private Camera _cam;
-	public static LinkedList<Integer> _passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));;
+	private static LinkedList<Integer> _passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));;
 	private BufferedImage[] _playerFrames, _simpleFishFrames, _followerFrames;
 
 	private final int PLAYER_WIDTH = 8 * BlockType.getSize() / 10, PLAYER_HEIGHT = 19 * BlockType.getSize() / 10,
 			SIMPLE_FISH_WIDTH = PLAYER_WIDTH / 4, SIMPLE_FISH_HEIGHT = PLAYER_HEIGHT / 4, FOLLOWER_WIDTH = 7 * PLAYER_WIDTH / 10,
 			FOLLOWER_HEIGHT = PLAYER_HEIGHT;
 
-	public int _increaseBorder = 2;
+	private int _increaseBorder = 5;
+	private GameFrame _frame;
 
-	public Logic(Map map)
+	public Logic(Map map, GameFrame frame)
 	{
+		_frame = frame;
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		_map = map;
 		_playerFrames = setFrames("images//SharkFrames//", PLAYER_WIDTH, PLAYER_HEIGHT);
 		_simpleFishFrames = setFrames("images//SharkFrames//", SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT);
 		_followerFrames = setFrames("images//SharkFrames//", FOLLOWER_WIDTH, FOLLOWER_HEIGHT);
-		_player = new Player(3 * Block.getSize()	+ Block.getSize() / 2, 5.5 * Block.getSize() + Block.getSize() / 2, PLAYER_WIDTH,
-								PLAYER_HEIGHT, Block.getSize() / 8, _playerFrames);
+		_player = new Player(	indexToMiddleBlock(3), indexToMiddleBlock(6), PLAYER_WIDTH, PLAYER_HEIGHT, 8.0 / 60 * Block.getSize(),
+								_playerFrames);
 		_cam = new Camera(	new Point(BlockType.getSize(), BlockType.getSize()), (int) screenSize.getWidth(), (int) screenSize.getHeight(),
 							_map.getWidth(), _map.getHeight());
 		_cam.updateCamPoint(_player);
 		_aiCharacters = new LinkedList<AICharacter>();
 		_basicCharacters = new LinkedList<AICharacter>();
 		_followers = new LinkedList<Follower>();
-		addAICharacters(0);
-		addFollowers(1);
+		addAICharacters(100);
+		addFollowers(2);
 	}
 
 	public BufferedImage[] setFrames(String path, int width, int height)
@@ -80,19 +78,17 @@ public class Logic
 		checkEaten();
 		checkHurt();
 		movementLogic();
+		if (_player.getHealth() == 0)
+		{
+			_frame.nibbaIsDead();
+		}
 		_player.updateStats();
 		for (AICharacter c : _aiCharacters)
 		{
 			if (c instanceof Follower)
 			{
 				Follower f = (Follower) c;
-				if (true /*
-							 * || f.getLoc().distance(_player.getLoc()) <
-							 * Block.getSize() * 10
-							 */)
-				{
-					followCharacter(f, _player);
-				}
+				followCharacter(f, _player);
 				if (f.getPath().size() <= 1)
 				{
 					f.basicAIMovement(_player);
@@ -114,12 +110,9 @@ public class Logic
 
 	public void paintAICharacters(Graphics2D g, boolean drawDebug)
 	{
-		Iterator<AICharacter> iterator = _aiCharacters.iterator();
-		while (iterator.hasNext())
+		for (int i = 0; i < _aiCharacters.size(); i++)
 		{
-			AICharacter c = iterator.next();
-			if (_cam.inScreen(c.getHitbox()))
-				c.Paint(g, drawDebug);
+			_aiCharacters.get(i).draw(g, drawDebug);
 		}
 	}
 
@@ -159,8 +152,8 @@ public class Logic
 	{
 		for (int i = 0; i < count; i++)
 		{
-			AICharacter b = new AICharacter(16	* Block.getSize(), 7 * Block.getSize(), SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT, 2,
-											_simpleFishFrames);
+			AICharacter b = new AICharacter(16	* Block.getSize(), 7 * Block.getSize(), SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT,
+											2.0 / 60 * Block.getSize(), _simpleFishFrames);
 			_aiCharacters.add(b);
 			_basicCharacters.add(b);
 
@@ -171,9 +164,8 @@ public class Logic
 	{
 		for (int i = 0; i < count; i++)
 		{
-			Follower f = new Follower(10 * Block.getSize()	+ i * Block.getSize() + Block.getSize() / 2,
-										5 * Block.getSize() + i * Block.getSize() + Block.getSize() / 2, FOLLOWER_WIDTH, FOLLOWER_HEIGHT, 6,
-										_followerFrames);
+			Follower f = new Follower(	indexToMiddleBlock(48), indexToMiddleBlock(28), FOLLOWER_WIDTH, FOLLOWER_HEIGHT,
+										6.0 / 60 * Block.getSize(), _followerFrames);
 			_aiCharacters.add(f);
 			_followers.add(f);
 		}
@@ -181,10 +173,10 @@ public class Logic
 
 	public void followCharacter(Follower f, Character c)
 	{
-		Point2D.Double startLoc = new Point2D.Double(((int) (f.getLoc().x / Block.getSize())) * Block.getSize()	+ Block.getSize() / 2,
-														((int) (f.getLoc().y / Block.getSize())) * Block.getSize() + Block.getSize() / 2);
-		Point2D.Double endLoc = new Point2D.Double(((int) (c.getLoc().x / Block.getSize())) * Block.getSize()	+ Block.getSize() / 2,
-													((int) (c.getLoc().y / Block.getSize())) * Block.getSize() + Block.getSize() / 2);
+		Point2D.Double startLoc = new Point2D.Double(	indexToMiddleBlock((int) (f.getLoc().x / Block.getSize())),
+														indexToMiddleBlock((int) (f.getLoc().y / Block.getSize())));
+		Point2D.Double endLoc = new Point2D.Double(	indexToMiddleBlock((int) (c.getLoc().x / Block.getSize())),
+													indexToMiddleBlock((int) (c.getLoc().y / Block.getSize())));
 
 		int i = findIndex(f.getPath(), endLoc);
 		if (i != -1)
@@ -196,9 +188,9 @@ public class Logic
 		{
 			LinkedList<Point2D.Double> add = startDjikstra(	f.getSearchRect(), startLoc, endLoc, _map.getWidth(), _map.getHeight(),
 															_increaseBorder);
+			add.removeFirst();
 			f.getPath().clear();
 			f.getPath().addAll(add);
-			// startDjikstraFromEnd(c, _player.getLoc());
 		}
 		// System.out.println("start: " + startLoc + " " + " end: " + endLoc);
 		// System.out.println(f.getPath());
@@ -286,6 +278,16 @@ public class Logic
 		g.drawRect((int) _player.getX(), (int) _player.getY(), 100, 100);
 	}
 
+	// public void drawSearchOrder(Graphics2D g)
+	// {
+	// for (int i = 0; i < searchOrder.size(); i++)
+	// {
+	// g.drawRect(searchOrder.get(i).getX() * Block.getSize(),
+	// searchOrder.get(i).getY() * Block.getSize(), 5 * Block.getSize() / 6,
+	// 5 * Block.getSize() / 6);
+	// }
+	// }
+
 	public Map getMap()
 	{
 		return _map;
@@ -336,8 +338,8 @@ public class Logic
 		_aiCharacters = aiCharacters;
 	}
 
-	public static LinkedList<Point2D.Double> startDjikstra(	Rectangle searchRect, Point2D.Double startLoc, Point2D.Double endLoc,
-															int mapWidth, int mapHeight, int increaseBorder)
+	public LinkedList<Point2D.Double> startDjikstra(Rectangle searchRect, Point2D.Double startLoc, Point2D.Double endLoc, int mapWidth,
+													int mapHeight, int increaseBorder)
 	{
 		LinkedList<DjikstraVertex> Q = new LinkedList<DjikstraVertex>();
 		LinkedList<Point2D.Double> path = new LinkedList<Point2D.Double>();
@@ -347,16 +349,14 @@ public class Logic
 		searchRect.x -= increaseBorder;
 		searchRect.y = (searchRect.y < 0) ? 0 : searchRect.y;
 		searchRect.x = (searchRect.x < 0) ? 0 : searchRect.x;
-		searchRect.width = (int) ((startLoc.x > endLoc.x) ? startLoc.x / Block.getSize() : endLoc.x / Block.getSize())	- searchRect.x + 1
+		searchRect.width = (int) ((startLoc.x > endLoc.x) ? startLoc.x - searchRect.x : endLoc.x - searchRect.x) / Block.getSize()	+ 1
 							+ increaseBorder;
-		searchRect.height = (int) ((startLoc.y > endLoc.y) ? startLoc.y / Block.getSize() : endLoc.y / Block.getSize())	- searchRect.y
-							+ increaseBorder + 1;
 
+		searchRect.height = (int) ((startLoc.y > endLoc.y) ? startLoc.y - searchRect.y : endLoc.y - searchRect.y) / Block.getSize()	+ 1
+							+ increaseBorder;
 		searchRect.width = (searchRect.width + searchRect.x > mapWidth) ? mapWidth - searchRect.x : searchRect.width;
 		searchRect.height = (searchRect.height + searchRect.y > mapHeight) ? mapHeight - searchRect.y : searchRect.height;
 		DjikstraVertex[][] dMap = new DjikstraVertex[searchRect.height][searchRect.width];
-
-		// System.out.println("start: " + startX + " " + startY + " w:" + width
 		// + " h:" + height);
 
 		for (int y = 0; y < searchRect.height; y++)
@@ -365,18 +365,28 @@ public class Logic
 			{
 				// System.out.println((x + startX) + " " + (y + startY));
 				dMap[y][x] = new DjikstraVertex(x	+ searchRect.x, y + searchRect.y,
-												Map.getdMap()[y + searchRect.y][x + searchRect.x].isClear());
+												Map.getdMap()[y + searchRect.y][x + searchRect.x].isClear(),
+												(int) endLoc.x / Block.getSize(), (int) endLoc.y / Block.getSize());
 				Q.add(dMap[y][x]);
 			}
 		}
 
 		dMap[(int) startLoc.y / Block.getSize() - searchRect.y][(int) startLoc.x / Block.getSize() - searchRect.x].setDistance(0);
-		int count = 0;
+		int count = 0, newStartCount = 0;
+		// searchOrder.clear();
 		while (!Q.isEmpty())
 		{
 			DjikstraVertex u = Collections.min(Q);
-			if (u.getLoc().y == (int) endLoc.y / Block.getSize() && u.getLoc().x == (int) endLoc.x / Block.getSize())
+			searchOrder.add((DjikstraVertex) u.clone());
+			if (u.getPrev().x == -1 && u.getPrev().y == -1)
+			{
+				newStartCount++;
+			}
+			if (newStartCount == 2
+				|| (u.getLoc().x == (int) endLoc.x / Block.getSize() && u.getLoc().y == (int) endLoc.y / Block.getSize()))
+			{
 				break;
+			}
 			Q.remove(u);
 			changeNeighbours(dMap, u, searchRect.x, searchRect.y);
 			count++;
@@ -385,13 +395,15 @@ public class Logic
 		DjikstraVertex next = dMap[(int) endLoc.y / Block.getSize() - searchRect.y][(int) endLoc.x / Block.getSize() - searchRect.x];
 		while (next.getPrev().x != -1 && next.getPrev().y != -1)
 		{
-			path.addFirst(new Point2D.Double(next.getLoc().x * Block.getSize()	+ Block.getSize() / 2,
-												next.getLoc().y * Block.getSize() + Block.getSize() / 2));
+			path.addFirst(new Point2D.Double(indexToMiddleBlock(next.getLoc().x), indexToMiddleBlock(next.getLoc().y)));
 			next = dMap[next.getPrev().y - searchRect.y][next.getPrev().x - searchRect.x];
 		}
+		path.addFirst((Point2D.Double) startLoc.clone());
 		path.addLast((Point2D.Double) endLoc.clone());
 		return path;
 	}
+
+	public static LinkedList<DjikstraVertex> searchOrder = new LinkedList<DjikstraVertex>();
 
 	public static <T> int findIndex(LinkedList<T> l, T e)
 	{
@@ -401,6 +413,11 @@ public class Logic
 				return i;
 		}
 		return -1;
+	}
+
+	public static double indexToMiddleBlock(int i)
+	{
+		return i * Block.getSize() + Block.getSize() / 2;
 	}
 
 	public static void changeNeighbours(DjikstraVertex[][] dMap, DjikstraVertex u, int startX, int startY)
@@ -413,7 +430,6 @@ public class Logic
 		changeNeighbour(dMap, u.getX(), u.getY() - 1, u, 1, startX, startY);
 		changeNeighbour(dMap, u.getX(), u.getY() + 1, u, 1, startX, startY);
 		changeNeighbour(dMap, u.getX() + 1, u.getY(), u, 1, startX, startY);
-
 	}
 
 	public static void changeNeighbour(DjikstraVertex[][] dMap, int x, int y, DjikstraVertex u, double add, int startX, int startY)
@@ -422,7 +438,11 @@ public class Logic
 		y -= startY;
 		if (inBounds(x, y, dMap[0].length, dMap.length) && dMap[y][x] != null && dMap[y][x].isClear())
 		{
-			double dis = u.getDistance() + add;
+			double dis = u.getDistance()	+ Math.hypot((u.getLoc().x - dMap[y][x].getLoc().x), (u.getLoc().y - dMap[y][x].getLoc().y))
+							+ dMap[y][x].getToEnd();
+			// System.out.println(Math.hypot((u.getLoc().x - x), (u.getLoc().y -
+			// y)) + " " + dMap[y][x].getToEnd());
+			// double dis = u.getDistance() + add;
 			if (dis < dMap[y][x].getDistance())
 			{
 				dMap[y][x].setDistance(dis);
@@ -436,85 +456,40 @@ public class Logic
 		return x >= 0 && y >= 0 && y < height && x < width;
 	}
 
-	public static void writeObjectToFile(Object o, String path)
-	{
-		try
-		{
-
-			// create a new file with an ObjectOutputStream
-			FileOutputStream out = new FileOutputStream(path);
-			ObjectOutputStream oout = new ObjectOutputStream(out);
-
-			// write something in the file
-			oout.writeObject(o);
-			// close the stream
-			oout.close();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-
-	public Object readObjectFromFile(String path)
-	{
-		// create an ObjectInputStream for the file we created before
-		ObjectInputStream ois;
-		try
-		{
-			ois = new ObjectInputStream(new FileInputStream(path));
-			// read and print what we wrote before
-			return ois.readObject();
-		}
-		catch (Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	public void startDjikstraFromEnd(Follower c, Point2D.Double endLoc)
-	{
-		LinkedList<DjikstraVertex> Q = new LinkedList<DjikstraVertex>();
-		LinkedList<Point2D.Double> addList = new LinkedList<Point2D.Double>();
-		DjikstraVertex[][] dMap = new DjikstraVertex[Map.getdMap().length][Map.getdMap()[0].length];
-		for (int y = 0; y < Map.getdMap().length; y++)
-		{
-			for (int x = 0; x < Map.getdMap()[0].length; x++)
-			{
-				dMap[y][x] = new DjikstraVertex(x, y, Map.getdMap()[y][x].isClear());
-				Q.add(dMap[y][x]);
-			}
-		}
-		Point2D.Double startLoc = (c.getPath().isEmpty()) ? c.getLoc() : c.getPath().getLast();
-		dMap[(int) startLoc.y / Block.getSize()][(int) startLoc.x / Block.getSize()].setDistance(0);
-
-		while (!Q.isEmpty())
-		{
-			DjikstraVertex u = Collections.min(Q);
-			if (u.getLoc().y == (int) endLoc.y / Block.getSize() && u.getLoc().x == (int) endLoc.x / Block.getSize())
-				break;
-			Q.remove(u);
-			// changeNeighbours(dMap, u, startX, startY);
-		}
-		// c.getPath().clear();
-		DjikstraVertex next = dMap[(int) endLoc.y / Block.getSize()][(int) endLoc.x / Block.getSize()];
-		while (next.getPrev().x != -1 && next.getPrev().y != -1)
-		{
-			Point2D.Double temp = new Point2D.Double(next.getLoc().x * Block.getSize()	+ Block.getSize() / 2,
-														next.getLoc().y * Block.getSize() + Block.getSize() / 2);
-			if (c.getPath().contains(temp))
-			{
-				c.getPath().subList(findIndex(c.getPath(), temp), c.getPath().size()).clear();
-			}
-			else
-			{
-				addList.addFirst(temp);
-			}
-			next = dMap[next.getPrev().y][next.getPrev().x];
-		}
-		c.getPath().addAll(c.getPath().size(), addList);
-	}
-
+	// public static void writeObjectToFile(Object o, String path)
+	// {
+	// try
+	// {
+	// // create a new file with an ObjectOutputStream
+	// FileOutputStream out = new FileOutputStream(path);
+	// ObjectOutputStream oout = new ObjectOutputStream(out);
+	//
+	// // write something in the file
+	// oout.writeObject(o);
+	// // close the stream
+	// oout.close();
+	// }
+	// catch (Exception e)
+	// {
+	// e.printStackTrace();
+	// }
+	// }
+	//
+	// public static Object readObjectFromFile(String path)
+	// {
+	// // create an ObjectInputStream for the file we created before
+	// ObjectInputStream ois;
+	// try
+	// {
+	// ois = new ObjectInputStream(new FileInputStream(path));
+	// // read and print what we wrote before
+	// return ois.readObject();
+	// }
+	// catch (Exception e)
+	// {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// return null;
+	// }
 }

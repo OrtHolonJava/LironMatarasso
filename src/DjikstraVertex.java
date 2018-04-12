@@ -1,17 +1,31 @@
 import java.awt.Point;
 
-public class DjikstraVertex implements Comparable<DjikstraVertex>
+public class DjikstraVertex implements Comparable<DjikstraVertex>, Cloneable
 {
 	private Point _prev, _loc;
 	private boolean _isClear;
-	private double _distance;
+	private double _distance, _toEnd;
+	private int _endX, _endY;
 
-	public DjikstraVertex(int x, int y, boolean isClear)
+	public DjikstraVertex(int x, int y, boolean isClear, int endX, int endY)
 	{
 		_distance = 1000000;
 		_loc = new Point(x, y);
 		_prev = new Point(-1, -1);
 		_isClear = isClear;
+		_endX = endX;
+		_endY = endY;
+		_toEnd = Math.hypot(x - _endX, y - _endY);
+	}
+
+	public double getToEnd()
+	{
+		return _toEnd;
+	}
+
+	public void setToEnd(double toEnd)
+	{
+		_toEnd = toEnd;
 	}
 
 	public double getDistance()
@@ -42,6 +56,33 @@ public class DjikstraVertex implements Comparable<DjikstraVertex>
 	public void setPrev(Point prev)
 	{
 		_prev = prev;
+	}
+
+	public int getEndX()
+	{
+		return _endX;
+	}
+
+	public void setEndX(int endX)
+	{
+		_endX = endX;
+	}
+
+	public int getEndY()
+	{
+		return _endY;
+	}
+
+	public void setEndY(int endY)
+	{
+		_endY = endY;
+	}
+
+	@Override
+	protected Object clone()
+	{
+		// TODO Auto-generated method stub
+		return new DjikstraVertex(_loc.x, _loc.y, _isClear, _endX, _endY);
 	}
 
 	@Override

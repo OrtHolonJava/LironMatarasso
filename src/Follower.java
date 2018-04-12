@@ -3,7 +3,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 public class Follower extends AICharacter
@@ -17,7 +16,6 @@ public class Follower extends AICharacter
 		_path = new LinkedList<Point2D.Double>();
 		_searchRect = new Rectangle(0, 0, 0, 0);
 	}
-
 
 	public void followPath()
 	{
@@ -45,40 +43,31 @@ public class Follower extends AICharacter
 		move(getAngle(), getFinalSpeed());
 	}
 
-	public static void drawPath(Graphics2D g, LinkedList<Point2D.Double> path)
+	@Override
+	public synchronized void draw(Graphics2D g, boolean drawDebug)
 	{
-		Iterator<Point2D.Double> iterator = path.iterator();
+		super.draw(g, drawDebug);
+		if (drawDebug)
+		{
+			drawPath(g, _path);
+			g.setColor(Color.YELLOW);
+			drawSearchRect(g);
+		}
+	}
+
+	public void drawPath(Graphics2D g, LinkedList<Point2D.Double> path)
+	{
 		g.setColor(Color.red);
 		if (!path.isEmpty())
 		{
-			Point2D.Double start = iterator.next();
-			// g.drawLine((int) start.x, (int) start.y, (int) getLoc().x, (int)
-			// getLoc().y);
-			while (iterator.hasNext())
+			Point2D.Double start = path.getFirst();
+			for (int i = 1; i < path.size(); i++)
 			{
-				Point2D.Double p = iterator.next();
+				Point2D.Double p = path.get(i);
 				g.drawLine((int) start.x, (int) start.y, (int) p.x, (int) p.y);
 				start = p;
 			}
 		}
-	}
-
-	@Override
-	public synchronized void Paint(Graphics2D g, boolean isDebug)
-	{
-		// TODO Auto-generated method stub
-		super.Paint(g, isDebug);
-		// if (isDebug)
-		// {
-		drawPath(g, _path);
-		g.setColor(Color.orange);
-		g.drawRect((int) getTarget().getX(), (int) getTarget().getY(), 100, 100);
-		g.drawString(String.valueOf(getAngle()), (int) getTarget().getX(), (int) getTarget().getY());
-		g.setColor(Color.YELLOW);
-		drawSearchRect(g);
-
-		// }
-
 	}
 
 	public void drawSearchRect(Graphics2D g)
