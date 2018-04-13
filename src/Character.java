@@ -274,7 +274,6 @@ public abstract class Character
 	public double getCorrectedAngle(double angle)
 	{
 		return (((angle < 0) ? 360 + angle : angle) + 90) % 360;
-
 	}
 
 	public void setAngle(double angle)

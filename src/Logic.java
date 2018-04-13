@@ -49,8 +49,8 @@ public class Logic
 		_aiCharacters = new LinkedList<AICharacter>();
 		_basicCharacters = new LinkedList<AICharacter>();
 		_followers = new LinkedList<Follower>();
-		addAICharacters(100);
-		addFollowers(2);
+		addAICharacters(1);
+		addFollowers(0);
 	}
 
 	public BufferedImage[] setFrames(String path, int width, int height)
@@ -78,7 +78,7 @@ public class Logic
 		checkEaten();
 		checkHurt();
 		movementLogic();
-		if (_player.getHealth() == 0)
+		if (_player.getHealth() <= 0)
 		{
 			_frame.nibbaIsDead();
 		}

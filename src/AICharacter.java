@@ -52,7 +52,7 @@ public class AICharacter extends Character
 	public void setNewTarget()
 	{
 		Random r = new Random();
-		int a = r.nextInt(90) - 45;
+		int a = r.nextInt(30) - 15;
 		setAngleAndTarget((getAngle() + a - 90));
 	}
 
