@@ -10,27 +10,23 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.LinkedList;
 
-public abstract class Character
+public abstract class Character extends CharacterType
 {
-	private int _height, _width;
 	private double _frameCount;
-	private BufferedImage[] _frames;
-	private double _angle, _baseSpeed, _finalSpeed, _speedSeaweedSlowdown;
+	private double _angle, _finalSpeed, _speedSeaweedSlowdown, _currentFrame;
 	private Area _hitbox;
 	private LinkedList<Point2D.Double> _polyList, _coliList;
 	private Point2D.Double _loc;
 	private LinkedList<Rectangle> _rects;
 	private Area _mouthHitbox;
 
-	public Character(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
+	public Character(double x, double y, int type)
 	{
+		super(type);
 		_loc = new Point2D.Double(x, y);
 		_angle = 0;
-		_width = width;
-		_height = height;
-		_baseSpeed = baseSpeed;
-		_frames = frames;
-		_frameCount = _frames.length;
+		_currentFrame = 0;
+		_frameCount = getFrames().length;
 		_speedSeaweedSlowdown = 1;
 		_polyList = new LinkedList<Point2D.Double>();
 		_coliList = new LinkedList<Point2D.Double>();
@@ -38,14 +34,20 @@ public abstract class Character
 		setHitbox();
 	}
 
+	public int frameNumToIndex(int frameNum)
+	{
+		if (frameNum < 10)
+			return frameNum;
+		return frameNum % 10 + ((int) _frameCount / 2);
+	}
+
 	public void draw(Graphics2D g, boolean drawDebug)
 	{
-		BufferedImage use = _frames[10 * (int) (_angle / 180)
-									+ (int) (_frameCount += 0.5 * (_finalSpeed / ((_baseSpeed != 0) ? _baseSpeed : 1)))
-										% (_frames.length / 2)];
+		BufferedImage use = getFrames()[frameNumToIndex(10 * (int) (_angle / 180)
+														+ (int) (_currentFrame += 0.5 * (_finalSpeed
+																							/ ((getBaseSpeed() != 0) ? getBaseSpeed() : 1)))
+															% (int) (_frameCount / 2))];
 		Graphics2D g2d = (Graphics2D) g.create();
-		// g2d.setColor(Color.orange);
-		// g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 		g2d.rotate(Math.toRadians(_angle), getX(), getY());
 		if (drawDebug)
 		{
@@ -66,10 +68,12 @@ public abstract class Character
 			{
 				g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
 			}
-			g.drawOval(	(int) (getX() - BlockType.getSize() * 5 / 2), (int) (getY() - BlockType.getSize() * 5 / 2), BlockType.getSize() * 5,
-						BlockType.getSize() * 5);
+			// g.drawOval( (int) (getX() - BlockType.getSize() * 5 / 2), (int)
+			// (getY() - BlockType.getSize() * 5 / 2), BlockType.getSize() * 5,
+			// BlockType.getSize() * 5);
 			g.setColor(Color.magenta);
 			g.draw(_mouthHitbox);
+			g.drawString(String.valueOf(_angle), (int) getX(), (int) getY());
 		}
 		g2d.drawImage(use, (int) (getX() - use.getWidth() / 2), (int) (getY() - use.getHeight() / 2), null);
 		g2d.dispose();
@@ -113,7 +117,7 @@ public abstract class Character
 			for (File child : directoryListing)
 			{
 				// System.out.println(path + child.getName());
-				arr[counter++] = new Img(path + child.getName(), 0, 0, _width, _height);
+				arr[counter++] = new Img(path + child.getName(), 0, 0, getWidth(), getHeight());
 			}
 		}
 		return arr;
@@ -123,7 +127,7 @@ public abstract class Character
 	{
 		AffineTransform af = new AffineTransform();
 		af.rotate(Math.toRadians(_angle), getX(), getY());
-		Area a = new Area(new Rectangle((int) (getX() - _width / 2), (int) (getY() - _height / 2), _width, _height));
+		Area a = new Area(new Rectangle((int) (getX() - getWidth() / 2), (int) (getY() - getHeight() / 2), getWidth(), getHeight()));
 		_hitbox = a.createTransformedArea(af);
 		_polyList = getPolygonPoints(toPolygon(_hitbox));
 		Area mh = new Area(new Rectangle((int) (getX() - getWidth() / 2), (int) (getY() - getHeight() / 2), getWidth(), getHeight() / 4));
@@ -172,7 +176,7 @@ public abstract class Character
 
 	public void updateFinalSpeed()
 	{
-		_finalSpeed = _baseSpeed * _speedSeaweedSlowdown;
+		_finalSpeed = getBaseSpeed() * _speedSeaweedSlowdown;
 	}
 
 	public void setCords(double x, double y)
@@ -182,8 +186,8 @@ public abstract class Character
 
 	public void setSize(int width, int height)
 	{
-		_width = width;
-		_height = height;
+		setWidth(width);
+		setHeight(height);
 	}
 
 	public Point2D.Double getLoc()
@@ -246,24 +250,14 @@ public abstract class Character
 		_loc.y = y;
 	}
 
-	public int getWidth()
+	public double getCurrentFrame()
 	{
-		return _width;
+		return _currentFrame;
 	}
 
-	public void setWidth(int width)
+	public void setCurrentFrame(double currentFrame)
 	{
-		_width = width;
-	}
-
-	public int getHeight()
-	{
-		return _height;
-	}
-
-	public void setHeight(int height)
-	{
-		_height = height;
+		_currentFrame = currentFrame;
 	}
 
 	public double getAngle()
@@ -278,17 +272,12 @@ public abstract class Character
 
 	public void setAngle(double angle)
 	{
+		_angle = angle;
+	}
+
+	public void setCorrectedAngle(double angle)
+	{
 		_angle = Math.floor(getCorrectedAngle(angle));
-	}
-
-	public double getBaseSpeed()
-	{
-		return _baseSpeed;
-	}
-
-	public void setBaseSpeed(double baseSpeed)
-	{
-		_baseSpeed = baseSpeed;
 	}
 
 	public double getFrameCount()
@@ -299,16 +288,6 @@ public abstract class Character
 	public void setFrameCount(double frameCount)
 	{
 		_frameCount = frameCount;
-	}
-
-	public BufferedImage[] getFrames()
-	{
-		return _frames;
-	}
-
-	public void setFrames(BufferedImage[] frames)
-	{
-		_frames = frames;
 	}
 
 	public double getFinalSpeed()

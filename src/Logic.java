@@ -7,74 +7,51 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
-
-import javax.swing.ImageIcon;
+import java.util.Random;
 
 public class Logic
 {
 	private Map _map;
 	private Player _player;
-	private LinkedList<AICharacter> _aiCharacters, _basicCharacters;
+	private LinkedList<AICharacter> _aiCharacters, _basicCharacters, _tempAdd;
 	private LinkedList<Follower> _followers;
 	private Camera _cam;
 	private static LinkedList<Integer> _passables = new LinkedList<Integer>(Arrays.asList(0, 3, 4, 5));;
-	private BufferedImage[] _playerFrames, _simpleFishFrames, _followerFrames;
 
-	private final int PLAYER_WIDTH = 8 * BlockType.getSize() / 10, PLAYER_HEIGHT = 19 * BlockType.getSize() / 10,
-			SIMPLE_FISH_WIDTH = PLAYER_WIDTH / 4, SIMPLE_FISH_HEIGHT = PLAYER_HEIGHT / 4, FOLLOWER_WIDTH = 7 * PLAYER_WIDTH / 10,
-			FOLLOWER_HEIGHT = PLAYER_HEIGHT;
-
-	private int _increaseBorder = 5;
 	private GameFrame _frame;
 
 	public Logic(Map map, GameFrame frame)
 	{
 		_frame = frame;
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		_map = map;
-		_playerFrames = setFrames("images//SharkFrames//", PLAYER_WIDTH, PLAYER_HEIGHT);
-		_simpleFishFrames = setFrames("images//SharkFrames//", SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT);
-		_followerFrames = setFrames("images//SharkFrames//", FOLLOWER_WIDTH, FOLLOWER_HEIGHT);
-		_player = new Player(	indexToMiddleBlock(3), indexToMiddleBlock(6), PLAYER_WIDTH, PLAYER_HEIGHT, 8.0 / 60 * Block.getSize(),
-								_playerFrames);
+		_player = new Player(indexToMiddleBlock(3), indexToMiddleBlock(6));
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		_cam = new Camera(	new Point(BlockType.getSize(), BlockType.getSize()), (int) screenSize.getWidth(), (int) screenSize.getHeight(),
 							_map.getWidth(), _map.getHeight());
 		_cam.updateCamPoint(_player);
 		_aiCharacters = new LinkedList<AICharacter>();
 		_basicCharacters = new LinkedList<AICharacter>();
+		_tempAdd = new LinkedList<AICharacter>();
 		_followers = new LinkedList<Follower>();
-		addAICharacters(1);
-		addFollowers(0);
+		// spawnShoal();
+		addAIToStart(0);
+		addFollowers(1);
 	}
 
-	public BufferedImage[] setFrames(String path, int width, int height)
+	public void addTempFish()
 	{
-		BufferedImage[] arr = null;
-		File dir = new File(System.getProperty("user.dir") + "\\bin\\" + path);
-		File[] directoryListing = dir.listFiles();
-		if (directoryListing != null)
-		{
-			arr = new BufferedImage[directoryListing.length];
-			int counter = 0;
-			for (File child : directoryListing)
-			{
-				// System.out.println(path + child.getName());
-				arr[counter] = Img.toBufferedImage(new ImageIcon(this	.getClass().getClassLoader()
-																		.getResource(path + child.getName())).getImage());
-				arr[counter++] = Img.resize(arr[counter - 1], width, height);
-			}
-		}
-		return arr;
+		_aiCharacters.addAll(_tempAdd);
+		_basicCharacters.addAll(_tempAdd);
+		_tempAdd.clear();
 	}
 
 	public void doLogic()
 	{
+		addTempFish();
 		checkEaten();
 		checkHurt();
 		movementLogic();
@@ -83,8 +60,9 @@ public class Logic
 			_frame.nibbaIsDead();
 		}
 		_player.updateStats();
-		for (AICharacter c : _aiCharacters)
+		for (int i = 0; i < _aiCharacters.size(); i++)
 		{
+			AICharacter c = _aiCharacters.get(i);
 			if (c instanceof Follower)
 			{
 				Follower f = (Follower) c;
@@ -103,9 +81,10 @@ public class Logic
 				c.basicAIMovement(_player);
 			}
 			if (collisionHandle(c))
+			{
 				c.setNewTarget();
+			}
 		}
-
 	}
 
 	public void paintAICharacters(Graphics2D g, boolean drawDebug)
@@ -135,10 +114,9 @@ public class Logic
 
 	public void checkHurt()
 	{
-		Iterator<Follower> iterator = _followers.iterator();
-		while (iterator.hasNext())
+		for (int i = 0; i < _followers.size(); i++)
 		{
-			Follower f = iterator.next();
+			Follower f = _followers.get(i);
 			Area temp = (Area) f.getMouthHitbox().clone();
 			temp.intersect(_player.getHitbox());
 			if (!temp.isEmpty())
@@ -148,15 +126,39 @@ public class Logic
 		}
 	}
 
-	public void addAICharacters(int count)
+	public void spawnShoal()
 	{
+		var r = new Random();
+		var type = 1 + r.nextInt(3);
+		var size = 5 + r.nextInt(15);
+		var spawnPoint = getValidPoint();
+		var angle = r.nextInt(360);
+		for (int i = 0; i < size; i++)
+		{
+			var c = new AICharacter(spawnPoint.x * Block.getSize(), spawnPoint.y * Block.getSize(), type, angle);
+			_tempAdd.add(c);
+		}
+	}
+
+	private Point getValidPoint()
+	{
+		Random r = new Random();
+		Point p = _map.getClearBlock().get(r.nextInt(_map.getClearBlock().size()));
+		while (_cam.getScreenRectangle().contains(p.x * Block.getSize(), p.y * Block.getSize()))
+		{
+			p = _map.getClearBlock().get(r.nextInt(_map.getClearBlock().size()));
+		}
+		return p;
+	}
+
+	public void addAIToStart(int count)
+	{
+		Random r = new Random();
 		for (int i = 0; i < count; i++)
 		{
-			AICharacter b = new AICharacter(16	* Block.getSize(), 7 * Block.getSize(), SIMPLE_FISH_WIDTH, SIMPLE_FISH_HEIGHT,
-											2.0 / 60 * Block.getSize(), _simpleFishFrames);
-			_aiCharacters.add(b);
-			_basicCharacters.add(b);
 
+			AICharacter b = new AICharacter(indexToMiddleBlock(22), indexToMiddleBlock(5), 1 + r.nextInt(3), r.nextInt(360));
+			_tempAdd.add(b);
 		}
 	}
 
@@ -164,8 +166,7 @@ public class Logic
 	{
 		for (int i = 0; i < count; i++)
 		{
-			Follower f = new Follower(	indexToMiddleBlock(48), indexToMiddleBlock(28), FOLLOWER_WIDTH, FOLLOWER_HEIGHT,
-										6.0 / 60 * Block.getSize(), _followerFrames);
+			Follower f = new Follower(indexToMiddleBlock(48), indexToMiddleBlock(28), 10);
 			_aiCharacters.add(f);
 			_followers.add(f);
 		}
@@ -204,7 +205,7 @@ public class Logic
 			{
 				while (c.getHitbox().intersects(r))
 				{
-					c.move(Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (c.getX()), (r.y + r.getHeight() / 2) - (c.getY()))), 0.5);
+					c.move(Math.toDegrees(-Math.atan2((r.x + r.getWidth() / 2) - (c.getX()), (r.y + r.getHeight() / 2) - (c.getY()))), 1);
 				}
 			}
 			checkCollision(c);
@@ -218,8 +219,8 @@ public class Logic
 		_cam.getFinalMousePoint().setLocation(_cam.getCamPoint().x + _cam.getMousePoint().x, _cam.getCamPoint().y + _cam.getMousePoint().y);
 		if (_cam.getFinalMousePoint().distance(_player.getLoc()) > 2)
 		{
-			_player.setAngle(Math.toDegrees(Math.atan2(_cam.getFinalMousePoint().y	- _player.getY(),
-														_cam.getFinalMousePoint().x - _player.getX())));
+			_player.setCorrectedAngle(Math.toDegrees(Math.atan2(_cam.getFinalMousePoint().y	- _player.getY(),
+																_cam.getFinalMousePoint().x - _player.getX())));
 		}
 
 		_player.setDisToSpeedRatio((_cam.getFinalMousePoint().distance(_player.getX(), _player.getY()) / (5 * BlockType.getSize())));
@@ -259,7 +260,9 @@ public class Logic
 							}
 						}
 						if (c.getSpeedSeaweedSlowdown() == 1)
+						{
 							c.applySeaweedSlowdown(_map.getHmap()[y][x].getBitMask().getBlockID() == 3);
+						}
 					}
 				}
 			}
@@ -338,23 +341,25 @@ public class Logic
 		_aiCharacters = aiCharacters;
 	}
 
+	private int _increaseBorder = 5;
+
 	public LinkedList<Point2D.Double> startDjikstra(Rectangle searchRect, Point2D.Double startLoc, Point2D.Double endLoc, int mapWidth,
 													int mapHeight, int increaseBorder)
 	{
 		LinkedList<DjikstraVertex> Q = new LinkedList<DjikstraVertex>();
 		LinkedList<Point2D.Double> path = new LinkedList<Point2D.Double>();
-		searchRect.y = (int) ((startLoc.y < endLoc.y) ? startLoc.y / Block.getSize() : endLoc.y / Block.getSize());
-		searchRect.x = (int) ((startLoc.x < endLoc.x) ? startLoc.x / Block.getSize() : endLoc.x / Block.getSize());
-		searchRect.y -= increaseBorder;
+		searchRect.x = (int) Math.min(startLoc.x, endLoc.x) / Block.getSize();
+		searchRect.y = (int) Math.min(startLoc.y, endLoc.y) / Block.getSize();
 		searchRect.x -= increaseBorder;
-		searchRect.y = (searchRect.y < 0) ? 0 : searchRect.y;
-		searchRect.x = (searchRect.x < 0) ? 0 : searchRect.x;
-		searchRect.width = (int) ((startLoc.x > endLoc.x) ? startLoc.x - searchRect.x : endLoc.x - searchRect.x) / Block.getSize()	+ 1
-							+ increaseBorder;
+		searchRect.y -= increaseBorder;
+		searchRect.x = Math.max(searchRect.x, 0);
+		searchRect.y = Math.max(searchRect.y, 0);
+		searchRect.width = (int) (Math.abs(endLoc.x - startLoc.x) / Block.getSize()) + 1 + 2 * increaseBorder;
+		searchRect.height = (int) (Math.abs(endLoc.y - startLoc.y) / Block.getSize()) + 1 + 2 * increaseBorder;
 
-		searchRect.height = (int) ((startLoc.y > endLoc.y) ? startLoc.y - searchRect.y : endLoc.y - searchRect.y) / Block.getSize()	+ 1
-							+ increaseBorder;
+		System.out.println("before: " + searchRect.width);
 		searchRect.width = (searchRect.width + searchRect.x > mapWidth) ? mapWidth - searchRect.x : searchRect.width;
+		System.out.println("after: " + searchRect.width);
 		searchRect.height = (searchRect.height + searchRect.y > mapHeight) ? mapHeight - searchRect.y : searchRect.height;
 		DjikstraVertex[][] dMap = new DjikstraVertex[searchRect.height][searchRect.width];
 		// + " h:" + height);
@@ -455,41 +460,4 @@ public class Logic
 	{
 		return x >= 0 && y >= 0 && y < height && x < width;
 	}
-
-	// public static void writeObjectToFile(Object o, String path)
-	// {
-	// try
-	// {
-	// // create a new file with an ObjectOutputStream
-	// FileOutputStream out = new FileOutputStream(path);
-	// ObjectOutputStream oout = new ObjectOutputStream(out);
-	//
-	// // write something in the file
-	// oout.writeObject(o);
-	// // close the stream
-	// oout.close();
-	// }
-	// catch (Exception e)
-	// {
-	// e.printStackTrace();
-	// }
-	// }
-	//
-	// public static Object readObjectFromFile(String path)
-	// {
-	// // create an ObjectInputStream for the file we created before
-	// ObjectInputStream ois;
-	// try
-	// {
-	// ois = new ObjectInputStream(new FileInputStream(path));
-	// // read and print what we wrote before
-	// return ois.readObject();
-	// }
-	// catch (Exception e)
-	// {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// return null;
-	// }
 }

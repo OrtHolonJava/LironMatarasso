@@ -1,7 +1,6 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.util.Random;
 
 public class AICharacter extends Character
@@ -9,20 +8,14 @@ public class AICharacter extends Character
 	private Point2D.Double _target;
 	private double _tempSpeedBoost;
 
-	public AICharacter(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
+	public AICharacter(double x, double y, int type, double angle)
 	{
-		super(x, y, width, height, baseSpeed, frames);
-		Random r = new Random();
+		super(x, y, type);
 		_tempSpeedBoost = 0;
 		_target = new Point2D.Double(-1, -1);
-		setAngle(r.nextInt(360));
+		setCorrectedAngle(angle);
 		updateFinalSpeed();
 		setNewTarget();
-	}
-
-	public void chase(Player p)
-	{
-		setAngleAndTarget(new Point2D.Double(p.getLoc().x, p.getLoc().y));
 	}
 
 	public boolean nearTarget()
@@ -51,22 +44,22 @@ public class AICharacter extends Character
 
 	public void setNewTarget()
 	{
+		int range = 30;
 		Random r = new Random();
-		int a = r.nextInt(30) - 15;
+		int a = r.nextInt(range) - range / 2;
 		setAngleAndTarget((getAngle() + a - 90));
 	}
 
 	public void setAngleAndTarget(Point2D.Double target)
 	{
-
 		_target.setLocation(target);
-		setAngle(Math.toDegrees(Math.atan2(_target.getY() - getY(), _target.getX() - getX())));
+		setCorrectedAngle(Math.toDegrees(Math.atan2(_target.getY() - getY(), _target.getX() - getX())));
 	}
 
 	public void setAngleAndTarget(double a)
 	{
 		double radius = BlockType.getSize() * 2.5;
-		setAngle(a);
+		setCorrectedAngle(a);
 		_target.setLocation(getX() + radius * Math.sin(Math.toRadians(getAngle())), getY() - radius * Math.cos(Math.toRadians(getAngle())));
 	}
 
@@ -85,6 +78,7 @@ public class AICharacter extends Character
 		{
 			g.drawRect((int) _target.getX(), (int) _target.getY(), 100, 100);
 			g.drawString(String.valueOf(getAngle()), (int) _target.getX(), (int) _target.getY());
+			g.drawString(String.valueOf(_target.getX()) + " " + String.valueOf(_target.getY()), (int) getX(), (int) getY() + 20);
 		}
 	}
 

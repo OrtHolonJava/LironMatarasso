@@ -1,5 +1,8 @@
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.File;
+import java.util.LinkedList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,7 +23,9 @@ public class Map
 	private int _width, _height;
 	private int _counter = 0;
 	private Block[][] _hmap, _heffects, _hbackgrounds;
+	private LinkedList<Point> _clearBlock;
 	private static DjikstraVertex[][] _dMap;
+	private Rectangle _mapBorders;
 
 	public Map(int height, int width, String mapFileName, String effectsFileName, String backgroundsFileName)
 	{
@@ -29,18 +34,24 @@ public class Map
 		_hmap = new Block[_height][_width];
 		_heffects = new Block[_height][_width];
 		_hbackgrounds = new Block[_height][_width];
+		_clearBlock = new LinkedList<Point>();
+		_mapBorders = new Rectangle(0, 0, width * Block.getSize(), height * Block.getSize());
 		readFile(mapFileName, _hmap);
 		readFile(effectsFileName, _heffects);
 		readFile(backgroundsFileName, _hbackgrounds);
-		_dMap = new DjikstraVertex[_hmap.length][_hmap[0].length];
-		for (int y = 0; y < _hmap.length; y++)
+		_dMap = new DjikstraVertex[_height][_width];
+		for (int y = 0; y < _height; y++)
 		{
-			for (int x = 0; x < _hmap[0].length; x++)
+			for (int x = 0; x < _width; x++)
 			{
 				_dMap[y][x] =
 							new DjikstraVertex(	x, y,
 												_hmap[y][x] == null || MapPanel._passables.contains(_hmap[y][x].getBitMask().getBlockID()),
 												0, 0);
+				if (_hmap[y][x] == null)
+				{
+					_clearBlock.add(new Point(x, y));
+				}
 			}
 		}
 	}
@@ -212,5 +223,35 @@ public class Map
 	public static void setdMap(DjikstraVertex[][] dMap)
 	{
 		_dMap = dMap;
+	}
+
+	public static DjikstraVertex[][] get_dMap()
+	{
+		return _dMap;
+	}
+
+	public static void set_dMap(DjikstraVertex[][] _dMap)
+	{
+		Map._dMap = _dMap;
+	}
+
+	public Rectangle getMapBorders()
+	{
+		return _mapBorders;
+	}
+
+	public void setMapBorders(Rectangle mapBorders)
+	{
+		_mapBorders = mapBorders;
+	}
+
+	public LinkedList<Point> getClearBlock()
+	{
+		return _clearBlock;
+	}
+
+	public void setClearBlock(LinkedList<Point> clearBlock)
+	{
+		_clearBlock = clearBlock;
 	}
 }

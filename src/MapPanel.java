@@ -39,7 +39,7 @@ public class MapPanel extends JPanel implements MyMouseListener, MyKeyListener
 		_effectsFile = "MapFiles//effects_20180103202456.xml";
 		_mapHeight = Map.getElementCountByName(_mapFile, "Line");
 		_mapWidth = Map.getElementCountByName(_mapFile, "Area") / _mapHeight;
-		_blockSize = 60;
+		_blockSize = 10;
 		BlockType.setSize(_blockSize);
 		Block.setSize(_blockSize);
 		_logic = new Logic(new Map(_mapHeight, _mapWidth, _mapFile, _effectsFile, _backgroundFile), frame);
@@ -102,12 +102,12 @@ public class MapPanel extends JPanel implements MyMouseListener, MyKeyListener
 		{
 			drawHMap(g2d, _logic.getMap().getHmap());
 		}
-		_logic.getPlayer().drawBars(g2d);
 		if (_drawDebug)
 		{
 			_logic.drawDebug(g2d);
 		}
 		_logic.paintAICharacters(g2d, _drawDebug);
+		_logic.getPlayer().drawBars(g2d);
 		// _logic.drawSearchOrder(g2d);
 		g2d.dispose();
 		g.dispose();
@@ -285,13 +285,25 @@ public class MapPanel extends JPanel implements MyMouseListener, MyKeyListener
 	@Override
 	public void keyPressed(KeyEvent e)
 	{
-		// TODO Auto-generated method stub
 		switch (e.getKeyCode())
 		{
 			case KeyEvent.VK_ESCAPE:
 			{
 				break;
 			}
+
+			case KeyEvent.VK_D:
+			{
+				_drawDebug = !_drawDebug;
+				break;
+			}
+
+			case KeyEvent.VK_ADD:
+			{
+				_logic.spawnShoal();
+				break;
+			}
+
 		}
 
 	}
@@ -300,7 +312,6 @@ public class MapPanel extends JPanel implements MyMouseListener, MyKeyListener
 	public void keyReleased(KeyEvent e)
 	{
 		// TODO Auto-generated method stub
-
 	}
 
 	public Logic getLogic()

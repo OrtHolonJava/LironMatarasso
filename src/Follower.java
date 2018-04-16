@@ -2,17 +2,17 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.util.LinkedList;
+import java.util.Random;
 
 public class Follower extends AICharacter
 {
 	private LinkedList<Point2D.Double> _path;
 	private Rectangle _searchRect;
 
-	public Follower(double x, double y, int width, int height, double baseSpeed, BufferedImage[] frames)
+	public Follower(double x, double y, int type)
 	{
-		super(x, y, width, height, baseSpeed, frames);
+		super(x, y, type, 0);
 		_path = new LinkedList<Point2D.Double>();
 		_searchRect = new Rectangle(0, 0, 0, 0);
 	}
@@ -27,7 +27,6 @@ public class Follower extends AICharacter
 			}
 		}
 		setAngleAndTarget(_path.getFirst());
-
 		move(getAngle(), getFinalSpeed());
 	}
 
@@ -38,9 +37,18 @@ public class Follower extends AICharacter
 		updateFinalSpeed();
 		if (nearTarget())
 		{
-			setNewTarget();
+			super.setNewTarget();
 		}
 		move(getAngle(), getFinalSpeed());
+	}
+
+	@Override
+	public void setNewTarget()
+	{
+		int range = 90;
+		Random r = new Random();
+		int a = r.nextInt(range) - range / 2;
+		setAngleAndTarget((getAngle() + a - 90));
 	}
 
 	@Override
