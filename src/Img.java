@@ -9,8 +9,7 @@ import javax.swing.ImageIcon;
 /**
  * Img class for saving an image and its info
  * 
- * @author PC05
- *
+ * @author liron
  */
 public class Img
 {

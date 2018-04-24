@@ -9,20 +9,30 @@ import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
+/**
+ * GameFrame class for the window of the game
+ * 
+ * @author liron
+ *
+ */
 public class GameFrame extends JFrame
 {
-	private MapPanel _mapPanel;
+	private GamePanel _gamePanel;
 	private LinkedList<MyKeyListener> _keyListeners;
 	private LinkedList<MyMouseListener> _mouseListeners;
 	private GameLoop _gameLoop;
 	private MenuPanel _menuPanel;
 	private OptionsPanel _optionsPanel;
-	private InGameOptionsPanel _inGameOptionsPanel;
-	private endPanel _endPanel;
+	private InstructionsPanel _instructionsPanel;
+	private PausePanel _pausePanel;
+	private EndPanel _endPanel;
 	private JLayeredPane _layerdPane;
 
 	private boolean _drawDebug, _fastGraphics, _isPaused, _inGame;
 
+	/**
+	 * Init a new GameFrame object
+	 */
 	public GameFrame()
 	{
 		_drawDebug = false;
@@ -48,50 +58,75 @@ public class GameFrame extends JFrame
 		setVisible(true);
 	}
 
+	/**
+	 * starts the game and closes the given panel
+	 * 
+	 * @param panelToClose
+	 */
 	public void startGame(JPanel panelToClose)
 	{
 		_isPaused = false;
 		_inGame = true;
 		_layerdPane.remove(panelToClose);
-		_mapPanel = new MapPanel(_drawDebug, _fastGraphics, this);
-		_layerdPane.add(_mapPanel, 1);
-		addMyMouseListenerToList(_mapPanel);
-		addMyKeyListenerToList(_mapPanel);
+		_gamePanel = new GamePanel(_drawDebug, _fastGraphics, this);
+		_layerdPane.add(_gamePanel, 1);
+		addMyMouseListenerToList(_gamePanel);
+		addMyKeyListenerToList(_gamePanel);
 		revalidate();
 		repaint();
-		_gameLoop = new GameLoop(_mapPanel);
+		_gameLoop = new GameLoop(_gamePanel);
 		_gameLoop.startGame();
 	}
 
+	/**
+	 * shuts down the game
+	 */
 	public void close()
 	{
 		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
 
+	/**
+	 * adds a listener to the mouse events
+	 * 
+	 * @param e
+	 */
 	public void addMyMouseListenerToList(MyMouseListener e)
 	{
 		_mouseListeners.add(e);
 	}
 
+	/**
+	 * adds a listener to the keyboard events
+	 * 
+	 * @param e
+	 */
 	public void addMyKeyListenerToList(MyKeyListener e)
 	{
 		_keyListeners.add(e);
 	}
 
+	/**
+	 * toggle the pause of the game
+	 */
 	public void togglePaused()
 	{
 		_isPaused = !_isPaused;
 		_gameLoop.setPaused(_isPaused);
 		if (_isPaused)
 		{
-			openInGameOptions();
+			openPausePanel();
 		}
 		else
 		{
-			closeInGameOptions();
+			closePausePanel();
 		}
 	}
 
+	/**
+	 * 
+	 * @return a key adapter
+	 */
 	public KeyAdapter getKeyAdapter()
 	{
 		KeyAdapter k = new KeyAdapter()
@@ -122,6 +157,10 @@ public class GameFrame extends JFrame
 		return k;
 	}
 
+	/**
+	 * 
+	 * @return a mouse adapter
+	 */
 	public MouseAdapter getMouseAdapter()
 	{
 		MouseAdapter m = new MouseAdapter()
@@ -165,6 +204,11 @@ public class GameFrame extends JFrame
 		return m;
 	}
 
+	/**
+	 * Handles an event called from a button according to the type
+	 * 
+	 * @param type
+	 */
 	public void buttonPressed(ImageButton.MyButtonType type)
 	{
 		switch (type)
@@ -200,10 +244,30 @@ public class GameFrame extends JFrame
 			case BACKTOMENU:
 			{
 				backToMenu();
+				break;
+			}
+			case INSTRUCTIONS:
+			{
+				openInstructions();
+				break;
+			}
+			case NOTHING:
+			{
+				break;
+			}
+			default:
+			{
+				break;
 			}
 		}
 	}
 
+	/**
+	 * Handles an event called from a toggle button according to the type
+	 * 
+	 * @param type
+	 * @param selected
+	 */
 	public void buttonToggled(ImageToggleButton.MyToggleType type, boolean selected)
 	{
 		switch (type)
@@ -221,6 +285,21 @@ public class GameFrame extends JFrame
 		}
 	}
 
+	/**
+	 * opens the instructions panel
+	 */
+	private void openInstructions()
+	{
+		_layerdPane.remove(_menuPanel);
+		_instructionsPanel = new InstructionsPanel(this);
+		_layerdPane.add(_instructionsPanel, 1);
+		revalidate();
+		repaint();
+	}
+
+	/**
+	 * opens the options panel
+	 */
 	private void openOptions()
 	{
 		_layerdPane.remove(_menuPanel);
@@ -230,17 +309,26 @@ public class GameFrame extends JFrame
 		repaint();
 	}
 
-	private void openInGameOptions()
+	/**
+	 * opens the pause panel
+	 */
+	private void openPausePanel()
 	{
-		_inGameOptionsPanel = new InGameOptionsPanel(this);
-		_layerdPane.add(_inGameOptionsPanel, 2);
+		_pausePanel = new PausePanel(this);
+		_layerdPane.add(_pausePanel, 2);
 	}
 
-	private void closeInGameOptions()
+	/**
+	 * closes the pause panel
+	 */
+	private void closePausePanel()
 	{
-		_layerdPane.remove(_inGameOptionsPanel);
+		_layerdPane.remove(_pausePanel);
 	}
 
+	/**
+	 * returns to the menu
+	 */
 	private void backToMenu()
 	{
 		_layerdPane.removeAll();
@@ -251,11 +339,17 @@ public class GameFrame extends JFrame
 		repaint();
 	}
 
-	public void nibbaIsDead()
+	/**
+	 * stops the game and opens the end game panel if the player died
+	 * 
+	 * @param amountEaten
+	 * @param timeSurvived
+	 */
+	public void playerIsDead(int amountEaten, String timeSurvived)
 	{
 		_inGame = false;
 		_gameLoop.setPaused(true);
-		_endPanel = new endPanel(this);
+		_endPanel = new EndPanel(this, amountEaten, timeSurvived);
 		_layerdPane.add(_endPanel, 2);
 	}
 }

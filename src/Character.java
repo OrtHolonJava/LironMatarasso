@@ -10,23 +10,38 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.LinkedList;
 
-public abstract class Character extends CharacterType
+/**
+ * Character class for all the characters in the game (player and computer
+ * controlled)
+ * 
+ * @author liron
+ *
+ */
+public abstract class Character
 {
-	private double _frameCount;
-	private double _angle, _finalSpeed, _speedSeaweedSlowdown, _currentFrame;
-	private Area _hitbox;
-	private LinkedList<Point2D.Double> _polyList, _coliList;
-	private Point2D.Double _loc;
-	private LinkedList<Rectangle> _rects;
-	private Area _mouthHitbox;
+	protected CharacterType _characterType;
+	protected double _frameCount;
+	protected double _angle, _finalSpeed, _speedSeaweedSlowdown, _currentFrame;
+	protected Area _hitbox;
+	protected LinkedList<Point2D.Double> _polyList, _coliList;
+	protected Point2D.Double _loc;
+	protected LinkedList<Rectangle> _rects;
+	protected Area _mouthHitbox;
 
+	/**
+	 * Init a new Character object with the following parameters:
+	 * 
+	 * @param x
+	 * @param y
+	 * @param type
+	 */
 	public Character(double x, double y, int type)
 	{
-		super(type);
+		_characterType = new CharacterType(type);
 		_loc = new Point2D.Double(x, y);
 		_angle = 0;
 		_currentFrame = 0;
-		_frameCount = getFrames().length;
+		_frameCount = _characterType.getFrames().length;
 		_speedSeaweedSlowdown = 1;
 		_polyList = new LinkedList<Point2D.Double>();
 		_coliList = new LinkedList<Point2D.Double>();
@@ -34,6 +49,12 @@ public abstract class Character extends CharacterType
 		setHitbox();
 	}
 
+	/**
+	 * gets the number of a frame and returns its index in the frames array
+	 * 
+	 * @param frameNum
+	 * @return
+	 */
 	public int frameNumToIndex(int frameNum)
 	{
 		if (frameNum < 10)
@@ -41,12 +62,18 @@ public abstract class Character extends CharacterType
 		return frameNum % 10 + ((int) _frameCount / 2);
 	}
 
+	/**
+	 * draws the character
+	 * 
+	 * @param g
+	 * @param drawDebug
+	 */
 	public void draw(Graphics2D g, boolean drawDebug)
 	{
-		BufferedImage use = getFrames()[frameNumToIndex(10 * (int) (_angle / 180)
-														+ (int) (_currentFrame += 0.5 * (_finalSpeed
-																							/ ((getBaseSpeed() != 0) ? getBaseSpeed() : 1)))
-															% (int) (_frameCount / 2))];
+		int i = frameNumToIndex(10 * (int) (_angle / 180)
+				+ (int) (_currentFrame += 0.25 * (_finalSpeed / ((_characterType.getBaseSpeed() != 0) ? _characterType.getBaseSpeed() : 1)))
+						% (int) (_frameCount / 2));
+		BufferedImage use = _characterType.getFrames()[i];
 		Graphics2D g2d = (Graphics2D) g.create();
 		g2d.rotate(Math.toRadians(_angle), getX(), getY());
 		if (drawDebug)
@@ -68,9 +95,6 @@ public abstract class Character extends CharacterType
 			{
 				g.fillRect((int) p.getX(), (int) p.getY(), 1, 1);
 			}
-			// g.drawOval( (int) (getX() - BlockType.getSize() * 5 / 2), (int)
-			// (getY() - BlockType.getSize() * 5 / 2), BlockType.getSize() * 5,
-			// BlockType.getSize() * 5);
 			g.setColor(Color.magenta);
 			g.draw(_mouthHitbox);
 			g.drawString(String.valueOf(_angle), (int) getX(), (int) getY());
@@ -79,13 +103,24 @@ public abstract class Character extends CharacterType
 		g2d.dispose();
 	}
 
+	/**
+	 * moves the character according to the angle and speed
+	 * 
+	 * @param angle
+	 * @param speed
+	 */
 	public void move(double angle, double speed)
 	{
-		getLoc().x += speed * Math.sin(Math.toRadians(angle));
-		getLoc().y -= speed * Math.cos(Math.toRadians(angle));
-		updateCharacter(getLoc().x, getLoc().y);
+		_loc.x += speed * Math.sin(Math.toRadians(angle));
+		_loc.y -= speed * Math.cos(Math.toRadians(angle));
+		updateCharacter(_loc.x, _loc.y);
 	}
 
+	/**
+	 * slows the character if it is touching seaweed
+	 * 
+	 * @param touching
+	 */
 	public void applySeaweedSlowdown(boolean touching)
 	{
 		if (touching)
@@ -99,12 +134,25 @@ public abstract class Character extends CharacterType
 		updateFinalSpeed();
 	}
 
+	/**
+	 * updates a character coordinates and its hitbox
+	 * 
+	 * @param x
+	 * @param y
+	 */
 	public void updateCharacter(double x, double y)
 	{
 		setCords(x, y);
 		setHitbox();
 	}
 
+	/**
+	 * gets a directory path and returns all the pictures inside the directory
+	 * in an array
+	 * 
+	 * @param path
+	 * @return the frames in the path in array
+	 */
 	public Img[] setFrames(String path)
 	{
 		Img[] arr = null;
@@ -116,24 +164,34 @@ public abstract class Character extends CharacterType
 			int counter = 0;
 			for (File child : directoryListing)
 			{
-				// System.out.println(path + child.getName());
-				arr[counter++] = new Img(path + child.getName(), 0, 0, getWidth(), getHeight());
+				arr[counter++] = new Img(path + child.getName(), 0, 0, _characterType.getWidth(), _characterType.getHeight());
 			}
 		}
 		return arr;
 	}
 
+	/**
+	 * setting the hitbox of the character
+	 */
 	public void setHitbox()
 	{
 		AffineTransform af = new AffineTransform();
 		af.rotate(Math.toRadians(_angle), getX(), getY());
-		Area a = new Area(new Rectangle((int) (getX() - getWidth() / 2), (int) (getY() - getHeight() / 2), getWidth(), getHeight()));
+		Area a = new Area(new Rectangle((int) (getX() - _characterType.getWidth() / 2), (int) (getY() - _characterType.getHeight() / 2),
+										_characterType.getWidth(), _characterType.getHeight()));
 		_hitbox = a.createTransformedArea(af);
 		_polyList = getPolygonPoints(toPolygon(_hitbox));
-		Area mh = new Area(new Rectangle((int) (getX() - getWidth() / 2), (int) (getY() - getHeight() / 2), getWidth(), getHeight() / 4));
+		Area mh = new Area(new Rectangle(	(int) (getX() - _characterType.getWidth() / 2), (int) (getY() - _characterType.getHeight() / 2),
+											_characterType.getWidth(), _characterType.getHeight() / 4));
 		_mouthHitbox = mh.createTransformedArea(af);
 	}
 
+	/**
+	 * gets a polygon and returns the points that define the polygon
+	 * 
+	 * @param p
+	 * @return a linked list of the points in the edges of the polygon
+	 */
 	public static LinkedList<Point2D.Double> getPolygonPoints(Polygon p)
 	{
 		LinkedList<Point2D.Double> list = new LinkedList<Point2D.Double>();
@@ -144,6 +202,12 @@ public abstract class Character extends CharacterType
 		return list;
 	}
 
+	/**
+	 * gets an area and converts it into a polygon
+	 * 
+	 * @param a
+	 * @return a polygon that covers the area
+	 */
 	public static Polygon toPolygon(Area a)
 	{
 		PathIterator iterator = a.getPathIterator(null);
@@ -166,6 +230,11 @@ public abstract class Character extends CharacterType
 		return polygon;
 	}
 
+	/**
+	 * prints the polygon points
+	 * 
+	 * @param p
+	 */
 	public static void printPolygon(Polygon p)
 	{
 		for (int i = 0; i < p.npoints; i++)
@@ -174,65 +243,62 @@ public abstract class Character extends CharacterType
 		}
 	}
 
+	/**
+	 * updates the final speed of the character
+	 */
 	public void updateFinalSpeed()
 	{
-		_finalSpeed = getBaseSpeed() * _speedSeaweedSlowdown;
+		_finalSpeed = _characterType.getBaseSpeed() * _speedSeaweedSlowdown;
 	}
 
+	/**
+	 * sets the coordinates of the character
+	 * 
+	 * @param x
+	 * @param y
+	 */
 	public void setCords(double x, double y)
 	{
 		_loc.setLocation(x, y);
 	}
 
+	/**
+	 * sets the size of the character
+	 * 
+	 * @param width
+	 * @param height
+	 */
 	public void setSize(int width, int height)
 	{
-		setWidth(width);
-		setHeight(height);
+		_characterType.setWidth(width);
+		_characterType.setHeight(height);
 	}
 
-	public Point2D.Double getLoc()
+	/**
+	 * gets an angle and returns an angle that is accuratly represented in the
+	 * java swing panel
+	 * 
+	 * @param angle
+	 * @return
+	 */
+	public double getCorrectedAngle(double angle)
 	{
-		return _loc;
+		return Math.floor((((angle < 0) ? 360 + angle : angle) + 90) % 360);
 	}
 
-	public void setLoc(Point2D.Double loc)
+	/**
+	 * sets the angle of the character to the given angle after correction
+	 * 
+	 * @param angle
+	 */
+	public void setCorrectedAngle(double angle)
 	{
-		_loc = loc;
+		_angle = getCorrectedAngle(angle);
 	}
 
 	public double getX()
 	{
 		return _loc.getX();
-	}
-
-	public Area getHitbox()
-	{
-		return _hitbox;
-	}
-
-	public void setHitbox(Area hitbox)
-	{
-		_hitbox = hitbox;
-	}
-
-	public LinkedList<Point2D.Double> getPolyList()
-	{
-		return _polyList;
-	}
-
-	public void setPolyList(LinkedList<Point2D.Double> polyList)
-	{
-		_polyList = polyList;
-	}
-
-	public LinkedList<Point2D.Double> getColiList()
-	{
-		return _coliList;
-	}
-
-	public void setColiList(LinkedList<Point2D.Double> coliList)
-	{
-		_coliList = coliList;
 	}
 
 	public void setX(double x)
@@ -249,85 +315,4 @@ public abstract class Character extends CharacterType
 	{
 		_loc.y = y;
 	}
-
-	public double getCurrentFrame()
-	{
-		return _currentFrame;
-	}
-
-	public void setCurrentFrame(double currentFrame)
-	{
-		_currentFrame = currentFrame;
-	}
-
-	public double getAngle()
-	{
-		return _angle;
-	}
-
-	public double getCorrectedAngle(double angle)
-	{
-		return (((angle < 0) ? 360 + angle : angle) + 90) % 360;
-	}
-
-	public void setAngle(double angle)
-	{
-		_angle = angle;
-	}
-
-	public void setCorrectedAngle(double angle)
-	{
-		_angle = Math.floor(getCorrectedAngle(angle));
-	}
-
-	public double getFrameCount()
-	{
-		return _frameCount;
-	}
-
-	public void setFrameCount(double frameCount)
-	{
-		_frameCount = frameCount;
-	}
-
-	public double getFinalSpeed()
-	{
-		return _finalSpeed;
-	}
-
-	public void setFinalSpeed(double finalSpeed)
-	{
-		_finalSpeed = finalSpeed;
-	}
-
-	public double getSpeedSeaweedSlowdown()
-	{
-		return _speedSeaweedSlowdown;
-	}
-
-	public void setSpeedSeaweedSlowdown(double speedSeaweedSlowdown)
-	{
-		_speedSeaweedSlowdown = speedSeaweedSlowdown;
-	}
-
-	public LinkedList<Rectangle> getRects()
-	{
-		return _rects;
-	}
-
-	public void setRects(LinkedList<Rectangle> rects)
-	{
-		_rects = rects;
-	}
-
-	public Area getMouthHitbox()
-	{
-		return _mouthHitbox;
-	}
-
-	public void setMouthHitbox(Area mouthHitbox)
-	{
-		_mouthHitbox = mouthHitbox;
-	}
-
 }

@@ -11,7 +11,7 @@ public class ImageButton extends JButton
 
 	public enum MyButtonType
 	{
-		PLAY, OPTIONS, EXITTODESKTOP, PLAYOPTIONS, BACKTOGAME, BACKTOMENU
+		PLAY, OPTIONS, EXITTODESKTOP, PLAYOPTIONS, BACKTOGAME, BACKTOMENU, INSTRUCTIONS, NOTHING
 	};
 
 	private MyButtonType _type;

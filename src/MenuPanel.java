@@ -1,40 +1,36 @@
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Toolkit;
-
-import javax.swing.JPanel;
-
-public class MenuPanel extends JPanel
+/**
+ * MenuPanel class for the menu panel
+ * 
+ * @author liron
+ *
+ */
+public class MenuPanel extends MyPanel
 {
-	private ImageButton _playButton, _exitToDesktopButton, _optionsButton;
-	private Img _background;
+	private ImageButton _playButton, _instructionsButton, _exitToDesktopButton, _optionsButton;
 	private final int BUTTON_WIDTH = 800, BUTTON_HEIGHT = 60;
 
+	/**
+	 * Init a new MenuPanel object with the following parameters:
+	 * 
+	 * @param frame
+	 */
 	public MenuPanel(GameFrame frame)
 	{
-		setLayout(null);
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		setSize(screenSize);
-		_background = new Img("images//menuBackground.jpg", 0, 0, screenSize.width, screenSize.height);
-		_playButton = new ImageButton(	"images//Buttons//playButtonM.png", screenSize.width / 2 - BUTTON_WIDTH / 2,
-										3 * screenSize.height / 8, BUTTON_WIDTH, BUTTON_HEIGHT, ImageButton.MyButtonType.PLAY, frame);
-		_optionsButton = new ImageButton(	"images//Buttons//optionsButtonM.png", screenSize.width / 2 - BUTTON_WIDTH / 2,
-											4 * screenSize.height / 8, BUTTON_WIDTH, BUTTON_HEIGHT, ImageButton.MyButtonType.OPTIONS,
+		super("images//sharkPicture0.png");
+		_playButton = new ImageButton(	"images//Buttons//playButton.png", _screenSize.width / 2 - BUTTON_WIDTH / 2,
+										2 * _screenSize.height / 8, BUTTON_WIDTH, BUTTON_HEIGHT, ImageButton.MyButtonType.PLAY, frame);
+		_instructionsButton = new ImageButton(	"images//Buttons//instructionsButton.png", _screenSize.width / 2 - BUTTON_WIDTH / 2,
+												3 * _screenSize.height / 8, BUTTON_WIDTH, BUTTON_HEIGHT,
+												ImageButton.MyButtonType.INSTRUCTIONS, frame);
+		_optionsButton = new ImageButton(	"images//Buttons//optionsButton.png", _screenSize.width / 2 - BUTTON_WIDTH / 2,
+											4 * _screenSize.height / 8, BUTTON_WIDTH, BUTTON_HEIGHT, ImageButton.MyButtonType.OPTIONS,
 											frame);
-		_exitToDesktopButton = new ImageButton(	"images//Buttons//exitButtonM.png", screenSize.width / 2 - BUTTON_WIDTH / 2,
-												5 * screenSize.height / 8, BUTTON_WIDTH, BUTTON_HEIGHT,
+		_exitToDesktopButton = new ImageButton(	"images//Buttons//exitButton.png", _screenSize.width / 2 - BUTTON_WIDTH / 2,
+												5 * _screenSize.height / 8, BUTTON_WIDTH, BUTTON_HEIGHT,
 												ImageButton.MyButtonType.EXITTODESKTOP, frame);
 		add(_playButton);
+		add(_instructionsButton);
 		add(_optionsButton);
 		add(_exitToDesktopButton);
-
-	}
-
-	@Override
-	protected void paintComponent(Graphics g)
-	{
-		// TODO Auto-generated method stub
-		super.paintComponent(g);
-		_background.drawImg(g);
 	}
 }

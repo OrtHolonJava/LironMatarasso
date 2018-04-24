@@ -1,29 +1,29 @@
 import java.awt.Rectangle;
 
+/**
+ * Block class for holding the info of the blocks in the map
+ * 
+ * @author liron
+ *
+ */
 public class Block
 {
-	private BitMask _bitMask;
+	private BlockRelativeInfo _blockRelativeInfo;
 	private Rectangle _rectangle;
 
 	private static int size;
 
-	public Block(BitMask bitMask, int x, int y)
+	/**
+	 * Init a new Block object with the following parameters:
+	 * 
+	 * @param blockRelativeInfo
+	 * @param x
+	 * @param y
+	 */
+	public Block(BlockRelativeInfo blockRelativeInfo, int x, int y)
 	{
-		_bitMask = bitMask;
+		_blockRelativeInfo = blockRelativeInfo;
 		_rectangle = new Rectangle(x * size, y * size, size, size);
-	}
-
-	@Override
-	public String toString()
-	{
-		// TODO Auto-generated method stub
-
-		return _bitMask.toString() + " " + _rectangle.toString();
-	}
-
-	public static int getSize()
-	{
-		return size;
 	}
 
 	public static void setSize(int size)
@@ -31,14 +31,14 @@ public class Block
 		Block.size = size;
 	}
 
-	public BitMask getBitMask()
+	public BlockRelativeInfo getBlockRelativeInfo()
 	{
-		return _bitMask;
+		return _blockRelativeInfo;
 	}
 
-	public void setBitMask(BitMask bitMask)
+	public void setBlockRelativeInfo(BlockRelativeInfo blockRelativeInfo)
 	{
-		_bitMask = bitMask;
+		_blockRelativeInfo = blockRelativeInfo;
 	}
 
 	public Rectangle getRectangle()
@@ -49,6 +49,17 @@ public class Block
 	public void setRectangle(Rectangle rectangle)
 	{
 		_rectangle = rectangle;
+	}
+
+	public static int getSize()
+	{
+		return size;
+	}
+
+	@Override
+	public String toString()
+	{
+		return _blockRelativeInfo.toString() + " " + _rectangle.toString();
 	}
 
 }

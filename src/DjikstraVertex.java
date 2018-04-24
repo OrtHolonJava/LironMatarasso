@@ -1,16 +1,31 @@
 import java.awt.Point;
 
+/**
+ * DjikstraVertex class for representing the vertexes in the Djikstra Graph
+ * 
+ * @author liron
+ *
+ */
 public class DjikstraVertex implements Comparable<DjikstraVertex>, Cloneable
 {
-	private Point _prev, _loc;
+	private Point _prev, _current;
 	private boolean _isClear;
 	private double _distance, _toEnd;
 	private int _endX, _endY;
 
+	/**
+	 * Init a new DjikstraVertex object with the following parameters:
+	 * 
+	 * @param x
+	 * @param y
+	 * @param isClear
+	 * @param endX
+	 * @param endY
+	 */
 	public DjikstraVertex(int x, int y, boolean isClear, int endX, int endY)
 	{
 		_distance = 1000000;
-		_loc = new Point(x, y);
+		_current = new Point(x, y);
 		_prev = new Point(-1, -1);
 		_isClear = isClear;
 		_endX = endX;
@@ -18,34 +33,14 @@ public class DjikstraVertex implements Comparable<DjikstraVertex>, Cloneable
 		_toEnd = Math.hypot(x - _endX, y - _endY);
 	}
 
-	public double getToEnd()
-	{
-		return _toEnd;
-	}
-
-	public void setToEnd(double toEnd)
-	{
-		_toEnd = toEnd;
-	}
-
-	public double getDistance()
-	{
-		return _distance;
-	}
-
 	public int getX()
 	{
-		return _loc.x;
+		return _current.x;
 	}
 
 	public int getY()
 	{
-		return _loc.y;
-	}
-
-	public void setDistance(double distance)
-	{
-		_distance = distance;
+		return _current.y;
 	}
 
 	public Point getPrev()
@@ -56,6 +51,46 @@ public class DjikstraVertex implements Comparable<DjikstraVertex>, Cloneable
 	public void setPrev(Point prev)
 	{
 		_prev = prev;
+	}
+
+	public Point getCurrent()
+	{
+		return _current;
+	}
+
+	public void setCurrent(Point current)
+	{
+		_current = current;
+	}
+
+	public boolean isClear()
+	{
+		return _isClear;
+	}
+
+	public void setClear(boolean isClear)
+	{
+		_isClear = isClear;
+	}
+
+	public double getDistance()
+	{
+		return _distance;
+	}
+
+	public void setDistance(double distance)
+	{
+		_distance = distance;
+	}
+
+	public double getToEnd()
+	{
+		return _toEnd;
+	}
+
+	public void setToEnd(double toEnd)
+	{
+		_toEnd = toEnd;
 	}
 
 	public int getEndX()
@@ -81,42 +116,19 @@ public class DjikstraVertex implements Comparable<DjikstraVertex>, Cloneable
 	@Override
 	protected Object clone()
 	{
-		// TODO Auto-generated method stub
-		return new DjikstraVertex(_loc.x, _loc.y, _isClear, _endX, _endY);
+		return new DjikstraVertex(_current.x, _current.y, _isClear, _endX, _endY);
 	}
 
 	@Override
 	public int compareTo(DjikstraVertex o)
 	{
-		// TODO Auto-generated method stub
 		return (int) _distance - (int) o._distance;
-	}
-
-	public Point getLoc()
-	{
-		return _loc;
-	}
-
-	public void setLoc(Point loc)
-	{
-		_loc = loc;
-	}
-
-	public boolean isClear()
-	{
-		return _isClear;
-	}
-
-	public void setClear(boolean isClear)
-	{
-		_isClear = isClear;
 	}
 
 	@Override
 	public String toString()
 	{
-		// TODO Auto-generated method stub
-		return _loc.toString() + " " + _distance;
+		return _current.toString() + " " + _distance;
 	}
 
 }

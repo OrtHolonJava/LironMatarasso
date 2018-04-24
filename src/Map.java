@@ -22,32 +22,36 @@ public class Map
 {
 	private int _width, _height;
 	private int _counter = 0;
-	private Block[][] _hmap, _heffects, _hbackgrounds;
+	private Block[][] _hmap, _hbackgrounds;
 	private LinkedList<Point> _clearBlock;
 	private static DjikstraVertex[][] _dMap;
 	private Rectangle _mapBorders;
 
-	public Map(int height, int width, String mapFileName, String effectsFileName, String backgroundsFileName)
+	/**
+	 * Init a new Map object with the following parameters:
+	 * 
+	 * @param height
+	 * @param width
+	 * @param mapFileName
+	 * @param backgroundsFileName
+	 */
+	public Map(int height, int width, String mapFileName, String backgroundsFileName)
 	{
 		_width = width;
 		_height = height;
 		_hmap = new Block[_height][_width];
-		_heffects = new Block[_height][_width];
 		_hbackgrounds = new Block[_height][_width];
 		_clearBlock = new LinkedList<Point>();
 		_mapBorders = new Rectangle(0, 0, width * Block.getSize(), height * Block.getSize());
 		readFile(mapFileName, _hmap);
-		readFile(effectsFileName, _heffects);
 		readFile(backgroundsFileName, _hbackgrounds);
 		_dMap = new DjikstraVertex[_height][_width];
 		for (int y = 0; y < _height; y++)
 		{
 			for (int x = 0; x < _width; x++)
 			{
-				_dMap[y][x] =
-							new DjikstraVertex(	x, y,
-												_hmap[y][x] == null || MapPanel._passables.contains(_hmap[y][x].getBitMask().getBlockID()),
-												0, 0);
+				_dMap[y][x] = new DjikstraVertex(x, y, _hmap[y][x] == null
+						|| GamePanel.getPassables().contains(_hmap[y][x].getBlockRelativeInfo().getBlockID()), 0, 0);
 				if (_hmap[y][x] == null)
 				{
 					_clearBlock.add(new Point(x, y));
@@ -56,6 +60,11 @@ public class Map
 		}
 	}
 
+	/**
+	 * prints a block matrix
+	 * 
+	 * @param mat
+	 */
 	public void printMat(Block[][] mat)
 	{
 		for (int y = 0; y < mat.length; y++)
@@ -70,18 +79,31 @@ public class Map
 		}
 	}
 
-	public void setBitMasks(Block[][] map)
+	/**
+	 * computes all the relative info of all the blocks in the given matrix
+	 * 
+	 * @param map
+	 */
+	public void setBlockRelativeInfo(Block[][] map)
 	{
 		for (int y = 0; y < map.length; y++)
 		{
 			for (int x = 0; x < map[y].length; x++)
 			{
 				if (map[y][x] != null)
-					map[y][x].getBitMask().setBitMask(BitMask.computeTile(map, _width, y, x, map[y][x].getBitMask().getBlockID()));
+					map[y][x]	.getBlockRelativeInfo()
+								.setBitMask(BlockRelativeInfo.computeBlock(	map, _width, y, x,
+																			map[y][x].getBlockRelativeInfo().getBlockID()));
 			}
 		}
 	}
 
+	/**
+	 * reads an xml file and fills the block matrix
+	 * 
+	 * @param fileName
+	 * @param hmap
+	 */
 	private void readFile(String fileName, Block[][] hmap)
 	{
 		_counter = 0;
@@ -101,7 +123,7 @@ public class Map
 			{
 				readNode(doc.getChildNodes(), hmap);
 			}
-			setBitMasks(hmap);
+			setBlockRelativeInfo(hmap);
 		}
 		catch (Exception e)
 		{
@@ -109,6 +131,12 @@ public class Map
 		}
 	}
 
+	/**
+	 * reads a nodelist and fills the block matrix
+	 * 
+	 * @param nodeList
+	 * @param map
+	 */
 	private void readNode(NodeList nodeList, Block[][] map)
 	{
 		for (int count = 0; count < nodeList.getLength(); count++)
@@ -124,8 +152,9 @@ public class Map
 						Node node = nodeMap.item(i);
 						if (Integer.parseInt(node.getNodeValue()) != 0)
 						{
-							map[_counter / _width][_counter % _width] = new Block(	new BitMask(Integer.parseInt(node.getNodeValue()), -1),
-																					_counter % _width, _counter / _width);
+							map[_counter / _width][_counter
+									% _width] = new Block(	new BlockRelativeInfo(Integer.parseInt(node.getNodeValue()), -1),
+															_counter % _width, _counter / _width);
 						}
 						_counter++;
 					}
@@ -138,6 +167,12 @@ public class Map
 		}
 	}
 
+	/**
+	 * 
+	 * @param fileName
+	 * @param name
+	 * @return the amount of time the given element appears in the xml file
+	 */
 	public static int getElementCountByName(String fileName, String name)
 	{
 		try
@@ -173,16 +208,6 @@ public class Map
 	public void setHmap(Block[][] hmap)
 	{
 		_hmap = hmap;
-	}
-
-	public Block[][] getHeffects()
-	{
-		return _heffects;
-	}
-
-	public void setHeffects(Block[][] heffects)
-	{
-		_heffects = heffects;
 	}
 
 	public Block[][] getHbackgrounds()

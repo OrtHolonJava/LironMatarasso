@@ -1,29 +1,40 @@
+import javax.swing.SwingUtilities;
+
+/**
+ * GameLoop class for running the game thread
+ * 
+ * @author liron
+ *
+ */
 public class GameLoop implements Runnable
 {
-	Thread _gameThread;
-	MapPanel _mapPanel;
+	private Thread _gameThread;
+	private GamePanel _gamePanel;
 
 	private final double _ups = 60.0, _timeBetweenUpdates = 1000000000 / _ups, _targetFPS = 60,
 			_timeBetweenRenders = 1000000000 / _targetFPS;
 	private final int _maxUpdatesBeforeRender = 5;
 	private boolean _paused;
 
-	public GameLoop(MapPanel mapPanel)
+	/**
+	 * Init a new GameLoop object with the following parameters:
+	 * 
+	 * @param gamePanel
+	 */
+	public GameLoop(GamePanel gamePanel)
 	{
-		_mapPanel = mapPanel;
+		_gamePanel = gamePanel;
 		_paused = false;
 	}
 
+	/**
+	 * starts the game thread
+	 */
 	public void startGame()
 	{
 		_gameThread = new Thread(this);
 		_gameThread.start();
 	}
-
-	// double lastUpdateTime = System.nanoTime();
-	// double lastRenderTime = System.nanoTime();
-	// double now;
-	// int updateCount;
 
 	@Override
 	public void run()
@@ -64,7 +75,6 @@ public class GameLoop implements Runnable
 				lastUpdateTime = now - _timeBetweenUpdates;
 			}
 
-
 			while (_paused)
 			{
 				Thread.yield();
@@ -98,28 +108,20 @@ public class GameLoop implements Runnable
 		}
 	}
 
+	/**
+	 * repaints the game panel
+	 */
 	private void render()
 	{
-		// long startTime = System.nanoTime();
-		// SwingUtilities.invokeLater(() -> _mapPanel.repaint());
-		_mapPanel.repaint();
-		// RealTimeSwing.invokeNow(() -> _mapPanel.repaint(10));
-		// _mapPanel.getHeight());
-		// long estimatedTime = System.nanoTime() - startTime;
-		// System.out.println("r:" + String.format("%.12f", (double)
-		// estimatedTime / 1000000000));
+		SwingUtilities.invokeLater(() -> _gamePanel.paintImmediately(_gamePanel.getBounds()));
 	}
 
+	/**
+	 * does another cycle of computing everything
+	 */
 	private void tick()
 	{
-		// long startTime = System.nanoTime();
-		// SwingUtilities.invokeLater(() -> _mapPanel.doLogic());
-		// RealTimeSwing.invokeNow(() -> _mapPanel.checkMouse());
-		// RealTimeSwing.invokeNow(() -> _mapPanel.getLogic().doLogic());
-		_mapPanel.doLogic();
-		// long estimatedTime = System.nanoTime() - startTime;
-		// System.out.println("t:" + String.format("%.12f", (double)
-		// estimatedTime / 1000000000));
+		_gamePanel.doLogic();
 	}
 
 	public void setPaused(boolean paused)

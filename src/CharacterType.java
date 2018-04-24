@@ -3,16 +3,31 @@ import java.io.File;
 
 import javax.swing.ImageIcon;
 
-public abstract class CharacterType
+/**
+ * CharacterType class that holds the information of the types of characters in
+ * the game (player,passive and enemy characters)
+ * 
+ * @author liron
+ *
+ */
+public class CharacterType
 {
 	private int _width, _height, _type;
 	private double _baseSpeed;
 	private BufferedImage[] _frames;
 
-	private final int PLAYER_WIDTH = 8 * BlockType.getSize() / 10, PLAYER_HEIGHT = 19 * BlockType.getSize() / 10,
+	private final int PLAYER_WIDTH = 8 * BlockGraphics.getSize() / 10, PLAYER_HEIGHT = 19 * BlockGraphics.getSize() / 10,
 			GRAY_FISH_WIDTH = PLAYER_WIDTH / 4, GRAY_FISH_HEIGHT = PLAYER_HEIGHT / 4, SWORD_FISH_WIDTH = 7 * PLAYER_WIDTH / 10,
-			SWORD_FISH_HEIGHT = PLAYER_HEIGHT, YELLOW_FISH_WIDTH = 2 * GRAY_FISH_WIDTH, YELLOW_FISH_HEIGHT = YELLOW_FISH_WIDTH;
+			SWORD_FISH_HEIGHT = PLAYER_HEIGHT, YELLOW_FISH_WIDTH = 2 * GRAY_FISH_WIDTH, YELLOW_FISH_HEIGHT = YELLOW_FISH_WIDTH,
+			PINK_FISH_WIDTH = 5 * GRAY_FISH_WIDTH / 4, PINK_FISH_HEIGHT = GRAY_FISH_HEIGHT;
 
+	public static final int SMALL_FISH_COUNT = 5;
+
+	/**
+	 * Init a new CharacterType object with the following parameters:
+	 * 
+	 * @param type
+	 */
 	protected CharacterType(int type)
 	{
 		_type = type;
@@ -44,10 +59,28 @@ public abstract class CharacterType
 			}
 			case 3: // Pink fish
 			{
-				_width = GRAY_FISH_WIDTH;
-				_height = GRAY_FISH_HEIGHT;
+				_width = PINK_FISH_WIDTH;
+				_height = PINK_FISH_HEIGHT;
 				_frames = setFrames("images//Frames//PinkFish//", _width, _height);
 				_baseSpeed = 2.0 / 60 * Block.getSize();
+				break;
+			}
+
+			case 4: // Blue fish
+			{
+				_width = PINK_FISH_WIDTH;
+				_height = PINK_FISH_HEIGHT;
+				_frames = setFrames("images//Frames//BlueFish//", _width, _height);
+				_baseSpeed = 5.0 / 60 * Block.getSize();
+				break;
+			}
+
+			case 5: // Orange fish
+			{
+				_width = PINK_FISH_WIDTH * 2;
+				_height = PINK_FISH_HEIGHT * 2;
+				_frames = setFrames("images//Frames//OrangeFish//", _width, _height);
+				_baseSpeed = 3.0 / 60 * Block.getSize();
 				break;
 			}
 			case 10: // Sword Fish
@@ -61,6 +94,14 @@ public abstract class CharacterType
 		}
 	}
 
+	/**
+	 * gets the following parameters:
+	 * 
+	 * @param path
+	 * @param width
+	 * @param height
+	 * @return an array of buffered images in the given size from the given path
+	 */
 	public BufferedImage[] setFrames(String path, int width, int height)
 	{
 		BufferedImage[] arr = null;
@@ -72,7 +113,6 @@ public abstract class CharacterType
 			int counter = 0;
 			for (File child : directoryListing)
 			{
-				// System.out.println(path + child.getName());
 				arr[counter] = Img.toBufferedImage(new ImageIcon(this	.getClass().getClassLoader()
 																		.getResource(path + child.getName())).getImage());
 				arr[counter++] = Img.resize(arr[counter - 1], width, height);

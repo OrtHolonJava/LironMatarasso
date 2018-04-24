@@ -6,6 +6,11 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
 
+/**
+ * ImageToggleButton for toggle buttons with image
+ * 
+ * @author liron
+ */
 public class ImageToggleButton extends JToggleButton
 {
 
@@ -16,6 +21,18 @@ public class ImageToggleButton extends JToggleButton
 
 	private MyToggleType _type;
 
+	/**
+	 * Init a new ImageToggleButton object with the following parameters:
+	 * 
+	 * @param pathFalse
+	 * @param pathTrue
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 * @param type
+	 * @param frame
+	 */
 	public ImageToggleButton(String pathFalse, String pathTrue, int x, int y, int width, int height, MyToggleType type, GameFrame frame)
 	{
 		_type = type;
@@ -41,6 +58,13 @@ public class ImageToggleButton extends JToggleButton
 
 	}
 
+	/**
+	 * sets the image on the toggle button
+	 * 
+	 * @param path
+	 * @param width
+	 * @param height
+	 */
 	public void setIcon(String path, int width, int height)
 	{
 		ImageIcon icon = new ImageIcon(this.getClass().getClassLoader().getResource(path));
